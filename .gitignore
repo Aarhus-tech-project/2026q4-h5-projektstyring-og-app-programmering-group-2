@@ -1,0 +1,45 @@
+# --- .NET ---
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+.vs/
+.idea/
+TestResults/
+*.nupkg
+*.snupkg
+appsettings.*.local.json
+
+# --- Expo / React Native ---
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+*.tsbuildinfo
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# native folders (only if you use prebuild / CNG)
+/ios
+/android
+
+# signing keys
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# env
+.env
+.env*.local
+
+# --- misc ---
+.DS_Store
+Thumbs.db
+*.log
