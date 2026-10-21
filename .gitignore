@@ -11,6 +11,31 @@ TestResults/
 *.snupkg
 appsettings.*.local.json
 
+# C++
+build/
+out/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+.cache/
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.pdb
+*.ilk
+*.exp
+*.idb
+*.gch
+*.pch
+
 # --- Expo / React Native ---
 node_modules/
 .expo/
