@@ -1,0 +1,10 @@
+# Generates TypeScript from the shared .proto files in the git root.
+# Run with: npm run proto
+version: v2
+inputs:
+  - directory: ../protos
+plugins:
+  - local: protoc-gen-es
+    out: src/gen
+    opt: target=ts
+clean: true

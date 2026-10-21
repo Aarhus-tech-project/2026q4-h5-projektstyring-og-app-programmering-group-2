@@ -6,6 +6,7 @@ obj/
 *.userprefs
 .vs/
 .idea/
+/.vscode/
 TestResults/
 *.nupkg
 *.snupkg
