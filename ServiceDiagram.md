@@ -4,23 +4,23 @@ flowchart LR
         app["Expo app<br/>(iOS / Android)"]
     end
 
+    cf["Cloudflare edge<br/>HTTPS + cache"]
+
     subgraph docker["Docker (docker compose)"]
-        backend["Backend<br/>ASP.NET Core<br/>gRPC-Web + upload endpoint"]
+        tunnel["cloudflared<br/>tunnel"]
+        backend["Backend<br/>ASP.NET Core<br/>REST API"]
         images["Image service<br/>nginx"]
         db[("Database<br/>PostgreSQL")]
         vol[["images volume<br/>/srv/images"]]
     end
 
-    push["Expo Push Service<br/>(APNs / FCM)"]
+    app -- "HTTPS: domain/api/*<br/>domain/img/*" --> cf
+    cf == "outbound tunnel" ==> tunnel
 
-    app -- "gRPC-Web: pairs, votes, auth" --> backend
-    app -- "HTTP PUT: image upload" --> backend
-    app -- "HTTP GET: images (cached, immutable)" --> images
+    tunnel -- "/api/*: REST/JSON, PUT upload" --> backend
+    tunnel -- "/img/*: GET images" --> images
 
     backend -- "SQL" --> db
     backend -- "writes originals + variants" --> vol
     images -- "reads (sendfile)" --> vol
-
-    backend -. "push notifications" .-> push
-    push -. "notification" .-> app
 ```

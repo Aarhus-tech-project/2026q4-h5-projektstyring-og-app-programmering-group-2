@@ -8,11 +8,16 @@ erDiagram
         text description
         timestamptz created_at
     }
-    devices {
+    sessions {
         uuid id PK
         uuid user_id FK
-        text push_token UK
+        text refresh_token_hash UK
+        text device_name
+        text platform
+        text app_version
+        timestamptz created_at
         timestamptz last_seen_at
+        timestamptz revoked_at
     }
     images {
         text hash PK
@@ -20,6 +25,11 @@ erDiagram
         int width
         int height
         bytea thumbhash
+        text original_format
+        bigint original_size_bytes
+        text camera_make
+        text camera_model
+        timestamptz taken_at
         timestamptz created_at
     }
     posts {
@@ -49,7 +59,7 @@ erDiagram
         timestamptz created_at
     }
 
-    users ||--o{ devices : has
+    users ||--o{ sessions : "logged in on"
     users ||--o{ posts : creates
     images ||--o{ posts : "shown in"
     users ||--o{ matchups : "is shown"
