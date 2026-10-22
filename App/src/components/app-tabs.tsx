@@ -12,21 +12,25 @@ export default function AppTabs() {
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="ranking">
+          <NativeTabs.Trigger.Label>Ranking</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon sf={{ default: "trophy", selected: "trophy.fill" }} md="leaderboard" />
+        </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="vote">
+          <NativeTabs.Trigger.Label>Vote</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon sf={{ default: "rectangle.split.2x1", selected: "rectangle.split.2x1.fill" }} md="compare" />
+        </NativeTabs.Trigger>
+
+        <NativeTabs.Trigger name="camera">
+          <NativeTabs.Trigger.Label>Camera</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon sf={{ default: "camera", selected: "camera.fill" }} md="photo_camera" />
+        </NativeTabs.Trigger>
+
+        <NativeTabs.Trigger name="profile">
+          <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon sf={{ default: "person.crop.circle", selected: "person.crop.circle.fill" }} md="account_circle" />
+        </NativeTabs.Trigger>
     </NativeTabs>
   );
 }

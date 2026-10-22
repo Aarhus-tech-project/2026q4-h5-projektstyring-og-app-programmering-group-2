@@ -3,9 +3,9 @@ PODS:
     - ReactNativeDependencies
   - DoubleConversion (1.1.6):
     - ReactNativeDependencies
-  - EXConstants (58.0.12):
+  - EXConstants (58.0.13):
     - ExpoModulesCore
-  - Expo (58.0.16):
+  - Expo (58.0.17):
     - ExpoModulesCore
     - ExpoModulesJSI
     - hermes-engine
@@ -34,7 +34,7 @@ PODS:
     - Yoga
   - ExpoApplication (58.1.2):
     - ExpoModulesCore
-  - ExpoAsset (58.0.17):
+  - ExpoAsset (58.0.18):
     - ExpoModulesCore
   - ExpoDevice (58.0.5):
     - ExpoModulesCore
@@ -50,11 +50,11 @@ PODS:
     - ExpoModulesCore
   - ExpoKeepAwake (58.0.3):
     - ExpoModulesCore
-  - ExpoLinking (58.0.13):
+  - ExpoLinking (58.0.14):
     - ExpoModulesCore
-  - ExpoLogBox (58.0.12):
+  - ExpoLogBox (58.0.13):
     - React-Core
-  - ExpoModulesCore (58.0.23):
+  - ExpoModulesCore (58.0.24):
     - ExpoModulesJSI
     - hermes-engine
     - RCTRequired
@@ -79,29 +79,31 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - ExpoModulesJSI (58.0.16):
+  - ExpoModulesJSI (58.0.17):
     - React-Core
     - ReactCommon
-  - ExpoModulesWorklets (58.0.23):
+  - ExpoModulesWorklets (58.0.24):
     - ExpoModulesCore
     - ExpoModulesJSI
-  - ExpoModulesWorkletsAdapter (58.0.23):
+  - ExpoModulesWorkletsAdapter (58.0.24):
     - ExpoModulesCore
     - ExpoModulesJSI
     - ExpoModulesWorklets
     - RNWorklets
-  - ExpoNotifications (58.1.5):
+  - ExpoNotifications (58.1.6):
     - ExpoModulesCore
-  - ExpoRouter (58.0.24):
+  - ExpoRouter (58.0.25):
     - ExpoModulesCore
     - RNScreens
-  - ExpoSplashScreen (58.0.10):
+  - ExpoSplashScreen (58.0.11):
+    - ExpoModulesCore
+  - ExpoStatusBar (58.0.4):
     - ExpoModulesCore
   - ExpoSymbols (58.0.4):
     - ExpoModulesCore
   - ExpoSystemUI (58.0.6):
     - ExpoModulesCore
-  - ExpoUI (58.0.21):
+  - ExpoUI (58.0.22):
     - ExpoModulesCore
     - ExpoModulesWorklets
     - React-RCTFabric
@@ -2218,6 +2220,7 @@ DEPENDENCIES:
   - ExpoNotifications (from `../node_modules/expo-notifications/ios`)
   - ExpoRouter (from `../node_modules/expo-router/ios`)
   - ExpoSplashScreen (from `../node_modules/expo-splash-screen/ios`)
+  - ExpoStatusBar (from `../node_modules/expo-status-bar/ios`)
   - ExpoSymbols (from `../node_modules/expo-symbols/ios`)
   - ExpoSystemUI (from `../node_modules/expo-system-ui/ios`)
   - "ExpoUI (from `../node_modules/@expo/ui/ios`)"
@@ -2359,6 +2362,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-router/ios"
   ExpoSplashScreen:
     :path: "../node_modules/expo-splash-screen/ios"
+  ExpoStatusBar:
+    :path: "../node_modules/expo-status-bar/ios"
   ExpoSymbols:
     :path: "../node_modules/expo-symbols/ios"
   ExpoSystemUI:
@@ -2552,10 +2557,10 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: 8502bfdc46e2804408af2e163049ece181009af4
   DoubleConversion: 501a575c40c0b50c89685762dd3e415e6bb26fb0
-  EXConstants: ff5c226215048137ea31d39fa460027a6daeeadc
-  Expo: 994438bd7721559fbf1d33989f3166a87395c395
+  EXConstants: e90e362a4ffafaa03999f456bf81d7fb8021db9d
+  Expo: b34c4572c14ac95174334d7b07ba59d475b35952
   ExpoApplication: c83355b2f69f996b5d26b64fef39228e7f1e1208
-  ExpoAsset: a21dfe76346f30e600f2cc9cc835a6ede18ca39f
+  ExpoAsset: 9548991f0332bd8ed8819299e0b413d713104a1a
   ExpoDevice: 77a9816436a09a0bfc00f5ace649c6ccb219b96d
   ExpoDomWebView: b2a6d681b9d34c23b1f584321386ca8da1d36afb
   ExpoFileSystem: 6e11203047bfcbd318e6db7bb91210a95a4162b3
@@ -2563,18 +2568,19 @@ SPEC CHECKSUMS:
   ExpoGlassEffect: 008d906ff11ffeb03a8e702af9d6a471c16c10eb
   ExpoImage: 002ec1de17e9d4328d7b930ed112244227b69a5c
   ExpoKeepAwake: fd18a5d233329013c578030ad399d8e10b252b5f
-  ExpoLinking: 5e84f6510eef3dd1985e3afce4de809610f7f0c4
-  ExpoLogBox: 14c42e5429c85e1e2acfb9316b4e821db8e40d42
-  ExpoModulesCore: 5ef2e963f407a0a09ade31a07b319aa7e2eb9a73
-  ExpoModulesJSI: dc5ce2e1bab90688002a41af81bb6b9243ca1a99
-  ExpoModulesWorklets: a09d8313cdc714c0e539f5f432445d6a9783d2e2
-  ExpoModulesWorkletsAdapter: 503cb506616c53a2e1f9e63bea3b09a4b36e31f1
-  ExpoNotifications: b2f5a3a301a48a546ee3156f8633055b8a15fd93
-  ExpoRouter: cc1ecd075ac6d03c90ff5daf2fb2bdfbdccce40a
-  ExpoSplashScreen: fd71780cf74d7a8fdbf5f81eb07e7af78eb9485a
+  ExpoLinking: 0937be9faa1580dee244062cc4c5a77732dc2c4d
+  ExpoLogBox: 624d64042d73abe0dc230a24b1a9f835adb2cec9
+  ExpoModulesCore: bb8a152e463fb063223b0a0a1b88d2fd54ab0b43
+  ExpoModulesJSI: 744bbba28465e6fff44f48debe964b81b3ebebb1
+  ExpoModulesWorklets: 1ffcd69fa7269a878dbc5ee7acd4e32af85c0406
+  ExpoModulesWorkletsAdapter: fa45f4969290c7da2a5ad029104dac026f9e5eba
+  ExpoNotifications: d0ab853f324bacf76f0fe32d06eba2e1f8532ca5
+  ExpoRouter: fcfb1d2f4a86586af350aacfc4c1496f565593aa
+  ExpoSplashScreen: 4a16996856aeceb61b1c253c5fc9b43208705fa5
+  ExpoStatusBar: 56aa9746e1bee4d8adbab12f4d7efc97000ac49f
   ExpoSymbols: 1260e741b35b6fd105942779895418db306645c8
   ExpoSystemUI: 7f794f868bd10f62788f85bf169bc8ca45fbe736
-  ExpoUI: 2dfa03387386304db67c1fb125c67beec0813ae6
+  ExpoUI: 1c6f5e73c8707a6552974eead48932e516e03618
   ExpoWebBrowser: 2999ed3f2ee8c06985cb37b4ac566328ca0e4c7a
   fast_float: 7c925d1cebf8328d4018d061f49377e9f887e3b4
   FBLazyVector: fdebac2dfe9c53bca49f8218fbdf1e24e36c8be0
