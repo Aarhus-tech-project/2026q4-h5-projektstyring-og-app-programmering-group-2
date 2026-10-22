@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace Server;
 
 public class Program
@@ -11,6 +13,7 @@ public class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddProblemDetails();
         builder.Services.AddScoped<LoginRepository>();
+        builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql("Host=localhost;Username=postgres;Password=secret;Database=postgres").UseSnakeCaseNamingConvention());
 
         var app = builder.Build();
         app.MapControllers();
