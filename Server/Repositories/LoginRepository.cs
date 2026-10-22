@@ -15,12 +15,6 @@ public class LoginRepository(AppDbContext db)
 
     public async Task<bool> Register(UserLoginDTO login)
     {
-        if (await db.Users.AnyAsync(u => u.Email == login.Email))
-            return false;
-
-        if (!MailAddress.TryCreate(login.Email, out var mail) || mail.Address != login.Email)
-            return false;
-
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -32,6 +26,22 @@ public class LoginRepository(AppDbContext db)
 
         db.Users.Add(user);
         await db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> MarkusesEmailTjek(UserLoginDTO login) 
+    {
+        if (await db.Users.AnyAsync(u => u.Email == login.Email))
+            return false;
+
+        return true;
+    }
+
+    public bool ValidEmailSyntax(UserLoginDTO login) 
+    {
+        if (!MailAddress.TryCreate(login.Email, out var mail) || mail.Address != login.Email)
+            return false;
+
         return true;
     }
 }

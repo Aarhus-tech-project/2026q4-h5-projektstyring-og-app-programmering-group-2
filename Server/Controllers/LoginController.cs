@@ -17,7 +17,13 @@ public class LoginController(LoginRepository _loginRepository) : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserLoginDTO login)
     {
-        var success = await _loginRepository.Register(login);
-        return success ? Ok() : Unauthorized();
+        bool EmailTjekResult = await _loginRepository.MarkusesEmailTjek(login);
+            if (!EmailTjekResult) { return Conflict("Email findes allerede"); }
+    
+        bool EmailSyntaxResult = _loginRepository.ValidEmailSyntax(login);
+            if (!EmailSyntaxResult) { return Conflict("Invalid email syntax"); }
+
+        await _loginRepository.Register(login);
+        return Ok();
     }
 }
