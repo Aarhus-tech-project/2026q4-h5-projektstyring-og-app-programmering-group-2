@@ -6,9 +6,10 @@ namespace Server;
 [Route("api/[controller]")]
 public class LoginController(LoginRepository _loginRepository) : ControllerBase
 {
+    public record TokenResponse(string AccessToken, string RefreshToken);
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] UserLoginDTO login)
+    public async Task<ActionResult<TokenResponse>> Login([FromBody] UserLoginDTO login)
     {
         var success = await _loginRepository.Login(login);
         return success ? Ok() : Unauthorized("Forkert email eller password");
