@@ -10,10 +10,15 @@ public class User
     public DateTime CreatedAt { get; set; }
 }
 
-public class UserLoginDTO
+public class UserRegisterDTO
 {
     public string Username { get; set; } = null!;
     public string Email { get; set; } = null!;
-    public string PasswordHash { get; set; } = null!;
+    public string Password { get; set; } = null!;
 }
 
+public class UserLoginDTO
+{
+    public string loginString { get; set; } = null!;
+    public string Password { get; set; } = null!;
+}

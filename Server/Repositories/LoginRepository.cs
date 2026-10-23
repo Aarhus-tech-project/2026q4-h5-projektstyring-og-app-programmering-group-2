@@ -8,12 +8,31 @@ namespace Server;
 
 public class LoginRepository(AppDbContext db)
 {
+    PasswordHasher<User> PasswordHasher = new PasswordHasher<User>();
+
     public async Task<bool> Login(UserLoginDTO login)
     {
-        return true;
+        if (ValidEmailSyntax(login.loginString))
+        {
+            User? user = db.Users.FirstOrDefault(u => u.Email == login.loginString);
+            if (user == null) { return false; }
+
+            PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password);
+
+            return true;
+        }
+        else
+        {
+            User? user = db.Users.FirstOrDefault(u => u.Username == login.loginString);
+            if (user == null) { return false; }
+
+            PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password);
+
+            return true;
+        }
     }
 
-    public async Task<bool> Register(UserLoginDTO login)
+    public async Task<bool> Register(UserRegisterDTO login)
     {
         var user = new User
         {
@@ -22,24 +41,24 @@ public class LoginRepository(AppDbContext db)
             Email = login.Email,
             CreatedAt = DateTime.UtcNow
         };
-        user.PasswordHash = new PasswordHasher<User>().HashPassword(user, login.PasswordHash);
+        user.PasswordHash = new PasswordHasher<User>().HashPassword(user, login.Password);
 
         db.Users.Add(user);
         await db.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> MarkusesEmailTjek(UserLoginDTO login) 
+    public async Task<bool> MarkusesEmailTjek(string email) 
     {
-        if (await db.Users.AnyAsync(u => u.Email == login.Email))
+        if (await db.Users.AnyAsync(u => u.Email == email))
             return false;
 
         return true;
     }
 
-    public bool ValidEmailSyntax(UserLoginDTO login) 
+    public bool ValidEmailSyntax(string email) 
     {
-        if (!MailAddress.TryCreate(login.Email, out var mail) || mail.Address != login.Email)
+        if (!MailAddress.TryCreate(email, out var mail) || mail.Address != email)
             return false;
 
         return true;
