@@ -13,7 +13,7 @@ public class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddProblemDetails();
         builder.Services.AddScoped<LoginRepository>();
-        builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql("Host=localhost;Username=postgres;Password=secret;Database=postgres").UseSnakeCaseNamingConvention());
+        builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql("Host=localhost;Username=postgres;Password=somethinglongandrandom;Database=postgres").UseSnakeCaseNamingConvention());
         builder.Services.AddOpenApi();
 
         var app = builder.Build();

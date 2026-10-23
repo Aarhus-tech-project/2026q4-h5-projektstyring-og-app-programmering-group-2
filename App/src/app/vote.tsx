@@ -10,6 +10,7 @@ import { Collapsible } from '@/components/ui/collapsible';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { api } from '../../lib/api';
 
 export default function TabTwoScreen() {
   const safeAreaInsets = useSafeAreaInsets();
@@ -43,6 +44,19 @@ export default function TabTwoScreen() {
           <ThemedText style={styles.centerText} themeColor="textSecondary">
             This starter app includes example{'\n'}code to help you get started.
           </ThemedText>
+          <Pressable onPress={async o => {
+            const { data, error } = await api.POST("/api/Login/register", {
+              body: { username: "hej", email: "dddddd", password: "string" },
+            });
+
+            console.log(data);
+            console.log(error);
+          }}>
+            <ThemedText>
+              jeg hader jonas
+            </ThemedText>
+          </Pressable>
+
 
           <ExternalLink href="https://docs.expo.dev" asChild>
             <Pressable style={({ pressed }) => pressed && styles.pressed}>
