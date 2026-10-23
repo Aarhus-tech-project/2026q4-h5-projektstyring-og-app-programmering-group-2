@@ -14,6 +14,7 @@ public class Program
         builder.Services.AddProblemDetails();
         builder.Services.AddScoped<LoginRepository>();
         builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql("Host=localhost;Username=postgres;Password=secret;Database=postgres").UseSnakeCaseNamingConvention());
+        builder.Services.AddOpenApi();
 
         var app = builder.Build();
         app.MapControllers();
@@ -22,6 +23,7 @@ public class Program
         {
             app.UseSwagger();
             app.UseSwaggerUI();
+            app.MapOpenApi();
         }
 
         app.UseExceptionHandler();
