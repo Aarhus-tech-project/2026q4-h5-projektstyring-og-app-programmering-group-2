@@ -19,8 +19,9 @@ erDiagram
         timestamptz last_seen_at
         timestamptz revoked_at
     }
-    images {
+    media {
         text hash PK
+        text kind
         text status
         int width
         int height
@@ -32,10 +33,21 @@ erDiagram
         timestamptz taken_at
         timestamptz created_at
     }
+    media_jobs {
+        uuid id PK
+        uuid user_id FK
+        text media_hash FK
+        text upload_path
+        text status
+        int attempts
+        timestamptz locked_at
+        text error
+        timestamptz created_at
+    }
     posts {
         uuid id PK
         uuid user_id FK
-        text image_hash FK
+        text media_hash FK
         real elo
         int wins
         int losses
@@ -61,7 +73,9 @@ erDiagram
 
     users ||--o{ sessions : "logged in on"
     users ||--o{ posts : creates
-    images ||--o{ posts : "shown in"
+    media ||--o{ posts : "shown in"
+    users ||--o{ media_jobs : uploads
+    media ||--o{ media_jobs : "produced by"
     users ||--o{ matchups : "is shown"
     posts ||--o{ matchups : "appears in"
     matchups ||--o| votes : "decided by"

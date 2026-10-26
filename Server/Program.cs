@@ -1,4 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 
 namespace Server;
 
@@ -13,9 +17,32 @@ public class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddProblemDetails();
         builder.Services.AddScoped<LoginRepository>();
-        builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql("Host=localhost;Username=postgres;Password=secret;Database=postgres").UseSnakeCaseNamingConvention());
+        builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql("Host=localhost;Username=postgres;Password=somethinglongandrandom;Database=postgres").UseSnakeCaseNamingConvention());
         builder.Services.AddOpenApi();
+        
+        builder.Logging.AddOpenTelemetry(o =>
+        {
+            o.IncludeFormattedMessage = true;
+            o.IncludeScopes = true;
+        });
 
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(r => r.AddService("fotolo"))
+            .WithLogging(l => l.AddOtlpExporter(e =>
+            {
+                e.Endpoint = new Uri("http://localhost:3100/otlp/v1/logs");
+                e.Protocol = OtlpExportProtocol.HttpProtobuf;
+            }))
+            .WithMetrics(m => m
+                .AddAspNetCoreInstrumentation()
+                .AddRuntimeInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddOtlpExporter(e =>
+                {
+                    e.Endpoint = new Uri("http://localhost:9090/api/v1/otlp/v1/metrics");
+                    e.Protocol = OtlpExportProtocol.HttpProtobuf;
+        }));
+            
         var app = builder.Build();
         app.MapControllers();
 
