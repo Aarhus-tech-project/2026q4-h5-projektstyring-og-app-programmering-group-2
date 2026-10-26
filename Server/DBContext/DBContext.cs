@@ -1,12 +1,10 @@
-﻿using Microsoft.Extensions.Hosting;
-using System.Collections.Generic;
-using System.Reflection.Emit;
-using Microsoft.EntityFrameworkCore;
-using static System.Net.Mime.MediaTypeNames;
+﻿using Microsoft.EntityFrameworkCore;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
+    public DbSet<Media> Media => Set<Media>();
+    public DbSet<MediaJob> MediaJobs => Set<MediaJob>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -14,5 +12,23 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         b.Entity<User>().Property(u => u.Email).HasColumnType("citext");
         b.Entity<User>().HasIndex(u => u.Email).IsUnique();
+
+        b.Entity<Media>(e =>
+        {
+            e.HasKey(m => m.Hash);
+            e.Property(m => m.Kind).HasConversion<string>();
+            e.Property(m => m.CreatedAt).HasDefaultValueSql("now()");
+        });
+
+        b.Entity<MediaJob>(e =>
+        {
+            e.Property(j => j.Status).HasConversion<string>();
+            e.Property(j => j.CreatedAt).HasDefaultValueSql("now()");
+
+            e.HasOne(j => j.User).WithMany().HasForeignKey(j => j.UserId);
+            e.HasOne(j => j.Media).WithMany().HasForeignKey(j => j.MediaHash);
+
+            e.HasIndex(j => new { j.Status, j.CreatedAt });
+        });
     }
 }

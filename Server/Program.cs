@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs;
 using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
@@ -11,13 +12,15 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true);
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddProblemDetails();
         builder.Services.AddScoped<LoginRepository>();
-        builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql("Host=localhost;Username=postgres;Password=somethinglongandrandom;Database=postgres").UseSnakeCaseNamingConvention());
+        builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).UseSnakeCaseNamingConvention());
+        builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
         builder.Services.AddOpenApi();
         
         builder.Logging.AddOpenTelemetry(o =>
@@ -30,7 +33,7 @@ public class Program
             .ConfigureResource(r => r.AddService("fotolo"))
             .WithLogging(l => l.AddOtlpExporter(e =>
             {
-                e.Endpoint = new Uri("http://localhost:3100/otlp/v1/logs");
+                e.Endpoint = new Uri(builder.Configuration["Otlp:LogsEndpoint"]!);
                 e.Protocol = OtlpExportProtocol.HttpProtobuf;
             }))
             .WithMetrics(m => m
@@ -39,7 +42,7 @@ public class Program
                 .AddHttpClientInstrumentation()
                 .AddOtlpExporter(e =>
                 {
-                    e.Endpoint = new Uri("http://localhost:9090/api/v1/otlp/v1/metrics");
+                    e.Endpoint = new Uri(builder.Configuration["Otlp:MetricsEndpoint"]!);
                     e.Protocol = OtlpExportProtocol.HttpProtobuf;
         }));
             
