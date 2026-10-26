@@ -40,6 +40,7 @@ public class Program
                 .AddAspNetCoreInstrumentation()
                 .AddRuntimeInstrumentation()
                 .AddHttpClientInstrumentation()
+                .AddMeter("Npgsql")
                 .AddOtlpExporter(e =>
                 {
                     e.Endpoint = new Uri(builder.Configuration["Otlp:MetricsEndpoint"]!);

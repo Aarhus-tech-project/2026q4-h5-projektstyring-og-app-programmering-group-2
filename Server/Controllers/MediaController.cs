@@ -6,7 +6,7 @@ namespace Server;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UploadController(BlobServiceClient blobs) : Controller
+public class MediaController(BlobServiceClient blobs) : Controller
 {
     private BlobContainerClient Media => blobs.GetBlobContainerClient("media");
     private BlobContainerClient Uploads => blobs.GetBlobContainerClient("uploads");
