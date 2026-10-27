@@ -34,6 +34,22 @@ services:
       - prometheus-data:/prometheus
     restart: unless-stopped
 
+  tempo:
+    image: grafana/tempo:2.8.1
+    user: "0"
+    command:
+      - -config.file=/etc/tempo/tempo.yaml
+    ports:
+      - "3200:3200"   # tempo query api
+      - "4317:4317"   # otlp grpc
+      - "4318:4318"   # otlp http
+    volumes:
+      - tempo-data:/var/tempo
+    configs:
+      - source: tempo-config
+        target: /etc/tempo/tempo.yaml
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana:latest
     environment:
@@ -49,20 +65,54 @@ services:
     depends_on:
       - loki
       - prometheus
+      - tempo
     restart: unless-stopped
 
 configs:
+  tempo-config:
+    content: |
+      stream_over_http_enabled: true
+      server:
+        http_listen_port: 3200
+      distributor:
+        receivers:
+          otlp:
+            protocols:
+              grpc:
+                endpoint: 0.0.0.0:4317
+              http:
+                endpoint: 0.0.0.0:4318
+      storage:
+        trace:
+          backend: local
+          wal:
+            path: /var/tempo/wal
+          local:
+            path: /var/tempo/blocks
+
   grafana-datasources:
     content: |
       apiVersion: 1
       datasources:
         - name: Prometheus
           type: prometheus
+          uid: prometheus
           url: http://prometheus:9090
           isDefault: true
         - name: Loki
           type: loki
+          uid: loki
           url: http://loki:3100
+        - name: Tempo
+          type: tempo
+          uid: tempo
+          url: http://tempo:3200
+          jsonData:
+            tracesToLogsV2:
+              datasourceUid: loki
+              filterByTraceID: true
+            serviceMap:
+              datasourceUid: prometheus
         - name: Postgres
           type: grafana-postgresql-datasource
           url: postgres:5432
@@ -78,3 +128,4 @@ volumes:
   loki-data:
   prometheus-data:
   grafana-data:
+  tempo-data:

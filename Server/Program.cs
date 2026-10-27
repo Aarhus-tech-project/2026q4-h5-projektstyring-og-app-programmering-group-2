@@ -18,7 +18,9 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddProblemDetails();
+        builder.Services.AddScoped<MediaService>();
         builder.Services.AddScoped<LoginRepository>();
+        builder.Services.AddScoped<PostsRepository>();
         builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).UseSnakeCaseNamingConvention());
         builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
         builder.Services.AddOpenApi();

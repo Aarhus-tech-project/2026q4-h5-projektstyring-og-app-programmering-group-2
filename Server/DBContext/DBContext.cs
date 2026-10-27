@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users => Set<User>();
     public DbSet<Media> Media => Set<Media>();
     public DbSet<Session> Sessions => Set<Session>();
+    public DbSet<Post> Posts => Set<Post>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -26,5 +27,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         });
 
         b.Entity<Session>().HasIndex(s => s.RefreshTokenHash).IsUnique();
+
+        b.Entity<Post>(e =>
+        {
+            e.Property(p => p.Elo).HasDefaultValue(1000f);
+            e.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
+
+            e.HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId);
+            e.HasOne(p => p.Media).WithMany().HasForeignKey(p => p.MediaHash);
+        });
     }
 }
