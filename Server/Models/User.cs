@@ -22,4 +22,14 @@ public class UserLoginDTO
 {
     public string loginString { get; set; } = null!;
     public string Password { get; set; } = null!;
+    public string deviceName { get; set; } = null!;
+    public string platform { get; set; } = null!;
+
+}
+
+public class UserLogoutDTO
+{
+    public string loginString { get; set; } = null!;
+
+
 }
