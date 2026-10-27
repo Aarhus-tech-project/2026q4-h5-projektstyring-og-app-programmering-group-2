@@ -22,6 +22,120 @@ namespace Server.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Media", b =>
+                {
+                    b.Property<byte[]>("Hash")
+                        .HasColumnType("bytea")
+                        .HasColumnName("hash");
+
+                    b.Property<string>("CameraMake")
+                        .HasColumnType("text")
+                        .HasColumnName("camera_make");
+
+                    b.Property<string>("CameraModel")
+                        .HasColumnType("text")
+                        .HasColumnName("camera_model");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer")
+                        .HasColumnName("height");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("OriginalFormat")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("original_format");
+
+                    b.Property<long>("OriginalSizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("original_size_bytes");
+
+                    b.Property<DateTimeOffset?>("TakenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("taken_at");
+
+                    b.Property<byte[]>("Thumbhash")
+                        .HasColumnType("bytea")
+                        .HasColumnName("thumbhash");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("integer")
+                        .HasColumnName("width");
+
+                    b.HasKey("Hash")
+                        .HasName("pk_media");
+
+                    b.ToTable("media", (string)null);
+                });
+
+            modelBuilder.Entity("MediaJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("text")
+                        .HasColumnName("error");
+
+                    b.Property<DateTimeOffset?>("LockedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("locked_at");
+
+                    b.Property<byte[]>("MediaHash")
+                        .HasColumnType("bytea")
+                        .HasColumnName("media_hash");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<string>("UploadPath")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("upload_path");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_media_jobs");
+
+                    b.HasIndex("MediaHash")
+                        .HasDatabaseName("ix_media_jobs_media_hash");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_media_jobs_user_id");
+
+                    b.HasIndex("Status", "CreatedAt")
+                        .HasDatabaseName("ix_media_jobs_status_created_at");
+
+                    b.ToTable("media_jobs", (string)null);
+                });
+
             modelBuilder.Entity("User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -60,6 +174,25 @@ namespace Server.Migrations
                         .HasDatabaseName("ix_users_email");
 
                     b.ToTable("users", (string)null);
+                });
+
+            modelBuilder.Entity("MediaJob", b =>
+                {
+                    b.HasOne("Media", "Media")
+                        .WithMany()
+                        .HasForeignKey("MediaHash")
+                        .HasConstraintName("fk_media_jobs_media_media_hash");
+
+                    b.HasOne("User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_media_jobs_users_user_id");
+
+                    b.Navigation("Media");
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

@@ -20,9 +20,8 @@ erDiagram
         timestamptz revoked_at
     }
     media {
-        text hash PK
+        bytea hash PK
         text kind
-        text status
         int width
         int height
         bytea thumbhash
@@ -36,7 +35,7 @@ erDiagram
     media_jobs {
         uuid id PK
         uuid user_id FK
-        text media_hash FK
+        bytea media_hash FK
         text upload_path
         text status
         int attempts
@@ -47,7 +46,7 @@ erDiagram
     posts {
         uuid id PK
         uuid user_id FK
-        text media_hash FK
+        bytea media_hash FK
         real elo
         int wins
         int losses
