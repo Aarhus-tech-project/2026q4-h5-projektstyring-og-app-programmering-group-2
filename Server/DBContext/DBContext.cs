@@ -1,9 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using Server.Models;
+using System.Collections.Generic;
+using System.Reflection.Emit;
+using static System.Net.Mime.MediaTypeNames;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Media> Media => Set<Media>();
+    public DbSet<Session> Sessions => Set<Session>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -18,5 +24,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(m => m.Kind).HasConversion<string>();
             e.Property(m => m.CreatedAt).HasDefaultValueSql("now()");
         });
+
+        b.Entity<Session>().HasIndex(s => s.RefreshTokenHash).IsUnique();
     }
 }
