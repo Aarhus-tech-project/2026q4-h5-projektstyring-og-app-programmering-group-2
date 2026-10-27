@@ -10,26 +10,9 @@ public class LoginRepository(AppDbContext db)
 {
     PasswordHasher<User> PasswordHasher = new PasswordHasher<User>();
 
-    public async Task<bool> Login(UserLoginDTO login)
+    public async Task<User?> Login(UserLoginDTO loginDTO)
     {
-        if (ValidEmailSyntax(login.loginString))
-        {
-            User? user = db.Users.FirstOrDefault(u => u.Email == login.loginString);
-            if (user == null) { return false; }
-
-            PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password);
-
-            return true;
-        }
-        else
-        {
-            User? user = db.Users.FirstOrDefault(u => u.Username == login.loginString);
-            if (user == null) { return false; }
-
-            PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, login.Password);
-
-            return true;
-        }
+        return await GetUserWithUserLoginDTO(loginDTO);
     }
 
     public async Task<bool> Register(UserRegisterDTO login)
@@ -62,5 +45,27 @@ public class LoginRepository(AppDbContext db)
             return false;
 
         return true;
+    }
+
+    public async Task<User?> GetUserWithUserLoginDTO(UserLoginDTO userLoginDTO)
+    {
+        if (ValidEmailSyntax(userLoginDTO.loginString))
+        {
+            User? user = db.Users.FirstOrDefault(u => u.Email == userLoginDTO.loginString);
+            if (user == null) { return null; }
+
+            PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, userLoginDTO.Password);
+
+            return user;
+        }
+        else
+        {
+            User? user = db.Users.FirstOrDefault(u => u.Username == userLoginDTO.loginString);
+            if (user == null) { return null; }
+
+            PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, userLoginDTO.Password);
+
+            return user;
+        }
     }
 }
