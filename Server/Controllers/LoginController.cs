@@ -1,10 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
+using static Server.LoginController;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Server;
 
 [ApiController]
 [Route("api/[controller]")]
-public class LoginController(ILogger<LoginController> logger, LoginRepository _loginRepository) : ControllerBase
+public class LoginController(ILogger<LoginController> logger, LoginRepository _loginRepository, TokenGenerator tokenGenerator) : ControllerBase
 {
     public record TokenResponse(string AccessToken, string RefreshToken);
 
@@ -14,7 +20,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
         logger.LogInformation("Hello World");
 
         var success = await _loginRepository.Login(login);
-        return success ? Ok() : Unauthorized("Forkert email eller password");
+        return success ? Ok(new TokenResponse (tokenGenerator.GenerateAccessToken(login), tokenGenerator.GenerateRefreshToken(login))) : Unauthorized("Forkert email eller password");
     }
 
     [HttpPost("register")]
@@ -28,5 +34,18 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
 
         await _loginRepository.Register(login);
         return Ok();
+    }
+}
+
+public class TokenGenerator 
+{
+    public string GenerateAccessToken(UserLoginDTO login)
+    {
+
+    }
+
+    public string GenerateRefreshToken(UserLoginDTO login)
+    {
+
     }
 }
