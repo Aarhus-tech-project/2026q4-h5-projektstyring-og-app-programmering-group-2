@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 
 namespace Server;
 
@@ -27,7 +28,15 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
         }
         else
         {
-            return Ok(new TokenResponse (tokenGenerator.GenerateAccessToken(user), tokenGenerator.GenerateRefreshToken(user)));
+            TokenResponse tokenResponse = new TokenResponse (tokenGenerator.GenerateAccessToken(user), tokenGenerator.GenerateRefreshToken());
+            if (await _loginRepository.InsertSession(user, tokenResponse.RefreshToken))
+            {
+                return Ok(tokenResponse);
+            }
+            else
+            {
+                return Unauthorized();
+            }
         }
     }
 

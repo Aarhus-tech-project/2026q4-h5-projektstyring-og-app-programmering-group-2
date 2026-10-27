@@ -22,6 +22,7 @@ public class Program
         builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).UseSnakeCaseNamingConvention());
         builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
         builder.Services.AddOpenApi();
+        builder.Services.AddScoped<TokenGenerator>();
         
         builder.Logging.AddOpenTelemetry(o =>
         {

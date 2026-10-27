@@ -78,62 +78,56 @@ namespace Server.Migrations
                     b.ToTable("media", (string)null);
                 });
 
-            modelBuilder.Entity("MediaJob", b =>
+            modelBuilder.Entity("Server.Models.Session", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<int>("Attempts")
-                        .HasColumnType("integer")
-                        .HasColumnName("attempts");
+                    b.Property<string>("AppVersion")
+                        .HasColumnType("text")
+                        .HasColumnName("app_version");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
+                        .HasColumnName("created_at");
 
-                    b.Property<string>("Error")
+                    b.Property<string>("DeviceName")
                         .HasColumnType("text")
-                        .HasColumnName("error");
+                        .HasColumnName("device_name");
 
-                    b.Property<DateTimeOffset?>("LockedAt")
+                    b.Property<DateTime?>("LastSeenAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("locked_at");
+                        .HasColumnName("last_seen_at");
 
-                    b.Property<byte[]>("MediaHash")
-                        .HasColumnType("bytea")
-                        .HasColumnName("media_hash");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
+                    b.Property<string>("Platform")
                         .HasColumnType("text")
-                        .HasColumnName("status");
+                        .HasColumnName("platform");
 
-                    b.Property<string>("UploadPath")
-                        .IsRequired()
+                    b.Property<string>("RefreshTokenHash")
                         .HasColumnType("text")
-                        .HasColumnName("upload_path");
+                        .HasColumnName("refresh_token_hash");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_media_jobs");
+                        .HasName("pk_sessions");
 
-                    b.HasIndex("MediaHash")
-                        .HasDatabaseName("ix_media_jobs_media_hash");
+                    b.HasIndex("RefreshTokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_sessions_refresh_token_hash");
 
                     b.HasIndex("UserId")
-                        .HasDatabaseName("ix_media_jobs_user_id");
+                        .HasDatabaseName("ix_sessions_user_id");
 
-                    b.HasIndex("Status", "CreatedAt")
-                        .HasDatabaseName("ix_media_jobs_status_created_at");
-
-                    b.ToTable("media_jobs", (string)null);
+                    b.ToTable("sessions", (string)null);
                 });
 
             modelBuilder.Entity("User", b =>
@@ -176,21 +170,14 @@ namespace Server.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("MediaJob", b =>
+            modelBuilder.Entity("Server.Models.Session", b =>
                 {
-                    b.HasOne("Media", "Media")
-                        .WithMany()
-                        .HasForeignKey("MediaHash")
-                        .HasConstraintName("fk_media_jobs_media_media_hash");
-
                     b.HasOne("User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_media_jobs_users_user_id");
-
-                    b.Navigation("Media");
+                        .HasConstraintName("fk_sessions_users_user_id");
 
                     b.Navigation("User");
                 });

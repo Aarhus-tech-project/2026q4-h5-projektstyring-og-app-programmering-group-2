@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Server.Models;
 using System.ComponentModel;
 using System.Net.Mail;
 
@@ -67,5 +68,21 @@ public class LoginRepository(AppDbContext db)
 
             return user;
         }
+    }
+
+    public async Task<bool> InsertSession(User user, string refreshToken)
+    {
+        var session = new Session
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            RefreshTokenHash = refreshToken,
+            DeviceName = null,
+
+        };
+
+        db.Sessions.Add(session);
+        await db.SaveChangesAsync();
+        return true;
     }
 }
