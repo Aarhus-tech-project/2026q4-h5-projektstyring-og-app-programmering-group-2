@@ -4,7 +4,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<Media> Media => Set<Media>();
-    public DbSet<MediaJob> MediaJobs => Set<MediaJob>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -18,17 +17,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasKey(m => m.Hash);
             e.Property(m => m.Kind).HasConversion<string>();
             e.Property(m => m.CreatedAt).HasDefaultValueSql("now()");
-        });
-
-        b.Entity<MediaJob>(e =>
-        {
-            e.Property(j => j.Status).HasConversion<string>();
-            e.Property(j => j.CreatedAt).HasDefaultValueSql("now()");
-
-            e.HasOne(j => j.User).WithMany().HasForeignKey(j => j.UserId);
-            e.HasOne(j => j.Media).WithMany().HasForeignKey(j => j.MediaHash);
-
-            e.HasIndex(j => new { j.Status, j.CreatedAt });
         });
     }
 }
