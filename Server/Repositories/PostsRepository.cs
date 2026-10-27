@@ -1,15 +1,22 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace Server;
 
 public class PostsRepository(AppDbContext db)
 {
-    public Post CreatePost(Guid userId, byte[] mediaHash)
+    public async Task<Post> CreatePost(Guid userId, Media media)
     {
+        if (!await db.Media.AnyAsync(m => m.Hash == media.Hash))
+            db.Media.Add(media);
+
         Post post = new()
         {
             UserId = userId,
-            MediaHash = mediaHash
+            MediaHash = media.Hash
         };
 
-        return db.Posts.Add(post).Entity;
+        db.Posts.Add(post);
+        await db.SaveChangesAsync();
+        return post;
     }
 }

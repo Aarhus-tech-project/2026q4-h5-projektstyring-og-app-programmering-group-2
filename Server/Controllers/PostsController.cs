@@ -15,16 +15,17 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     private BlobContainerClient Uploads => blobs.GetBlobContainerClient("uploads");
     
     [HttpPost]
-    public async Task<IActionResult> Create([FromForm]PostRequest postRequest)
+    public async Task<IActionResult> Post([FromForm]PostRequest postRequest)
     {
         try
         {
-            await using var proccessed = await mediaService.Process(postRequest.file);
-            var hash = await mediaService.Hash(proccessed);
+            await using var processed = await mediaService.Process(postRequest.file);
 
-            var blob = await Upload(proccessed, hash);
+            var blob = await Upload(processed.Data, processed.Media.Hash);
+            var thumbnailBlob = await Upload(processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
 
-            var post = postsRepository.CreatePost(Guid.NewGuid(), hash);
+            // Replace with actual User ID
+            var post = await postsRepository.CreatePost(Guid.Parse("36048bee-cf61-4e13-9345-ea468ec428cf"), processed.Media);
 
             return StatusCode(202, post.Id);
         }
@@ -40,9 +41,9 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         }
     }
 
-    async Task<BlobClient> Upload(Stream stream, byte[] hash, string contentType = "image/webp", string extension = ".webp")
+    async Task<BlobClient> Upload(Stream stream, byte[] hash, string suffix = "", string contentType = "image/webp", string extension = ".webp")
     {
-        var blob = Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{extension}");
+        var blob = Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}");
 
         try
         {
