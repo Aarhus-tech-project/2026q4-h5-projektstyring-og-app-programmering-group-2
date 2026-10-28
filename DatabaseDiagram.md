@@ -32,17 +32,6 @@ erDiagram
         timestamptz taken_at
         timestamptz created_at
     }
-    media_jobs {
-        uuid id PK
-        uuid user_id FK
-        bytea media_hash FK
-        text upload_path
-        text status
-        int attempts
-        timestamptz locked_at
-        text error
-        timestamptz created_at
-    }
     posts {
         uuid id PK
         uuid user_id FK
@@ -73,8 +62,6 @@ erDiagram
     users ||--o{ sessions : "logged in on"
     users ||--o{ posts : creates
     media ||--o{ posts : "shown in"
-    users ||--o{ media_jobs : uploads
-    media ||--o{ media_jobs : "produced by"
     users ||--o{ matchups : "is shown"
     posts ||--o{ matchups : "appears in"
     matchups ||--o| votes : "decided by"
