@@ -1,6 +1,7 @@
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Server;
@@ -9,12 +10,13 @@ namespace Server;
 [Route("api/[controller]")]
 public class PostsController(ILogger<PostsController> logger, BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService) : Controller
 {
-    public record PostRequest(IFormFile file);
+    public record PostRequest(IFormFile file, Guid UserId);
 
     private BlobContainerClient Media => blobs.GetBlobContainerClient("media");
     private BlobContainerClient Uploads => blobs.GetBlobContainerClient("uploads");
     
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Post([FromForm]PostRequest postRequest)
     {
         try
@@ -24,8 +26,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
             var blob = await Upload(processed.Data, processed.Media.Hash);
             var thumbnailBlob = await Upload(processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
 
-            // Replace with actual User ID
-            var post = await postsRepository.CreatePost(Guid.Parse("36048bee-cf61-4e13-9345-ea468ec428cf"), processed.Media);
+            var post = await postsRepository.CreatePost(postRequest.UserId, processed.Media);
 
             return StatusCode(202, post.Id);
         }

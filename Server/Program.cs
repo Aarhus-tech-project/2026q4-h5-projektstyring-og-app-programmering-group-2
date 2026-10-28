@@ -1,6 +1,11 @@
 using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Npgsql;
+using System.Text;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -14,14 +19,43 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        AppContext.SetSwitch("Azure.Experimental.EnableActivitySource", true);
-
         var builder = WebApplication.CreateBuilder(args);
+        AppContext.SetSwitch("Azure.Experimental.EnableActivitySource", true);
         builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true);
+
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(o =>
+            {
+                o.MapInboundClaims = false;
+                o.TokenValidationParameters = new()
+                {
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+                    NameClaimType = JwtRegisteredClaimNames.Name,
+                };
+            });
+
+        builder.Services.AddAuthorization();
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(o =>
+        {
+            // Adds the Authorize button to Swagger UI; paste the access token from /api/login/login (no "Bearer " prefix)
+            o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+            });
+            o.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference("Bearer", doc)] = [],
+            });
+        });
         builder.Services.AddProblemDetails();
         builder.Services.AddScoped<MediaService>();
         builder.Services.AddScoped<LoginRepository>();
@@ -68,6 +102,9 @@ public class Program
                 }));
             
         var app = builder.Build();
+        app.UseExceptionHandler();
+        app.UseAuthentication();
+        app.UseAuthorization();
         app.MapControllers();
 
         if (app.Environment.IsDevelopment())
@@ -77,7 +114,6 @@ public class Program
             app.MapOpenApi();
         }
 
-        app.UseExceptionHandler();
         app.Run();
     }
 }
