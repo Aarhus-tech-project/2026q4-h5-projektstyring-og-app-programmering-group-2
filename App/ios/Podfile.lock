@@ -44,7 +44,7 @@ PODS:
     - ExpoModulesCore
   - ExpoGlassEffect (58.0.4):
     - ExpoModulesCore
-  - ExpoImage (58.0.16):
+  - ExpoImage (58.0.17):
     - ExpoModulesCore
   - ExpoKeepAwake (58.0.3):
     - ExpoModulesCore
@@ -118,6 +118,9 @@ PODS:
   - hermes-engine (260318099.0.4):
     - hermes-engine/Pre-built (= 260318099.0.4)
   - hermes-engine/Pre-built (260318099.0.4)
+  - media-viewer (0.7.2):
+    - ExpoModulesCore
+    - SDWebImage
   - RCT-Folly (2024.11.18.00):
     - RCT-Folly/Default (= 2024.11.18.00)
     - ReactNativeDependencies
@@ -2190,6 +2193,9 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - SDWebImage (5.21.7):
+    - SDWebImage/Core (= 5.21.7)
+  - SDWebImage/Core (5.21.7)
   - SocketRocket (0.7.1):
     - ReactNativeDependencies
   - Yoga (0.0.0):
@@ -2227,6 +2233,7 @@ DEPENDENCIES:
   - fmt (from `build/rndeps-facades/fmt`)
   - glog (from `build/rndeps-facades/glog`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - media-viewer (from `../node_modules/expo-media-viewer/ios`)
   - RCT-Folly (from `build/rndeps-facades/RCT-Folly`)
   - RCTDeprecation (from `build/rncore-facades/RCTDeprecation`)
   - RCTRequired (from `build/rncore-facades/RCTRequired`)
@@ -2314,6 +2321,10 @@ DEPENDENCIES:
   - SocketRocket (from `build/rndeps-facades/SocketRocket`)
   - Yoga (from `build/rncore-facades/Yoga`)
 
+SPEC REPOS:
+  trunk:
+    - SDWebImage
+
 EXTERNAL SOURCES:
   boost:
     :path: build/rndeps-facades/boost
@@ -2378,6 +2389,8 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v260318099.0.2
+  media-viewer:
+    :path: "../node_modules/expo-media-viewer/ios"
   RCT-Folly:
     :path: build/rndeps-facades/RCT-Folly
   RCTDeprecation:
@@ -2560,7 +2573,7 @@ SPEC CHECKSUMS:
   ExpoFileSystem: 6e11203047bfcbd318e6db7bb91210a95a4162b3
   ExpoFont: 1d6500b0c451edb1f9676276b477fb1838190ccb
   ExpoGlassEffect: 008d906ff11ffeb03a8e702af9d6a471c16c10eb
-  ExpoImage: 002ec1de17e9d4328d7b930ed112244227b69a5c
+  ExpoImage: 04f6e13379ea155eec04e99499baefba1c313f77
   ExpoKeepAwake: fd18a5d233329013c578030ad399d8e10b252b5f
   ExpoLinking: 0937be9faa1580dee244062cc4c5a77732dc2c4d
   ExpoLogBox: 624d64042d73abe0dc230a24b1a9f835adb2cec9
@@ -2581,6 +2594,7 @@ SPEC CHECKSUMS:
   fmt: ba0886e864ebb21d14c98b2e12e164b8002f5b93
   glog: 3cf7cb46f743c4bc758ae3e6d9c15bd1b4cfd6d4
   hermes-engine: a1158910bb7e300b9e3d2f1e2d433f817ec1a4b5
+  media-viewer: 6e3114de0b1cadcee9a982f7fe1f66245c03b210
   RCT-Folly: 82921e585c0400eda46fac1068297aa9dfb035e4
   RCTDeprecation: e134f2a2c096a6450f5fcbbe949531f913a2ff04
   RCTRequired: f1a68295837ee8f91e112ed1b5694d12e7ff1784
@@ -2664,6 +2678,7 @@ SPEC CHECKSUMS:
   RNReanimated: 3018727dbf272754d0f31ef73f619e49ade7baf0
   RNScreens: d8ca12efabbcfaf7c35ac3244f191ee463b528ec
   RNWorklets: 488806637a21eb17812a48dadca7cb8c698c8cfd
+  SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SocketRocket: 37aec555668fb852ec12e3c0de59a86ca58f0871
   Yoga: d1c536142c5ff8ec8cd856ab2a7c227a1d875c8e
 

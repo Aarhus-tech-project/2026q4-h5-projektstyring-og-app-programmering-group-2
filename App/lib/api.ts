@@ -1,6 +1,6 @@
 import createClient from "openapi-fetch";
 import * as SecureStore from "expo-secure-store";
-import type { paths } from "./api-types";
+import type { components, paths } from "./api-types";
 
 export const api = createClient<paths>({
   baseUrl: process.env.EXPO_PUBLIC_API_URL,
@@ -13,3 +13,20 @@ api.use({
     return request;
   },
 });
+
+// ------------------------------------------------------------
+// Ranking Fetch - Top - Worst
+
+export type RankingOrder = "top" | "worst";
+export type RankedPost = components["schemas"]["RankedPost"];
+
+export async function getRanking(order: RankingOrder) {
+  const { data, error } = await api.GET("/api/Posts/ranking", {
+    params: { query: { order } },
+  });
+
+  if (error) throw error;
+  return data ?? [];
+}
+
+// ------------------------------------------------------------

@@ -19,4 +19,19 @@ public class PostsRepository(AppDbContext db)
         await db.SaveChangesAsync();
         return post;
     }
+
+    public async Task<List<Post>> GetRanking(string order)
+    {
+        IQueryable<Post> posts = db .Posts.Where(p => p.DeletedAt == null);
+
+        if (order == "worst")
+        {
+            posts = posts.OrderBy(p => p.Elo);
+        }
+        else
+        {
+            posts = posts.OrderByDescending(p => p.Elo);
+        }
+        return await posts.Take(10).ToListAsync();
+    }
 }
