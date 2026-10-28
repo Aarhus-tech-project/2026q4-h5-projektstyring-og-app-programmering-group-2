@@ -7,7 +7,7 @@ using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Server;
+namespace Server.Repositories;
 
 public class LoginRepository(AppDbContext db)
 {
@@ -65,6 +65,6 @@ public class LoginRepository(AppDbContext db)
 
         var result = PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, userLoginDTO.Password);
         return result == PasswordVerificationResult.Failed ? null : user;
-    }                       
+    }
 }
 

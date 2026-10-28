@@ -1,15 +1,16 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static Server.LoginController;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
+using Server.Models;
+using Server.Services;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.EntityFrameworkCore;
-using Server.Models;
 using Server.Repositories;
 
-namespace Server;
+namespace Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -42,9 +43,10 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     }
 
     [HttpPost("logout")]
-    public async Task<IActionResult> logOut([FromHeader] string authorization)
+    [Authorize]
+    public async Task<IActionResult> logOut([FromHeader] string refreshToken)
     {
-        var sessionId = await tokenGenerator.GetSessionId(authorization);
+        var sessionId = await tokenGenerator.GetSessionId(refreshToken);
         if (sessionId is null) return Unauthorized();
 
         await _loginRepository.logOut(sessionId.Value);
@@ -65,13 +67,14 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     }
 
     [HttpPost("refresh")]
-    public async Task<ActionResult<TokenResponse>> Refresh([FromBody] string request)
+    [Authorize]
+    public async Task<ActionResult<TokenResponse>> Refresh([FromBody] string refreshToken)
     {
-        var session = await authService.GetActiveSession(request);
+        var session = await authService.GetActiveSession(refreshToken);
         if (session == null) return Unauthorized();
 
-        var refreshToken = tokenGenerator.GenerateRefreshToken();
-        await authService.RotateSession(session, refreshToken);
+        var newRefreshToken = tokenGenerator.GenerateRefreshToken();
+        await authService.RotateSession((Session)session, refreshToken);
         return Ok(new TokenResponse(tokenGenerator.GenerateAccessToken(session.User, session), refreshToken));
     }
 }

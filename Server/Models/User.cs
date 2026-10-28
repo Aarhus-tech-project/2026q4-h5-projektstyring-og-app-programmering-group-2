@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using System.Security.Claims;
 
 public class User
 {
@@ -30,6 +31,11 @@ public class UserLoginDTO
 public class UserLogoutDTO
 {
     public string loginString { get; set; } = null!;
+}
 
-
+public class UserAccessTokenDTO
+{
+    public Guid Id { get; set; }
+    public string Username { get; set; } = null!;
+    public string Email { get; set; } = null!;
 }

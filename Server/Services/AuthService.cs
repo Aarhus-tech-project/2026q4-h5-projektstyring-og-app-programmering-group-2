@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using static Server.LoginController;
+using static Server.Controllers.LoginController;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Server.Models;
 
-namespace Server.Repositories
+namespace Server.Services
 {
     public class AuthService(AppDbContext db)
     {
