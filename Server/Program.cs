@@ -6,6 +6,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Server.Repositories;
 
 namespace Server;
 
@@ -29,7 +30,8 @@ public class Program
         builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
         builder.Services.AddOpenApi();
         builder.Services.AddScoped<TokenGenerator>();
-        
+        builder.Services.AddScoped<AuthService>();
+
         builder.Logging.AddOpenTelemetry(o =>
         {
             o.IncludeFormattedMessage = true;
