@@ -2,13 +2,18 @@ services:
   postgres:
     image: postgres:17
     environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
-      POSTGRES_DB: app
+      POSTGRES_USER: ${POSTGRES_USER:?see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
     restart: unless-stopped
 
   loki:
@@ -53,8 +58,8 @@ services:
   grafana:
     image: grafana/grafana:latest
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?see .env.example}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?see .env.example}
     ports:
       - "3000:3000"
     volumes:
@@ -116,12 +121,12 @@ configs:
         - name: Postgres
           type: grafana-postgresql-datasource
           url: postgres:5432
-          user: app
+          user: ${POSTGRES_USER:?see .env.example}
           jsonData:
-            database: app
+            database: ${POSTGRES_DB:-app}
             sslmode: disable
           secureJsonData:
-            password: app
+            password: ${POSTGRES_PASSWORD:?see .env.example}
 
 volumes:
   postgres-data:

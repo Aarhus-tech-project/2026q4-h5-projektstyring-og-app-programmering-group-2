@@ -1,0 +1,46 @@
+# Full stack: the infra from docker-compose.yml plus the backend running in a container.
+# Needs a .env next to this file (see .env.example).
+#
+#   docker compose -f docker-compose.full.yml up --build
+#
+# For debugging the backend with `dotnet run`, use plain `docker compose up` instead.
+
+include:
+  - docker-compose.yml
+
+x-postgres-connection: &postgres-connection "Host=postgres;Port=5432;Database=${POSTGRES_DB:-app};Username=${POSTGRES_USER:?see .env.example};Password=${POSTGRES_PASSWORD:?see .env.example}"
+
+services:
+  # Applies pending EF migrations, then exits. The server waits for it to succeed
+  migrate:
+    build:
+      context: ./Server
+      target: migrations
+    environment:
+      ConnectionStrings__Postgres: *postgres-connection
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  server:
+    build: ./Server
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__Postgres: *postgres-connection
+      ConnectionStrings__Blobs: ${BLOBS_CONNECTION_STRING}
+      Jwt__Key: ${JWT_KEY}
+      Otlp__LogsEndpoint: http://loki:3100/otlp/v1/logs
+      Otlp__MetricsEndpoint: http://prometheus:9090/api/v1/otlp/v1/metrics
+      Otlp__TracesEndpoint: http://tempo:4318/v1/traces
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      loki:
+        condition: service_started
+      prometheus:
+        condition: service_started
+      tempo:
+        condition: service_started
+    restart: unless-stopped
