@@ -8,9 +8,10 @@ namespace Server;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PostsController(ILogger<PostsController> logger, BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService) : Controller
+public class PostsController(ILogger<PostsController> logger, BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService, TokenGenerator tokenGenerator) : Controller
 {
-    public record PostRequest(IFormFile file, Guid UserId);
+    public record PostRequest(IFormFile File);
+    public record VoteRequest(Guid MatchupId, Guid WinnerId);
 
     private BlobContainerClient Media => blobs.GetBlobContainerClient("media");
     private BlobContainerClient Uploads => blobs.GetBlobContainerClient("uploads");
@@ -21,12 +22,15 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     {
         try
         {
-            await using var processed = await mediaService.Process(postRequest.file);
+            await using var processed = await mediaService.Process(postRequest.File);
 
             var blob = await Upload(processed.Data, processed.Media.Hash);
             var thumbnailBlob = await Upload(processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
 
-            var post = await postsRepository.CreatePost(postRequest.UserId, processed.Media);
+            string accessToken = Request.Headers.Authorization.ToString();
+            UserAccessTokenDTO? user = await tokenGenerator.DecodeAccessToken(accessToken);
+            if (user == null) throw new UnauthorizedAccessException();
+            Post post = await postsRepository.CreatePost(user.Id, processed.Media);
 
             return StatusCode(202, post.Id);
         }
@@ -42,6 +46,27 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         }
     }
 
+    [HttpPost("vote")]
+    [Authorize]
+    public async Task<IActionResult> Vote(VoteRequest voteRequest)
+    {
+        return Ok();
+    }
+
+    [HttpGet("matchup")]
+    [Authorize]
+    public async Task<IActionResult> Matchup()
+    {
+        string accessToken = Request.Headers.Authorization.ToString()["Bearer ".Length..];
+        UserAccessTokenDTO? user = await tokenGenerator.DecodeAccessToken(accessToken);
+        if (user == null) throw new UnauthorizedAccessException();
+
+        Matchup? matchup = await postsRepository.GetMatchup(user.Id);
+        if (matchup == null) return StatusCode(500, "Error Creating matchup");
+        
+        return Ok(new MatchupDTO(matchup));
+    }
+
     public record RankedPost(Guid Id, string ThumbnailUrl, string ImageUrl, float Elo, int Wins, int Losses);
 
     [HttpGet("ranking")]
@@ -53,7 +78,6 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         p.Elo, p.Wins,p.Losses)).ToList());
     }
 
-    // Same naming as Upload: {hash}{suffix}{extension}
     string MediaUrl(byte[] hash, string suffix = "", string extension = ".webp") =>
         Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}").Uri.ToString();
 

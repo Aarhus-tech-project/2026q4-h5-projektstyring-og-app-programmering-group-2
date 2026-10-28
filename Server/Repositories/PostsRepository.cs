@@ -20,6 +20,28 @@ public class PostsRepository(AppDbContext db)
         return post;
     }
 
+    public async Task<Matchup?> GetMatchup(Guid voterId)
+    {
+        var posts = await db.Posts
+            .Where(p => p.DeletedAt == null)
+            .OrderBy(p => EF.Functions.Random())
+            .Take(2)
+            .ToListAsync();
+
+        if (posts.Count < 2) return null;
+
+        Matchup matchup = new()
+        {
+            VoterId = voterId,
+            PostA = posts[0],
+            PostB = posts[1]
+        };
+
+        db.Matchups.Add(matchup);
+        await db.SaveChangesAsync();
+        return matchup;
+    }
+
     public async Task<List<Post>> GetRanking(string order)
     {
         IQueryable<Post> posts = db .Posts.Where(p => p.DeletedAt == null);

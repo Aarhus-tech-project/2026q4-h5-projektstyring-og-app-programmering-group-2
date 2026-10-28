@@ -22,6 +22,49 @@ namespace Server.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Matchup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issued_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("PostAId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("post_a_id");
+
+                    b.Property<Guid>("PostBId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("post_b_id");
+
+                    b.Property<Guid>("VoterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("voter_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_matchups");
+
+                    b.HasIndex("PostAId")
+                        .HasDatabaseName("ix_matchups_post_a_id");
+
+                    b.HasIndex("PostBId")
+                        .HasDatabaseName("ix_matchups_post_b_id");
+
+                    b.HasIndex("VoterId", "IssuedAt")
+                        .HasDatabaseName("ix_matchups_voter_id_issued_at");
+
+                    b.ToTable("matchups", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_matchups_different_posts", "post_a_id <> post_b_id");
+                        });
+                });
+
             modelBuilder.Entity("Media", b =>
                 {
                     b.Property<byte[]>("Hash")
@@ -222,6 +265,83 @@ namespace Server.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("Vote", b =>
+                {
+                    b.Property<Guid>("MatchupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("matchup_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<float>("LoserEloBefore")
+                        .HasColumnType("real")
+                        .HasColumnName("loser_elo_before");
+
+                    b.Property<Guid>("LoserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("loser_id");
+
+                    b.Property<float>("WinnerEloBefore")
+                        .HasColumnType("real")
+                        .HasColumnName("winner_elo_before");
+
+                    b.Property<Guid>("WinnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("winner_id");
+
+                    b.Property<bool>("WinnerWasA")
+                        .HasColumnType("boolean")
+                        .HasColumnName("winner_was_a");
+
+                    b.HasKey("MatchupId")
+                        .HasName("pk_votes");
+
+                    b.HasIndex("LoserId")
+                        .HasDatabaseName("ix_votes_loser_id");
+
+                    b.HasIndex("WinnerId")
+                        .HasDatabaseName("ix_votes_winner_id");
+
+                    b.ToTable("votes", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_votes_different_posts", "winner_id <> loser_id");
+                        });
+                });
+
+            modelBuilder.Entity("Matchup", b =>
+                {
+                    b.HasOne("Post", "PostA")
+                        .WithMany()
+                        .HasForeignKey("PostAId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_matchups_posts_post_a_id");
+
+                    b.HasOne("Post", "PostB")
+                        .WithMany()
+                        .HasForeignKey("PostBId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_matchups_posts_post_b_id");
+
+                    b.HasOne("User", "Voter")
+                        .WithMany()
+                        .HasForeignKey("VoterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_matchups_users_voter_id");
+
+                    b.Navigation("PostA");
+
+                    b.Navigation("PostB");
+
+                    b.Navigation("Voter");
+                });
+
             modelBuilder.Entity("Post", b =>
                 {
                     b.HasOne("Media", "Media")
@@ -253,6 +373,41 @@ namespace Server.Migrations
                         .HasConstraintName("fk_sessions_users_user_id");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Vote", b =>
+                {
+                    b.HasOne("Post", "Loser")
+                        .WithMany()
+                        .HasForeignKey("LoserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_votes_posts_loser_id");
+
+                    b.HasOne("Matchup", "Matchup")
+                        .WithOne("Vote")
+                        .HasForeignKey("Vote", "MatchupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_votes_matchups_matchup_id");
+
+                    b.HasOne("Post", "Winner")
+                        .WithMany()
+                        .HasForeignKey("WinnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_votes_posts_winner_id");
+
+                    b.Navigation("Loser");
+
+                    b.Navigation("Matchup");
+
+                    b.Navigation("Winner");
+                });
+
+            modelBuilder.Entity("Matchup", b =>
+                {
+                    b.Navigation("Vote");
                 });
 #pragma warning restore 612, 618
         }
