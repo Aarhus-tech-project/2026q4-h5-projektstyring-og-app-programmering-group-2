@@ -42,6 +42,21 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         }
     }
 
+    public record RankedPost(Guid Id, string ThumbnailUrl, string ImageUrl, float Elo, int Wins, int Losses);
+
+    [HttpGet("ranking")]
+    public async Task<ActionResult<List<RankedPost>>> Ranking([FromQuery] string order = "top")
+    {
+        List<Post> posts = await postsRepository.GetRanking(order);
+
+        return Ok(posts.Select(p => new RankedPost(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash),
+        p.Elo, p.Wins,p.Losses)).ToList());
+    }
+
+    // Same naming as Upload: {hash}{suffix}{extension}
+    string MediaUrl(byte[] hash, string suffix = "", string extension = ".webp") =>
+        Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}").Uri.ToString();
+
     async Task<BlobClient> Upload(Stream stream, byte[] hash, string suffix = "", string contentType = "image/webp", string extension = ".webp")
     {
         var blob = Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}");

@@ -33,7 +33,11 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "text/plain": components["schemas"]["TokenResponse"];
+                        "application/json": components["schemas"]["TokenResponse"];
+                        "text/json": components["schemas"]["TokenResponse"];
+                    };
                 };
             };
         };
@@ -82,10 +86,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/Posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/x-www-form-urlencoded": {
+                        file?: components["schemas"]["IFormFile"];
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Posts/ranking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    order?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["RankedPost"][];
+                        "application/json": components["schemas"]["RankedPost"][];
+                        "text/json": components["schemas"]["RankedPost"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Format: binary */
+        IFormFile: string;
+        RankedPost: {
+            /** Format: uuid */
+            id: string;
+            thumbnailUrl: string;
+            imageUrl: string;
+            /** Format: float */
+            elo: number | string;
+            /** Format: int32 */
+            wins: number | string;
+            /** Format: int32 */
+            losses: number | string;
+        };
+        TokenResponse: {
+            accessToken: string;
+            refreshToken: string;
+        };
         UserLoginDTO: {
             loginString?: string;
             password?: string;
