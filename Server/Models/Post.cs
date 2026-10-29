@@ -13,11 +13,4 @@ public class Post
     public Media Media { get; set; } = null!;
 }
 
-public class PublicPostDTO (Post post)
-{
-    public byte[] MediaHash { get; set; } = null!;
-    public float Elo { get; set; } = post.Elo;
-    public int Wins { get; set; } = post.Wins;
-    public int Losses { get; set; } = post.Losses;
-    public DateTimeOffset CreatedAt { get; set; } = post.CreatedAt;
-}
+public record PublicPostDTO(Guid Id, string ThumbnailUrl, string ImageUrl, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt);

@@ -14,7 +14,7 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class LoginController(ILogger<LoginController> logger, LoginRepository _loginRepository, TokenGenerator tokenGenerator, AuthService authService) : ControllerBase
+public class LoginController(ILogger<LoginController> logger, LoginRepository _loginRepository, TokenService tokenGenerator, AuthService authService) : ControllerBase
 {
     public record TokenResponse(string AccessToken, string RefreshToken);
 
