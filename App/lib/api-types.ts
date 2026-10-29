@@ -4,6 +4,160 @@
  */
 
 export interface paths {
+    "/api/Posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/x-www-form-urlencoded": {
+                        File?: components["schemas"]["IFormFile"];
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Posts/vote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["VoteRequest"];
+                    "text/json": components["schemas"]["VoteRequest"];
+                    "application/*+json": components["schemas"]["VoteRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Posts/matchup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MatchupDTO"];
+                        "application/json": components["schemas"]["MatchupDTO"];
+                        "text/json": components["schemas"]["MatchupDTO"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Posts/ranking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    order?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PublicPostDTO"][];
+                        "application/json": components["schemas"]["PublicPostDTO"][];
+                        "text/json": components["schemas"]["PublicPostDTO"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/Login/login": {
         parameters: {
             query?: never;
@@ -38,6 +192,41 @@ export interface paths {
                         "application/json": components["schemas"]["TokenResponse"];
                         "text/json": components["schemas"]["TokenResponse"];
                     };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Login/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    refreshToken?: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
             };
         };
@@ -86,7 +275,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/Posts": {
+    "/api/Login/refresh": {
         parameters: {
             query?: never;
             header?: never;
@@ -104,44 +293,11 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/x-www-form-urlencoded": {
-                        file?: components["schemas"]["IFormFile"];
-                    };
+                    "application/json": string;
+                    "text/json": string;
+                    "application/*+json": string;
                 };
             };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/Posts/ranking": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    order?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
             responses: {
                 /** @description OK */
                 200: {
@@ -149,15 +305,13 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["RankedPost"][];
-                        "application/json": components["schemas"]["RankedPost"][];
-                        "text/json": components["schemas"]["RankedPost"][];
+                        "text/plain": components["schemas"]["TokenResponse"];
+                        "application/json": components["schemas"]["TokenResponse"];
+                        "text/json": components["schemas"]["TokenResponse"];
                     };
                 };
             };
         };
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -170,7 +324,15 @@ export interface components {
     schemas: {
         /** Format: binary */
         IFormFile: string;
-        RankedPost: {
+        MatchupDTO: {
+            /** Format: uuid */
+            id: string;
+            postA: components["schemas"]["PublicPostDTO"];
+            postB: components["schemas"]["PublicPostDTO"];
+            /** Format: date-time */
+            issuedAt: string;
+        };
+        PublicPostDTO: {
             /** Format: uuid */
             id: string;
             thumbnailUrl: string;
@@ -181,6 +343,8 @@ export interface components {
             wins: number | string;
             /** Format: int32 */
             losses: number | string;
+            /** Format: date-time */
+            createdAt: string;
         };
         TokenResponse: {
             accessToken: string;
@@ -189,11 +353,19 @@ export interface components {
         UserLoginDTO: {
             loginString?: string;
             password?: string;
+            deviceName?: string;
+            platform?: string;
         };
         UserRegisterDTO: {
             username?: string;
             email?: string;
             password?: string;
+        };
+        VoteRequest: {
+            /** Format: uuid */
+            matchupId: string;
+            /** Format: uuid */
+            winnerId: string;
         };
     };
     responses: never;
