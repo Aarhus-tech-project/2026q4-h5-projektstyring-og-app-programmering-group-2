@@ -44,7 +44,7 @@ public class PostsRepository(AppDbContext db)
 
     public async Task<List<Post>> GetRanking(string order)
     {
-        IQueryable<Post> posts = db .Posts.Where(p => p.DeletedAt == null);
+        IQueryable<Post> posts = db.Posts.Where(p => p.DeletedAt == null);
 
         if (order == "worst")
         {
