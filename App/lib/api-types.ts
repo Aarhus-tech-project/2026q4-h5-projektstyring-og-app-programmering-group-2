@@ -351,7 +351,7 @@ export interface components {
             refreshToken: string;
         };
         UserLoginDTO: {
-            loginString?: string;
+            email?: string;
             password?: string;
             deviceName?: string;
             platform?: string;
