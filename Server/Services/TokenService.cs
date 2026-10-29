@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-public class TokenGenerator(IConfiguration config)
+public class TokenService(IConfiguration config)
 {
     public string GenerateAccessToken(User user, Session session)
     {

@@ -12,11 +12,4 @@ public class Matchup
     public Vote? Vote { get; set; }
 }
 
-public class MatchupDTO(Matchup matchup)
-{
-    public Guid Id { get; set; } = matchup.Id;
-    public Guid VoterId { get; set; } = matchup.VoterId;
-    public Guid PostAId { get; set; } = matchup.PostAId;
-    public Guid PostBId { get; set; } = matchup.PostBId;
-    public DateTimeOffset IssuedAt { get; set; } = matchup.IssuedAt;
-}
+public record MatchupDTO(Guid Id, PublicPostDTO PostA, PublicPostDTO PostB, DateTimeOffset IssuedAt);

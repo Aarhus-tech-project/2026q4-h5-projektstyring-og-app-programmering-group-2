@@ -8,7 +8,7 @@ namespace Server;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PostsController(ILogger<PostsController> logger, BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService, TokenGenerator tokenGenerator) : Controller
+public class PostsController(ILogger<PostsController> logger, BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService, TokenService tokenService) : Controller
 {
     public record PostRequest(IFormFile File);
     public record VoteRequest(Guid MatchupId, Guid WinnerId);
@@ -28,7 +28,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
             var thumbnailBlob = await Upload(processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
 
             string accessToken = Request.Headers.Authorization.ToString();
-            UserAccessTokenDTO? user = await tokenGenerator.DecodeAccessToken(accessToken);
+            UserAccessTokenDTO? user = await tokenService.DecodeAccessToken(accessToken);
             if (user == null) throw new UnauthorizedAccessException();
             Post post = await postsRepository.CreatePost(user.Id, processed.Media);
 
@@ -55,31 +55,34 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
 
     [HttpGet("matchup")]
     [Authorize]
-    public async Task<IActionResult> Matchup()
+    public async Task<ActionResult<MatchupDTO>> Matchup()
     {
         string accessToken = Request.Headers.Authorization.ToString()["Bearer ".Length..];
-        UserAccessTokenDTO? user = await tokenGenerator.DecodeAccessToken(accessToken);
+        UserAccessTokenDTO? user = await tokenService.DecodeAccessToken(accessToken);
         if (user == null) throw new UnauthorizedAccessException();
 
         Matchup? matchup = await postsRepository.GetMatchup(user.Id);
         if (matchup == null) return StatusCode(500, "Error Creating matchup");
-        
-        return Ok(new MatchupDTO(matchup));
-    }
 
-    public record RankedPost(Guid Id, string ThumbnailUrl, string ImageUrl, float Elo, int Wins, int Losses);
+        return new MatchupDTO(matchup.Id, ToDto(matchup.PostA), ToDto(matchup.PostB), matchup.IssuedAt);
+    }
 
     [HttpGet("ranking")]
-    public async Task<ActionResult<List<RankedPost>>> Ranking([FromQuery] string order = "top")
+    public async Task<ActionResult<List<PublicPostDTO>>> Ranking([FromQuery] string order = "top")
     {
         List<Post> posts = await postsRepository.GetRanking(order);
-
-        return Ok(posts.Select(p => new RankedPost(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash),
-        p.Elo, p.Wins,p.Losses)).ToList());
+        return posts.Select(ToDto).ToList();
     }
 
-    string MediaUrl(byte[] hash, string suffix = "", string extension = ".webp") =>
-        Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}").Uri.ToString();
+    PublicPostDTO ToDto(Post p)
+    {
+        return new(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash), p.Elo, p.Wins, p.Losses, p.CreatedAt);
+    }
+
+    string MediaUrl(byte[] hash, string suffix = "", string extension = ".webp")
+    {
+        return Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}").Uri.ToString();
+    }
 
     async Task<BlobClient> Upload(Stream stream, byte[] hash, string suffix = "", string contentType = "image/webp", string extension = ".webp")
     {

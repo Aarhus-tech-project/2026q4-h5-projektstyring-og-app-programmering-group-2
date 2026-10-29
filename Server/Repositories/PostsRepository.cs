@@ -46,14 +46,10 @@ public class PostsRepository(AppDbContext db)
     {
         IQueryable<Post> posts = db.Posts.Where(p => p.DeletedAt == null);
 
-        if (order == "worst")
-        {
-            posts = posts.OrderBy(p => p.Elo);
-        }
-        else
-        {
-            posts = posts.OrderByDescending(p => p.Elo);
-        }
+        posts = order == "worst"
+            ? posts.OrderBy(p => p.Elo)
+            : posts.OrderByDescending(p => p.Elo);
+
         return await posts.Take(10).ToListAsync();
     }
 }
