@@ -57,9 +57,9 @@ public class LoginRepository(AppDbContext db)
 
     public async Task<User?> GetUserWithUserLoginDTO(UserLoginDTO userLoginDTO)
     {
-        User? user = ValidEmailSyntax(userLoginDTO.loginString)
-            ? await db.Users.FirstOrDefaultAsync(u => u.Email == userLoginDTO.loginString)
-            : await db.Users.FirstOrDefaultAsync(u => u.Username == userLoginDTO.loginString);
+        User? user = ValidEmailSyntax(userLoginDTO.email)
+            ? await db.Users.FirstOrDefaultAsync(u => u.Email == userLoginDTO.email)
+            : await db.Users.FirstOrDefaultAsync(u => u.Username == userLoginDTO.email);
 
         if (user == null) return null;
 
