@@ -31,6 +31,11 @@ export default function AppTabs() {
           <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
           <NativeTabs.Trigger.Icon sf={{ default: "person.crop.circle", selected: "person.crop.circle.fill" }} md="account_circle" />
         </NativeTabs.Trigger>
+        
+        <NativeTabs.Trigger name="login">
+          <NativeTabs.Trigger.Label>login</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon sf={{ default: "person.crop.circle", selected: "person.crop.circle.fill" }} md="account_circle" />
+        </NativeTabs.Trigger>
     </NativeTabs>
   );
 }

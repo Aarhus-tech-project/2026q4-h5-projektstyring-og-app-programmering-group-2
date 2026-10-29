@@ -30,3 +30,12 @@ export async function getRanking(order: RankingOrder) {
 }
 
 // ------------------------------------------------------------
+
+// ------------------------------------------------------------
+// Is Logged in
+
+export async function isLoggedIn() {
+  const token = await SecureStore.getItemAsync("accessToken")
+  return token !== null;
+}
+// ------------------------------------------------------------
