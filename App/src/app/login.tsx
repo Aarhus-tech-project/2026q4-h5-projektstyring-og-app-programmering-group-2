@@ -4,6 +4,7 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { SegmentedControl } from '@expo/ui/community/segmented-control';
 import * as Device from 'expo-device';
+import { router } from 'expo-router/build/global-state/router.js';
 import * as SecureStore from 'expo-secure-store';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput } from 'react-native';
@@ -92,46 +93,58 @@ export default function LoginScreen() {
     </ThemedView>
   );
 
-  async function submit() {
+    async function submit() {
+    console.log("goygoygoyogogoggogogoogogogoogogogogogogg")
 
-    if (tab === "login")
-    {
-      const { data, error } = await api.POST("/api/Login/login", {
-      body: {
-        email,                                   // email or username
-        password,
-        deviceName: Device.deviceName ?? "Unknown device",
-        platform: Platform.OS,                          // "ios" | "android" | "web"
+    try {
+      if (tab === "login") {
+        console.log("login")
+
+        const { data, error } = await api.POST("/api/Login/login", {
+          body: {
+            email,
+            password,
+            deviceName: Device.deviceName ?? "Unknown device",
+            platform: Platform.OS,
+          },
+        });
+
+        console.log("login before if error");
+
+        if (error) {
+          console.log(error);
+          console.log(typeof error === "string" ? error : "Login failed");
+          return;
         }
-      }
-    )
 
-    if (!data) {
-      console.log(error);
-      return;
-    }
+        await SecureStore.setItemAsync("refreshtoken", data.refreshToken);
+        await SecureStore.setItemAsync("accesstoken", data.accessToken);
+      } else {
 
-    await SecureStore.setItemAsync("refreshtoken", data.refreshToken) 
-    await SecureStore.setItemAsync("accesstoken", data.accessToken) 
-    }
-    else 
-    {
-      const { data, error } = await api.POST("/api/Login/register", {
-      body: {
-        email,
-        username,                                  // email or username
-        password                       // "ios" | "android" | "web"
-          }
+        console.log("register")
+
+        const { data, error } = await api.POST("/api/Login/register", {
+          body: { email, username, password },
+        });
+
+        console.log("register before if error");
+
+        if (error) {
+          console.log(error);
+          console.log(typeof error === "string" ? error : "Register failed");
+          return;
         }
-      )
 
-      if (!data) {
-        console.log(error);
-        return;
+        console.log(typeof error === "string" ? error : "Login failed");
+        console.log(typeof data === "string" ? data : "Login failed");
       }
+      console.log("Success");
+      router.back();
+    } catch (e) {
+      console.log(e);
+      console.log(e instanceof Error ? e.message : "Request failed");
     }
-  } 
-
+  }
 }
 
 const styles = StyleSheet.create({

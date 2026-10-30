@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Server.Repositories;
+using Server.Exceptions;
 
 namespace Server.Controllers;
 
@@ -27,7 +28,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
 
         if (user == null)
         {
-            return Unauthorized("Forkert email eller password");
+            throw new InvalidLoginException();
         }
         else
         {
@@ -57,10 +58,10 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     public async Task<IActionResult> Register([FromBody] UserRegisterDTO login)
     {
         bool EmailSyntaxResult = _loginRepository.ValidEmailSyntax(login.Email);
-            if (!EmailSyntaxResult) { return Conflict("Invalid email syntax"); }
+            if (!EmailSyntaxResult) { throw new InvalidEmailSyntaxException(); }
 
         bool EmailTjekResult = await _loginRepository.MarkusesEmailTjek(login.Email);
-            if (!EmailTjekResult) { return Conflict("Email findes allerede"); }
+            if (!EmailTjekResult) { throw new EmailFindesAlleredeException(); }
 
         await _loginRepository.Register(login);
         return Ok();
@@ -71,7 +72,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     public async Task<ActionResult<TokenResponse>> Refresh([FromBody] string refreshToken)
     {
         var session = await authService.GetActiveSession(refreshToken);
-        if (session == null) return Unauthorized();
+            if (session == null) return Unauthorized();
 
         var newRefreshToken = tokenGenerator.GenerateRefreshToken();
         await authService.RotateSession((Session)session, refreshToken);
