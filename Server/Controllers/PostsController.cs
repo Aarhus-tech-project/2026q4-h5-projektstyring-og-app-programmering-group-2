@@ -27,10 +27,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
             var blob = await Upload(processed.Data, processed.Media.Hash);
             var thumbnailBlob = await Upload(processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
 
-            string accessToken = Request.Headers.Authorization.ToString();
-            UserAccessTokenDTO? user = await tokenService.DecodeAccessToken(accessToken);
-            if (user == null) throw new UnauthorizedAccessException();
-            Post post = await postsRepository.CreatePost(user.Id, processed.Media);
+            Post post = await postsRepository.CreatePost(User.GetUserId(), processed.Media);
 
             return StatusCode(202, post.Id);
         }
@@ -58,11 +55,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     [Authorize]
     public async Task<ActionResult<MatchupDTO>> Matchup()
     {
-        string accessToken = Request.Headers.Authorization.ToString()["Bearer ".Length..];
-        UserAccessTokenDTO? user = await tokenService.DecodeAccessToken(accessToken);
-        if (user == null) throw new UnauthorizedAccessException();
-
-        Matchup? matchup = await postsRepository.GetMatchup(user.Id);
+        Matchup? matchup = await postsRepository.GetMatchup(User.GetUserId());
         if (matchup == null) return StatusCode(500, "Error Creating matchup");
 
         return new MatchupDTO(matchup.Id, ToDto(matchup.PostA), ToDto(matchup.PostB), matchup.IssuedAt);
