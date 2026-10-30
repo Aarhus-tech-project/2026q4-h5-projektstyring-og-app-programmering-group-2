@@ -11,7 +11,7 @@ namespace Server;
 public class PostsController(ILogger<PostsController> logger, BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService, TokenService tokenService) : Controller
 {
     public record PostRequest(IFormFile File);
-    public record VoteRequest(Guid MatchupId, Guid WinnerId);
+    public record VoteRequest(Guid MatchupId, Guid WinnerPostId, Guid LooserPostId);
 
     private BlobContainerClient Media => blobs.GetBlobContainerClient("media");
     private BlobContainerClient Uploads => blobs.GetBlobContainerClient("uploads");
@@ -50,6 +50,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     [Authorize]
     public async Task<IActionResult> Vote(VoteRequest voteRequest)
     {
+        await postsRepository.SubmitVote(voteRequest);
         return Ok();
     }
 

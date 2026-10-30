@@ -60,6 +60,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasOne(v => v.Winner).WithMany().HasForeignKey(v => v.WinnerId);
             e.HasOne(v => v.Loser).WithMany().HasForeignKey(v => v.LoserId);
 
+            e.HasIndex(v => v.CreatedAt).HasFilter("counted_at IS NULL");
+
             e.ToTable(t => t.HasCheckConstraint("ck_votes_different_posts", "winner_id <> loser_id"));
         });
     }
