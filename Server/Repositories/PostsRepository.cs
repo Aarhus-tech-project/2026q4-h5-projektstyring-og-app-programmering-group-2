@@ -42,6 +42,11 @@ public class PostsRepository(AppDbContext db)
         return matchup;
     }
 
+    public async Task SubmitVote()
+    {
+        
+    }
+
     public async Task<List<Post>> GetRanking(string order)
     {
         IQueryable<Post> posts = db.Posts.Where(p => p.DeletedAt == null);

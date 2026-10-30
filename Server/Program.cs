@@ -4,13 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using Npgsql;
 using System.Text;
-using OpenTelemetry.Exporter;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using Server.Services;
 using Server.Repositories;
 
@@ -67,42 +61,8 @@ public class Program
         builder.Services.AddOpenApi();
         builder.Services.AddScoped<TokenService>();
         builder.Services.AddScoped<AuthService>();
+        builder.Services.AddTelemetry(builder.Configuration);
 
-        builder.Logging.AddOpenTelemetry(o =>
-        {
-            o.IncludeFormattedMessage = true;
-            o.IncludeScopes = true;
-        });
-
-        builder.Services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService("fotolo"))
-            .WithLogging(l => l.AddOtlpExporter(e =>
-            {
-                e.Endpoint = new Uri(builder.Configuration["Otlp:LogsEndpoint"]!);
-                e.Protocol = OtlpExportProtocol.HttpProtobuf;
-            }))
-            .WithMetrics(m => m
-                .AddAspNetCoreInstrumentation()
-                .AddRuntimeInstrumentation()
-                .AddHttpClientInstrumentation()
-                .AddMeter("Npgsql")
-                .AddOtlpExporter(e =>
-                {
-                    e.Endpoint = new Uri(builder.Configuration["Otlp:MetricsEndpoint"]!);
-                    e.Protocol = OtlpExportProtocol.HttpProtobuf;
-                }))
-            .WithTracing(t => t
-                .AddAspNetCoreInstrumentation(o => o.RecordException = true)
-                .AddHttpClientInstrumentation(o => o.RecordException = true)
-                .AddNpgsql()
-                .AddSource("Azure.*")
-                .AddSource("Server")
-                .AddOtlpExporter(e =>
-                {
-                    e.Endpoint = new Uri(builder.Configuration["Otlp:TracesEndpoint"]!);
-                    e.Protocol = OtlpExportProtocol.HttpProtobuf;
-                }));
-            
         var app = builder.Build();
         app.UseExceptionHandler();
         app.UseAuthentication();
