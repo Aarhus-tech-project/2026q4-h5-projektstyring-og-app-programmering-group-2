@@ -14,6 +14,7 @@ flowchart LR
         tunnel["cloudflared"]
 
         backend["Backend API<br/>ASP.NET Core<br/>(N replicas)"]
+        counter["Vote counter<br/>same ASP.NET Core image<br/>(1 replica, no ingress)"]
 
         db[("PostgreSQL")]
 
@@ -31,13 +32,15 @@ flowchart LR
 
     app -- "GET media directly" --> media
 
-    backend -- "SQL" --> db
+    backend -- "SQL<br/>(inserts uncounted votes)" --> db
+    counter -- "every 5 min:<br/>count pending votes, update Elo" --> db
     backend -- "saves originals" --> uploads
     backend -- "writes processed images" --> media
 
     backend -. "logs (OTLP)" .-> loki
     backend -. "metrics (OTLP)" .-> prom
     backend -. "traces (OTLP)" .-> tempo
+    counter -. "logs / metrics / traces (OTLP)" .-> obs
     grafana -.-> prom
     grafana -.-> loki
     grafana -.-> tempo
@@ -46,6 +49,7 @@ flowchart LR
 
 - **No gateway.** cloudflared routes `/api/*` straight to the backend's Kubernetes Service, which load-balances across replicas. The backend sets its own upload size limit. Cloudflare's free plan caps request bodies at 100 MB.
 - **The backend is stateless**, so it scales by adding replicas. All state lives in Postgres and Azure Blob Storage.
+- **The vote counter** is the same Docker image as the backend, started in counter mode (e.g. `Role=Counter`). In that mode it runs one `BackgroundService` and maps no API endpoints. It is its own Deployment with 1 replica and no Service, so cloudflared never routes to it. The API replicas never write Elo. See [Vote counting flow](#vote-counting-flow).
 - **Photos only for now.** `media.kind` stays so video can be added later, but nothing handles video yet.
 - **Uploads are processed inline** in the request: the backend validates the image, bakes in the EXIF orientation, resizes it and re-encodes it to WebP. The processed images carry no metadata.
 - **EXIF data** (camera make/model, capture time) is saved in the `media` table but never returned by the API. It's there in case the app shows it later.
@@ -79,3 +83,37 @@ sequenceDiagram
     API-->>App: posts + image/thumbnail URLs
     App->>Media: GET {hash}.webp
 ```
+
+## Vote counting flow
+
+```mermaid
+sequenceDiagram
+    participant App as Expo app
+    participant API as Backend API
+    participant DB as PostgreSQL
+    participant C as Vote counter
+
+    App->>API: GET /api/posts/matchup
+    API->>DB: insert matchup
+    API-->>App: matchup (post A, post B)
+
+    App->>API: POST /api/posts/vote (matchupId, winnerId)
+    API->>DB: insert vote (counted_at = null)
+    API-->>App: 204 (Elo not changed yet)
+
+    loop every 5 minutes
+        C->>DB: try pg_try_advisory_lock (skip this run if held)
+        C->>DB: BEGIN; select pending votes ORDER BY created_at LIMIT 1000
+        C->>DB: load the posts in those votes (once each)
+        C->>C: apply each vote in order, in memory
+        C->>DB: update each changed post once, set counted_at + elo_before on the votes
+        C->>DB: COMMIT, repeat while a full batch came back
+    end
+```
+
+- **Why the votes are counted in one place:** Elo depends on the order votes are applied. With one counter the result is the same as counting each vote live, and API replicas never race each other updating the same post row.
+- **Smart batching:** a post that appears in 50 pending votes is read once and written once per batch, not 50 times. Votes are still applied one by one in `created_at` order, so the Elo math is exact.
+- **Safe to restart or double-start:** each batch is one transaction, so a crash just leaves those votes pending for the next run. The advisory lock means a second counter (say, during a rolling deploy) skips the run instead of counting twice.
+- **Skipped votes:** a vote whose post was deleted before counting still gets `counted_at` set, so it isn't retried forever, but it doesn't change any Elo.
+- **The interval is a config value** (`VoteCounter:Interval`, default 5 minutes). Shorter means fresher rankings and smaller batches.
+- **Monitoring:** the counter exports the number of pending votes, votes counted per run and run duration. A pending count that keeps growing means the counter is down or falling behind.
