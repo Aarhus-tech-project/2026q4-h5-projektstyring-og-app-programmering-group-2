@@ -1,10 +1,6 @@
 using Azure.Storage.Blobs;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using System.Text;
 using Server.Services;
 using Server.Repositories;
 
@@ -18,22 +14,7 @@ public class Program
         AppContext.SetSwitch("Azure.Experimental.EnableActivitySource", true);
         builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true);
 
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(o =>
-            {
-                o.MapInboundClaims = false;
-                o.TokenValidationParameters = new()
-                {
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-                    NameClaimType = JwtRegisteredClaimNames.Name,
-                };
-            });
-
-        builder.Services.AddAuthorization();
+        builder.Services.AddJwtAuth(builder.Configuration);
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
