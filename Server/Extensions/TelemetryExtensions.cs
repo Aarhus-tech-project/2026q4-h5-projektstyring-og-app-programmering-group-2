@@ -9,7 +9,7 @@ namespace Server;
 
 public static class TelemetryExtensions
 {
-    public static IServiceCollection AddTelemetry(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddTelemetry(this IServiceCollection services, IConfiguration configuration, string role)
     {
         services.AddLogging(l => l.AddOpenTelemetry(o =>
         {
@@ -18,7 +18,7 @@ public static class TelemetryExtensions
         }));
 
         services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService("fotolo"))
+            .ConfigureResource(r => r.AddService($"fotolo-{role}"))
             .WithLogging(l => l.AddOtlpExporter(e =>
             {
                 e.Endpoint = new Uri(configuration["Otlp:LogsEndpoint"]!);
