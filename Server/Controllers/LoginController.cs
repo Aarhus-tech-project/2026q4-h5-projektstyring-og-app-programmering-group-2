@@ -60,10 +60,10 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     [Authorize]
     public async Task<IActionResult> logoutall([FromHeader] string refreshToken)
     {
-        var sessionId = await tokenGenerator.GetSessionId(refreshToken);
-        if (sessionId is null) return Unauthorized();
+        User user = await _loginRepository.GetUserViaUserID(refreshToken);
 
-        await _loginRepository.logOut(sessionId.Value);
+        await _loginRepository.RevokeAllUserSessions(user);
+
         return Ok();
     }
 

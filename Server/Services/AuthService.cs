@@ -51,6 +51,8 @@ namespace Server.Services
             await db.SaveChangesAsync();
         }
 
+
+
         public static string Hash(string token) =>
             Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
     }

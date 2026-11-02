@@ -66,10 +66,18 @@ public class LoginRepository(AppDbContext db)
     {
         string hashedRefreshToken = Hash(refreshToken);
 
-        await db.Sessions.Where(s => s.RefreshTokenHash == hashedRefreshToken)
+        Session? userSession = await db.Sessions.FirstOrDefaultAsync(s => s.RefreshTokenHash == hashedRefreshToken);
+
+        if (userSession == null) return null;
+        
+        return userSession.User;
+    }
+
+    public async Task RevokeAllUserSessions(User user)
+    {
+        await db.Sessions.Where(s => s.UserId == user.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.RevokedAt, DateTime.UtcNow));
     }
 
     public static string Hash(string token) =>
             Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 }
-
