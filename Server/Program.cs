@@ -1,9 +1,10 @@
 using Azure.Storage.Blobs;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Server.Services;
 using Server.Repositories;
-using Server.Workers;
 using Server.Services;
+using Server.Services;
+using Server.Workers;
 using System.Text;
 
 namespace Server;
@@ -36,10 +37,12 @@ public class Program
             builder.Services.AddScoped<MediaService>();
             builder.Services.AddScoped<LoginRepository>();
             builder.Services.AddScoped<PostsRepository>();
-            builder.Services.AddExceptionHandler<ApiExceptionHandler>();
-            builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
             builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<AuthService>();
+            builder.Services.AddExceptionHandler<ApiExceptionHandler>();
+            builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
+            builder.Services.AddControllers(o => o.Filters.Add<ValidationFilter>());
+            builder.Services.AddValidatorsFromAssemblyContaining<Program>();
         }
 
         if (isVoteWorker)

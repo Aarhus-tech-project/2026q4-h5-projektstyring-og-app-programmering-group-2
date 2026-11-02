@@ -26,8 +26,6 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     {
         logger.LogInformation("Hello World");
 
-        var result = await userLoginValidaor.ValidateAsync(login);
-
         User? user = await _loginRepository.Login(login);
 
         if (user == null)
