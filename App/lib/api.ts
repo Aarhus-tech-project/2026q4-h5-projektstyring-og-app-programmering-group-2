@@ -45,7 +45,7 @@ async function refresh() {
 // Ranking Fetch - Top - Worst
 
 export type RankingOrder = "top" | "worst";
-export type RankedPost = components["schemas"]["RankedPost"];
+export type RankedPost = components["schemas"]["PublicPostDTO"];
 
 export async function getRanking(order: RankingOrder) {
   const { data, error } = await api.GET("/api/Posts/ranking", {
@@ -66,3 +66,19 @@ export async function isLoggedIn() {
   return token !== null;
 }
 // ------------------------------------------------------------
+
+export type Matchup = components["schemas"]["MatchupDTO"];
+
+export async function getMatchup() {
+  const { data, error } = await api.GET("/api/Posts/matchup");
+  if (error) throw error;
+  if (!data) throw new Error("Matchup request returned no data");
+  return data;
+}
+
+export async function submitVote(matchupId: string, winnerPostId: string, looserPostId: string) {
+  const { error, response } = await api.POST("/api/Posts/vote", {
+    body: { matchupId, winnerPostId, looserPostId },
+  });
+  if (!response.ok) throw error ?? new Error(`Vote failed (${response.status})`);
+}
