@@ -23,7 +23,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     {
         await using var processed = await mediaService.Process(postRequest.File);
 
-        var originalBlob = Upload(Uploads, processed.Original, processed.Media.Hash);
+        var originalBlob = await Upload(Uploads, processed.Original, processed.Media.Hash);
         var processedBlob = await Upload(Media, processed.Proccesed, processed.Media.Hash);
         var thumbnailBlob = await Upload(Media, processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
 

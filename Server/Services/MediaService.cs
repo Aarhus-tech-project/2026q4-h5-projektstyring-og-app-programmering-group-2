@@ -19,20 +19,20 @@ public sealed record ProcessedMedia(Media Media, Stream Original, MemoryStream P
 
 public class MediaService
 {
-    public async Task<byte[]> Hash(Stream stream)
-    {
-        var hash = await SHA256.HashDataAsync(stream);
-        stream.Position = 0;
-        return hash;
-    }
-
     public async Task<ProcessedMedia> Process(IFormFile file, int maxSize = 2048, int thumbnailSize = 400, int quality = 80)
     {
-        var exif = ReadExif(file);
+        // Read the upload once. Streams from file.OpenReadStream() share one underlying buffer,
+        // so reading two of them throws "The inner stream position has changed unexpectedly".
+        byte[] bytes;
+        using (var buffer = new MemoryStream())
+        {
+            await file.CopyToAsync(buffer);
+            bytes = buffer.ToArray();
+        }
 
-        await using var input = file.OpenReadStream();
-        var original = file.OpenReadStream();
-        using var codec = SKCodec.Create(input) ?? throw new InvalidDataException("Unsupported image format");
+        var exif = ReadExif(bytes);
+
+        using var codec = SKCodec.Create(new MemoryStream(bytes, writable: false)) ?? throw new InvalidDataException("Unsupported image format");
         using var source = SKBitmap.Decode(codec);
         using var sourceImage = SKImage.FromBitmap(source);
 
@@ -57,7 +57,7 @@ public class MediaService
 
         var media = new Media
         {
-            Hash = await Hash(original),
+            Hash = SHA256.HashData(bytes),
             Kind = MediaKind.Photo,
             Width = info.Width,
             Height = info.Height,
@@ -69,7 +69,7 @@ public class MediaService
             TakenAt = exif.TakenAt,
         };
 
-        return new ProcessedMedia(media, original, output, Encode(thumbnail, quality));
+        return new ProcessedMedia(media, new MemoryStream(bytes, writable: false), output, Encode(thumbnail, quality));
     }
 
     private static readonly SKSamplingOptions Sampling = new(SKFilterMode.Linear, SKMipmapMode.Linear);
@@ -123,12 +123,12 @@ public class MediaService
 
     private record Exif(string? Make, string? Model, DateTimeOffset? TakenAt);
 
-    private static Exif ReadExif(IFormFile file)
+    private static Exif ReadExif(byte[] bytes)
     {
         IReadOnlyList<MetadataExtractor.Directory> directories;
         try
         {
-            using var stream = file.OpenReadStream();
+            using var stream = new MemoryStream(bytes, writable: false);
             directories = ImageMetadataReader.ReadMetadata(stream);
         }
         catch (ImageProcessingException)
