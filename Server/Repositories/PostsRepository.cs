@@ -105,4 +105,14 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
 
         return await posts.Take(10).ToListAsync();
     }
+
+    public async Task<User?> GetUser(Guid userId)
+    {
+        return await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+    }
+
+    public async Task<List<Post>> GetUserPosts(Guid userId)
+    {
+        return await db.Posts.Where(p => p.UserId == userId && p.DeletedAt == null).OrderByDescending(p => p.CreatedAt).ToListAsync();
+    }
 }

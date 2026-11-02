@@ -232,6 +232,10 @@ namespace Server.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<byte[]>("AvatarHash")
+                        .HasColumnType("bytea")
+                        .HasColumnName("avatar_hash");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -257,6 +261,9 @@ namespace Server.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_users");
+
+                    b.HasIndex("AvatarHash")
+                        .HasDatabaseName("ix_users_avatar_hash");
 
                     b.HasIndex("Email")
                         .IsUnique()
@@ -381,6 +388,16 @@ namespace Server.Migrations
                         .HasConstraintName("fk_sessions_users_user_id");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("User", b =>
+                {
+                    b.HasOne("Media", "Avatar")
+                        .WithMany()
+                        .HasForeignKey("AvatarHash")
+                        .HasConstraintName("fk_users_media_avatar_hash");
+
+                    b.Navigation("Avatar");
                 });
 
             modelBuilder.Entity("Vote", b =>

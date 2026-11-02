@@ -6,6 +6,10 @@ erDiagram
         citext email UK
         text password_hash
         text description
+        real elo
+        int wins
+        int losses
+        bytea avatar_hash FK
         timestamptz created_at
     }
     sessions {

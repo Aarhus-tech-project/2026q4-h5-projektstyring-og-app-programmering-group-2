@@ -56,6 +56,24 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         return posts.Select(ToDto).ToList();
     }
 
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<ActionResult<ProfileDTO>> Me()
+    {
+        Guid userId = User.GetUserId();
+
+        var user = await postsRepository.GetUser(userId);
+        if (user == null) return NotFound();
+        List<Post> posts = await postsRepository.GetUserPosts(userId);
+        int wins = posts.Sum(p => p.Wins);
+        int losses = posts.Sum(p => p.Losses);
+        float elo = posts.Count == 0 ? 1000 : posts.Max(p => p.Elo);
+        string? avatarThumbnailUrl = user.AvatarHash == null ? null : MediaUrl(user.AvatarHash, suffix: "_thumb");
+        string? avatarUrl = user.AvatarHash == null ? null : MediaUrl(user.AvatarHash);
+
+        return new ProfileDTO(user.Username, user.Description, avatarThumbnailUrl, avatarUrl, elo, wins, losses, posts.Select(ToDto).ToList());
+    }
+
     PublicPostDTO ToDto(Post p)
     {
         return new(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash), p.Elo, p.Wins, p.Losses, p.CreatedAt);

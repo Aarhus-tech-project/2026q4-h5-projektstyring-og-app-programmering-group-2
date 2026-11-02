@@ -1,67 +1,97 @@
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Pressable, StyleSheet, TextInput, View, FlatList } from 'react-native';
+import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { Image } from 'expo-image';
 import { useTheme } from '@/hooks/use-theme';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { SymbolView } from 'expo-symbols';
+import { ExpandableImage } from '@/components/ui/expandable-image';
+import { getMyProfile, Profile as ProfileData } from '../../lib/api';
+import { useFocusEffect } from 'expo-router';
 
 export default function Profile() {
   const theme = useTheme()
   const [tab, setTab] = useState<'photos' | 'favorites'>('photos')
+  const [profile, setProfile] = useState<ProfileData | null>(null)
+
+  useFocusEffect(useCallback(() => {
+    getMyProfile().then(setProfile)
+      .catch((error) => console.error('Failed to load profile posts', error))
+  }, []))
+
+  const posts = tab === 'photos' ? (profile?.posts ?? []) : []
   return (
     <ThemedView style={styles.screen}>
     <SafeAreaView style={styles.scrollable}>
-    <ScrollView>
-      <View style={styles.username} >
-      <ThemedText type='subtitle'>Markus</ThemedText>
-      </View>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <ThemedView type="backgroundElement" style={styles.eloBorder}>
-              <ThemedText type="smallBold" style={styles.eloText} adjustsFontSizeToFit>1239 ELO</ThemedText>
-            </ThemedView>
-           <ThemedText type="small" themeColor="textSecondary">
-            <ThemedText type="smallBold" style={{ color: '#4ADE80' }}>43 W</ThemedText>
-            {'  ·  '}
-            <ThemedText type="smallBold" style={{ color: '#F87171' }}>17 L</ThemedText>
-          </ThemedText>
+    <FlatList
+      data={posts}
+      keyExtractor={(photo) => photo.id}
+      numColumns={3}
+      contentContainerStyle={{ paddingBottom: BottomTabInset + Spacing.four }}
+      renderItem={({ item }) => (
+        <View style={styles.gridItems}>
+          <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} />
         </View>
-        <View style={styles.headerRight}>
-            <Image source={require('./Markus.png')} style={[styles.profilePic, { borderColor: theme.border }]} contentFit="cover"/>
-        </View>
-      </View>
-       <ThemedView type="backgroundElement" style={[styles.TextBox, { borderColor: theme.border }]}>
-        <TextInput style={styles.TextBoxText} editable={false} numberOfLines={12} multiline scrollEnabled={false}>Instragram.com/niclas Instragram.com/niclas Instragram.com/niclas Instragram.com/niclas Instragram.com/niclas Instragram.com/niclas Instragram.com/niclasnstragram.com/niclas Instragram.com/niclas nstragram.com/niclas Instragram.com/niclas nstragram.com/niclas Instragram.com/niclas nstragram.com/niclas Instragram.com/niclas nstragram.com/niclas Instragram.com/niclasnstragram.com/niclas nstragram.com/niclas Instragram.com/niclas nstragram.com/niclas Instragram.com/niclas nstragram.com/niclas Instragram.com/niclas nstragram.com/niclas Instragram.com/niclasnstragram.com/niclas nstragram.com/niclas Instragram.com/niclas nstragram.com/niclas Instragram.com/niclas nstragram.com/niclas Instragram.com/niclas nstragram.com/niclas Instragram.com/niclas</TextInput>
-      </ThemedView>
-      
-      <View style={[styles.body, {borderColor: theme.border}]}>
-        <Pressable style={styles.tab} onPress={()=> setTab('photos')}>
-          <SymbolView name={{ ios: 'photo', android: 'image', web: 'image' }}
-      tintColor={tab === 'photos' ? theme.text : theme.textSecondary}
-      size={32}/>
-        </Pressable>
-        <View style={[styles.line, {borderColor: theme.border} ]}></View>
-        <Pressable style={styles.tab} onPress={() => setTab('favorites')}>
-    <SymbolView
-      name={{ ios: tab === 'favorites' ? 'star.fill' : 'star', android: 'star', web: 'star' }}
-      tintColor={tab === 'favorites' ? '#FFD84D' : theme.textSecondary}
-      size={32}
-    />
-  </Pressable>
-      </View>
+      )}
+      ListHeaderComponent={
+        <>
+          <View style={styles.username} >
+          <ThemedText type='subtitle'>{profile?.username}</ThemedText>
+          </View>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <ThemedView type="backgroundElement" style={styles.eloBorder}>
+                <ThemedText type="smallBold" style={styles.eloText} adjustsFontSizeToFit>{Math.round(Number(profile?.elo ?? 1500))} ELO</ThemedText>
+              </ThemedView>
+              <ThemedText type="small" themeColor="textSecondary">
+                <ThemedText type="smallBold" style={{ color: '#4ADE80' }}>{profile?.wins ?? 0} W</ThemedText>
+                {'  ·  '}
+                <ThemedText type="smallBold" style={{ color: '#F87171' }}>{profile?.losses ?? 0} L</ThemedText>
+              </ThemedText>
+            </View>
+            <View style={styles.headerRight}>
+              <Image source={profile?.avatarUrl ?? require('./Markus.png')} style={[styles.profilePic, { borderColor: theme.border }]} contentFit="cover"/>
+            </View>
+          </View>
+          <ThemedView type="backgroundElement" style={[styles.TextBox, { borderColor: theme.border }]}>
+            <TextInput style={styles.TextBoxText} editable={false} numberOfLines={12} multiline scrollEnabled={false}>{profile?.description ?? 'Hi. Welcome to my profile'}</TextInput>
+          </ThemedView>
 
-    </ScrollView>
+          <View style={[styles.body, {borderColor: theme.border}]}>
+            <Pressable style={styles.tab} onPress={() => setTab('photos')}>
+              <SymbolView
+                name={{ ios: 'photo', android: 'image', web: 'image' }}
+                tintColor={tab === 'photos' ? theme.text : theme.textSecondary}
+                size={32}
+              />
+            </Pressable>
+            <View style={[styles.line, {borderColor: theme.border}]}></View>
+            <Pressable style={styles.tab} onPress={() => setTab('favorites')}>
+              <SymbolView
+                name={{ ios: tab === 'favorites' ? 'star.fill' : 'star', android: 'star', web: 'star' }}
+                tintColor={tab === 'favorites' ? '#FFD84D' : theme.textSecondary}
+                size={32}
+              />
+            </Pressable>
+          </View>
+        </>
+      }
+    />
     </SafeAreaView>
     </ThemedView>
   );
 }
-
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
+  },
+
+  gridItems: {
+    width: '33.333%',
+    aspectRatio: 1,
+    padding: 1,
   },
 
   tab: {

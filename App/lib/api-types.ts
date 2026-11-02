@@ -158,6 +158,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/Posts/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProfileDTO"];
+                        "application/json": components["schemas"]["ProfileDTO"];
+                        "text/json": components["schemas"]["ProfileDTO"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/Login/login": {
         parameters: {
             query?: never;
@@ -331,6 +368,18 @@ export interface components {
             postB: components["schemas"]["PublicPostDTO"];
             /** Format: date-time */
             issuedAt: string;
+        };
+        ProfileDTO: {
+            username: string;
+            description: null | string;
+            avatarUrl: null | string;
+            /** Format: float */
+            elo: number | string;
+            /** Format: int32 */
+            wins: number | string;
+            /** Format: int32 */
+            losses: number | string;
+            posts: components["schemas"]["PublicPostDTO"][];
         };
         PublicPostDTO: {
             /** Format: uuid */

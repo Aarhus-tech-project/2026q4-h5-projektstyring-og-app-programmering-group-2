@@ -82,3 +82,14 @@ export async function submitVote(matchupId: string, winnerPostId: string, looser
   });
   if (!response.ok) throw error ?? new Error(`Vote failed (${response.status})`);
 }
+//-------------------------------------------------------------
+// Get Own Profile Data
+
+export type Profile = components["schemas"]["ProfileDTO"]
+
+export async function getMyProfile() {
+  const {data, error} = await api.GET("/api/Posts/me");
+  if (error) throw error;
+  return data;
+}
+//-------------------------------------------------------------

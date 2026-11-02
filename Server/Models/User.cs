@@ -10,6 +10,8 @@ public class User
     public string PasswordHash { get; set; } = null!;
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
+    public byte[]? AvatarHash { get; set; }
+    public Media? Avatar { get; set; }
 }
 
 public class UserRegisterDTO
