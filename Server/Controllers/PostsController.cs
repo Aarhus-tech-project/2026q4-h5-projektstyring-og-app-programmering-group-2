@@ -23,9 +23,9 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     {
         await using var processed = await mediaService.Process(postRequest.File);
 
-        var originalBlob = UploadOriginal(processed.Original, processed.Media.Hash);
-        var processedBlob = await UploadMedia(processed.Proccesed, processed.Media.Hash);
-        var thumbnailBlob = await UploadMedia(processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
+        var originalBlob = Upload(Uploads, processed.Original, processed.Media.Hash);
+        var processedBlob = await Upload(Media, processed.Proccesed, processed.Media.Hash);
+        var thumbnailBlob = await Upload(Media, processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
 
         Post post = await postsRepository.CreatePost(User.GetUserId(), processed.Media);
 
@@ -66,9 +66,9 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         return Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}").Uri.ToString();
     }
 
-    async Task<BlobClient> UploadMedia(Stream stream, byte[] hash, string suffix = "", string contentType = "image/webp", string extension = ".webp")
+    async Task<BlobClient> Upload(BlobContainerClient client, Stream stream, byte[] hash, string suffix = "", string contentType = "image/webp", string extension = ".webp")
     {
-        var blob = Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}");
+        var blob = client.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}");
 
         try
         {
@@ -86,26 +86,6 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         {
             logger.LogError(ex, "Blob upload failed");
             throw new BlobUploadInternalServerException();
-        }
-
-        return blob;
-    }
-
-    async Task<BlobClient> UploadOriginal(Stream stream, byte[] hash, string suffix = "", string contentType = "image/webp", string extension = ".webp")
-    {
-        var blob = Uploads.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}");
-
-        try
-        {
-            await blob.UploadAsync(stream, new BlobUploadOptions
-            {
-                HttpHeaders = new BlobHttpHeaders { ContentType = contentType },
-                Conditions = new BlobRequestConditions { IfNoneMatch = ETag.All },
-            });
-        }
-        catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobAlreadyExists)
-        {
-            
         }
 
         return blob;

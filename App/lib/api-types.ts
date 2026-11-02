@@ -365,7 +365,9 @@ export interface components {
             /** Format: uuid */
             matchupId: string;
             /** Format: uuid */
-            winnerId: string;
+            winnerPostId: string;
+            /** Format: uuid */
+            looserPostId: string;
         };
     };
     responses: never;
