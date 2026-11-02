@@ -6,6 +6,8 @@
     }
 
     public class InvalidLoginException() : ApiException("Invalid email or password", 401);
-    public class InvalidEmailSyntaxException() : ApiException("Invalid email syntax", 400);
-    public class EmailFindesAlleredeException() : ApiException("Email findes allerede", 409);
+    public class BlobUploadInternalServerException() : ApiException("Internal server error", 502);
+    public class FailedToCreateInDatabaseException() : ApiException("Failed to create", 500);
+    public class VoteAlreadySubmittedException() : ApiException("Vote already submitted", 409);
+    public class MatchupDoesntExistException() : ApiException("Matchup doesnt exist", 404);
 }

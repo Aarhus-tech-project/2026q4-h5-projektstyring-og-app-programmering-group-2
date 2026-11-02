@@ -3,7 +3,6 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Server.Repositories;
 using Server.Services;
-using Server.Services;
 using Server.Workers;
 using System.Text;
 

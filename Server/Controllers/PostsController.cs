@@ -3,6 +3,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Server.Exceptions;
 
 namespace Server;
 
@@ -20,27 +21,15 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     [Authorize]
     public async Task<IActionResult> Post([FromForm]PostRequest postRequest)
     {
-        try
-        {
-            await using var processed = await mediaService.Process(postRequest.File);
+        await using var processed = await mediaService.Process(postRequest.File);
 
-            var blob = await Upload(processed.Data, processed.Media.Hash);
-            var thumbnailBlob = await Upload(processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
+        var originalBlob = Upload(Uploads, processed.Original, processed.Media.Hash);
+        var processedBlob = await Upload(Media, processed.Proccesed, processed.Media.Hash);
+        var thumbnailBlob = await Upload(Media, processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
 
-            Post post = await postsRepository.CreatePost(User.GetUserId(), processed.Media);
+        Post post = await postsRepository.CreatePost(User.GetUserId(), processed.Media);
 
-            return StatusCode(202, post.Id);
-        }
-        catch (RequestFailedException ex)
-        {
-            logger.LogError(ex, "Blob upload failed: {Status} {Code}", ex.Status, ex.ErrorCode);
-            return StatusCode(502, "Upload failed");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error creating post");
-            return StatusCode(500, "Server Error");
-        }
+        return StatusCode(202, post.Id);
     }
 
     [HttpPost("vote")]
@@ -55,8 +44,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     [Authorize]
     public async Task<ActionResult<MatchupDTO>> Matchup()
     {
-        Matchup? matchup = await postsRepository.GetMatchup(User.GetUserId());
-        if (matchup == null) return StatusCode(500, "Error Creating matchup");
+        Matchup matchup = await postsRepository.CreateMatchup(User.GetUserId());
 
         return new MatchupDTO(matchup.Id, ToDto(matchup.PostA), ToDto(matchup.PostB), matchup.IssuedAt);
     }
@@ -78,9 +66,9 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         return Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}").Uri.ToString();
     }
 
-    async Task<BlobClient> Upload(Stream stream, byte[] hash, string suffix = "", string contentType = "image/webp", string extension = ".webp")
+    async Task<BlobClient> Upload(BlobContainerClient client, Stream stream, byte[] hash, string suffix = "", string contentType = "image/webp", string extension = ".webp")
     {
-        var blob = Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}");
+        var blob = client.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}");
 
         try
         {
@@ -93,6 +81,11 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobAlreadyExists)
         {
             
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Blob upload failed");
+            throw new BlobUploadInternalServerException();
         }
 
         return blob;

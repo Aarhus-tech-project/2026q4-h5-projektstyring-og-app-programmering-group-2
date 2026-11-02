@@ -7,11 +7,12 @@ using ThumbHashes;
 
 namespace Server;
 
-public sealed record ProcessedMedia(Media Media, MemoryStream Data, MemoryStream Thumbnail) : IAsyncDisposable
+public sealed record ProcessedMedia(Media Media, Stream Original, MemoryStream Proccesed, MemoryStream Thumbnail) : IAsyncDisposable
 {
     public async ValueTask DisposeAsync()
     {
-        await Data.DisposeAsync();
+        await Original.DisposeAsync();
+        await Proccesed.DisposeAsync();
         await Thumbnail.DisposeAsync();
     }
 }
@@ -30,6 +31,7 @@ public class MediaService
         var exif = ReadExif(file);
 
         await using var input = file.OpenReadStream();
+        var original = file.OpenReadStream();
         using var codec = SKCodec.Create(input) ?? throw new InvalidDataException("Unsupported image format");
         using var source = SKBitmap.Decode(codec);
         using var sourceImage = SKImage.FromBitmap(source);
@@ -55,7 +57,7 @@ public class MediaService
 
         var media = new Media
         {
-            Hash = await Hash(output),
+            Hash = await Hash(original),
             Kind = MediaKind.Photo,
             Width = info.Width,
             Height = info.Height,
@@ -67,7 +69,7 @@ public class MediaService
             TakenAt = exif.TakenAt,
         };
 
-        return new ProcessedMedia(media, output, Encode(thumbnail, quality));
+        return new ProcessedMedia(media, original, output, Encode(thumbnail, quality));
     }
 
     private static readonly SKSamplingOptions Sampling = new(SKFilterMode.Linear, SKMipmapMode.Linear);
