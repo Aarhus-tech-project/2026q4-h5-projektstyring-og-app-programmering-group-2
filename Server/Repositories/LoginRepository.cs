@@ -15,7 +15,14 @@ public class LoginRepository(AppDbContext db)
 
     public async Task<User?> Login(UserLoginDTO loginDTO)
     {
-        return await GetUserWithUserLoginDTO(loginDTO);
+        User? user = ValidEmailSyntax(loginDTO.email)
+            ? await db.Users.FirstOrDefaultAsync(u => u.Email == loginDTO.email)
+            : await db.Users.FirstOrDefaultAsync(u => u.Username == loginDTO.email);
+
+        if (user == null) return null;
+
+        var result = PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, loginDTO.Password);
+        return result == PasswordVerificationResult.Failed ? null : user;
     }
 
     public async Task<bool> Register(UserRegisterDTO login)
@@ -55,16 +62,14 @@ public class LoginRepository(AppDbContext db)
         return true;
     }
 
-    public async Task<User?> GetUserWithUserLoginDTO(UserLoginDTO userLoginDTO)
+    public async Task<User> GetUserViaUserID(string refreshToken)
     {
-        User? user = ValidEmailSyntax(userLoginDTO.email)
-            ? await db.Users.FirstOrDefaultAsync(u => u.Email == userLoginDTO.email)
-            : await db.Users.FirstOrDefaultAsync(u => u.Username == userLoginDTO.email);
+        string hashedRefreshToken = Hash(refreshToken);
 
-        if (user == null) return null;
-
-        var result = PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, userLoginDTO.Password);
-        return result == PasswordVerificationResult.Failed ? null : user;
+        await db.Sessions.Where(s => s.RefreshTokenHash == hashedRefreshToken)
     }
+
+    public static string Hash(string token) =>
+            Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 }
 

@@ -44,9 +44,9 @@ namespace Server.Services
                 s.RefreshTokenHash == hash && s.RevokedAt == null && s.LastSeenAt > DateTime.UtcNow.AddDays(-30));
         }
 
-        public async Task RotateSession(Session session, string refreshToken)
+        public async Task RotateSession(Session session, string newRefreshToken)
         {
-            session.RefreshTokenHash = Hash(refreshToken);
+            session.RefreshTokenHash = Hash(newRefreshToken);
             session.LastSeenAt = DateTime.UtcNow;
             await db.SaveChangesAsync();
         }

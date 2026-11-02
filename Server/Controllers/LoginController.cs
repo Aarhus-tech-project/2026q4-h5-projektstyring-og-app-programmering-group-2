@@ -56,6 +56,17 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
         return Ok();
     }
 
+    [HttpPost("logoutall")]
+    [Authorize]
+    public async Task<IActionResult> logoutall([FromHeader] string refreshToken)
+    {
+        var sessionId = await tokenGenerator.GetSessionId(refreshToken);
+        if (sessionId is null) return Unauthorized();
+
+        await _loginRepository.logOut(sessionId.Value);
+        return Ok();
+    }
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDTO login)
     {
@@ -66,14 +77,13 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     }
 
     [HttpPost("refresh")]
-    [Authorize]
     public async Task<ActionResult<TokenResponse>> Refresh([FromBody] string refreshToken)
     {
         var session = await authService.GetActiveSession(refreshToken);
             if (session == null) return Unauthorized();
 
         var newRefreshToken = tokenGenerator.GenerateRefreshToken();
-        await authService.RotateSession((Session)session, refreshToken);
-        return Ok(new TokenResponse(tokenGenerator.GenerateAccessToken(session.User, session), refreshToken));
+        await authService.RotateSession((Session)session, newRefreshToken);
+        return Ok(new TokenResponse(tokenGenerator.GenerateAccessToken(session.User, session), newRefreshToken));
     }
 }
