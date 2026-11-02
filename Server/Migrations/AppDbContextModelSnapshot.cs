@@ -271,13 +271,17 @@ namespace Server.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("matchup_id");
 
+                    b.Property<DateTimeOffset?>("CountedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("counted_at");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<float>("LoserEloBefore")
+                    b.Property<float?>("LoserEloBefore")
                         .HasColumnType("real")
                         .HasColumnName("loser_elo_before");
 
@@ -285,7 +289,7 @@ namespace Server.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("loser_id");
 
-                    b.Property<float>("WinnerEloBefore")
+                    b.Property<float?>("WinnerEloBefore")
                         .HasColumnType("real")
                         .HasColumnName("winner_elo_before");
 
@@ -299,6 +303,10 @@ namespace Server.Migrations
 
                     b.HasKey("MatchupId")
                         .HasName("pk_votes");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_votes_created_at")
+                        .HasFilter("counted_at IS NULL");
 
                     b.HasIndex("LoserId")
                         .HasDatabaseName("ix_votes_loser_id");

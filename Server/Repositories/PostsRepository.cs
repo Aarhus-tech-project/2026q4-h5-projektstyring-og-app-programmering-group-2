@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using static Server.PostsController;
 
 namespace Server;
 
@@ -42,9 +43,23 @@ public class PostsRepository(AppDbContext db)
         return matchup;
     }
 
-    public async Task SubmitVote()
+    public async Task<bool> SubmitVote(VoteRequest voteRequest)
     {
-        
+        if (db.Votes.Any(v => v.MatchupId == voteRequest.MatchupId)) return false;
+
+        var matchup = await db.Matchups.FirstOrDefaultAsync(m => m.Id == voteRequest.MatchupId);
+        if (matchup == null) return false;
+
+        db.Votes.Add(new Vote()
+        {
+            MatchupId = voteRequest.MatchupId,
+            WinnerId = voteRequest.WinnerPostId,
+            LoserId = voteRequest.LooserPostId,
+            WinnerWasA = voteRequest.WinnerPostId == matchup.PostAId
+        });
+
+        await db.SaveChangesAsync();
+        return true;
     }
 
     public async Task<List<Post>> GetRanking(string order)

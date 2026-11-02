@@ -1,11 +1,8 @@
 using Azure.Storage.Blobs;
-using FluentValidation;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
+using Server.Services;
 using Server.Repositories;
+using Server.Workers;
 using Server.Services;
 using System.Text;
 
@@ -19,63 +16,46 @@ public class Program
         AppContext.SetSwitch("Azure.Experimental.EnableActivitySource", true);
         builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true);
 
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(o =>
-            {
-                o.MapInboundClaims = false;
-                o.TokenValidationParameters = new()
-                {
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-                    NameClaimType = JwtRegisteredClaimNames.Name,
-                };
-            });
+        var role = builder.Configuration["Role"] ?? "all";
+        if (role is not ("api" or "voteworker" or "all"))
+            throw new InvalidOperationException($"Unknown Role '{role}', expected api, voteworker or all");
+        var isApi = role is "api" or "all";
+        var isVoteWorker = role is "voteworker" or "all";
 
-        builder.Services.AddAuthorization();
-
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen(o =>
-        {
-            // Adds the Authorize button to Swagger UI; paste the access token from /api/login/login (no "Bearer " prefix)
-            o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-            });
-            o.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
-            {
-                [new OpenApiSecuritySchemeReference("Bearer", doc)] = [],
-            });
-        });
-        builder.Services.AddProblemDetails();
-        builder.Services.AddScoped<MediaService>();
-        builder.Services.AddScoped<LoginRepository>();
-        builder.Services.AddScoped<PostsRepository>();
-        builder.Services.AddExceptionHandler<ApiExceptionHandler>();
         builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).UseSnakeCaseNamingConvention());
-        builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
-        builder.Services.AddOpenApi();
-        builder.Services.AddScoped<TokenService>();
-        builder.Services.AddScoped<AuthService>();
-        builder.Services.AddTelemetry(builder.Configuration);
-        builder.Services.AddControllers(o => o.Filters.Add<ValidationFilter>());
-        builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+        builder.Services.AddTelemetry(builder.Configuration, role);
+
+        if (isApi)
+        {
+            builder.Services.AddJwtAuth(builder.Configuration);
+
+            builder.Services.AddControllers();
+            if (builder.Environment.IsDevelopment())
+                builder.Services.AddSwaggerDocs();
+            builder.Services.AddProblemDetails();
+            builder.Services.AddScoped<MediaService>();
+            builder.Services.AddScoped<LoginRepository>();
+            builder.Services.AddScoped<PostsRepository>();
+            builder.Services.AddExceptionHandler<ApiExceptionHandler>();
+            builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
+            builder.Services.AddScoped<TokenService>();
+            builder.Services.AddScoped<AuthService>();
+        }
+
+        if (isVoteWorker)
+            builder.Services.AddHostedService<VoteWorker>();
 
         var app = builder.Build();
-        app.UseExceptionHandler();
-        app.UseAuthentication();
-        app.UseAuthorization();
-        app.MapControllers();
 
-        if (app.Environment.IsDevelopment())
+        if (isApi)
         {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            app.MapOpenApi();
+            app.UseExceptionHandler();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.MapControllers();
+
+            if (app.Environment.IsDevelopment())
+                app.MapSwaggerDocs();
         }
 
         app.Run();

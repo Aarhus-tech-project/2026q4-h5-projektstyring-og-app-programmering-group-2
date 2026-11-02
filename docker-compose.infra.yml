@@ -1,0 +1,141 @@
+# Infra only: Postgres plus the observability stack, no backend. Use this while running the
+# server with `dotnet run`. Needs a .env next to this file (see .env.example).
+#
+#   docker compose -f docker-compose.infra.yml up
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:latest
+    command:
+      - -config.file=/etc/loki/local-config.yaml
+      - -reporting.enabled=false
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-otlp-receiver
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:2.8.1
+    user: "0"
+    command:
+      - -config.file=/etc/tempo/tempo.yaml
+    ports:
+      - "3200:3200"   # tempo query api
+      - "4317:4317"   # otlp grpc
+      - "4318:4318"   # otlp http
+    volumes:
+      - tempo-data:/var/tempo
+    configs:
+      - source: tempo-config
+        target: /etc/tempo/tempo.yaml
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?see .env.example}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?see .env.example}
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    configs:
+      - source: grafana-datasources
+        target: /etc/grafana/provisioning/datasources/datasources.yaml
+    depends_on:
+      - loki
+      - prometheus
+      - tempo
+    restart: unless-stopped
+
+configs:
+  tempo-config:
+    content: |
+      stream_over_http_enabled: true
+      server:
+        http_listen_port: 3200
+      distributor:
+        receivers:
+          otlp:
+            protocols:
+              grpc:
+                endpoint: 0.0.0.0:4317
+              http:
+                endpoint: 0.0.0.0:4318
+      storage:
+        trace:
+          backend: local
+          wal:
+            path: /var/tempo/wal
+          local:
+            path: /var/tempo/blocks
+
+  grafana-datasources:
+    content: |
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          uid: prometheus
+          url: http://prometheus:9090
+          isDefault: true
+        - name: Loki
+          type: loki
+          uid: loki
+          url: http://loki:3100
+        - name: Tempo
+          type: tempo
+          uid: tempo
+          url: http://tempo:3200
+          jsonData:
+            tracesToLogsV2:
+              datasourceUid: loki
+              filterByTraceID: true
+            serviceMap:
+              datasourceUid: prometheus
+        - name: Postgres
+          type: grafana-postgresql-datasource
+          url: postgres:5432
+          user: ${POSTGRES_USER:?see .env.example}
+          jsonData:
+            database: ${POSTGRES_DB:-app}
+            sslmode: disable
+          secureJsonData:
+            password: ${POSTGRES_PASSWORD:?see .env.example}
+
+volumes:
+  postgres-data:
+  loki-data:
+  prometheus-data:
+  grafana-data:
+  tempo-data:

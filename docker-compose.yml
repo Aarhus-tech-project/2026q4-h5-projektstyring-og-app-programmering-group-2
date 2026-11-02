@@ -1,136 +1,73 @@
+# Full stack: the infra from docker-compose.infra.yml plus the server and vote worker in containers.
+# Needs a .env next to this file (see .env.example).
+#
+#   docker compose up --build
+#
+# For debugging the backend with `dotnet run`, start only the infra instead:
+#
+#   docker compose -f docker-compose.infra.yml up
+
+include:
+  - docker-compose.infra.yml
+
+x-postgres-connection: &postgres-connection "Host=postgres;Port=5432;Database=${POSTGRES_DB:-app};Username=${POSTGRES_USER:?see .env.example};Password=${POSTGRES_PASSWORD:?see .env.example}"
+
 services:
-  postgres:
-    image: postgres:17
+  # Applies pending EF migrations, then exits. The server waits for it to succeed
+  migrate:
+    build:
+      context: ./Server
+      target: migrations
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:?see .env.example}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?see .env.example}
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 2s
-      timeout: 5s
-      retries: 30
-    restart: unless-stopped
-
-  loki:
-    image: grafana/loki:latest
-    command:
-      - -config.file=/etc/loki/local-config.yaml
-      - -reporting.enabled=false
-    ports:
-      - "3100:3100"
-    volumes:
-      - loki-data:/loki
-    restart: unless-stopped
-
-  prometheus:
-    image: prom/prometheus:latest
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.path=/prometheus
-      - --web.enable-otlp-receiver
-    ports:
-      - "9090:9090"
-    volumes:
-      - prometheus-data:/prometheus
-    restart: unless-stopped
-
-  tempo:
-    image: grafana/tempo:2.8.1
-    user: "0"
-    command:
-      - -config.file=/etc/tempo/tempo.yaml
-    ports:
-      - "3200:3200"   # tempo query api
-      - "4317:4317"   # otlp grpc
-      - "4318:4318"   # otlp http
-    volumes:
-      - tempo-data:/var/tempo
-    configs:
-      - source: tempo-config
-        target: /etc/tempo/tempo.yaml
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana:latest
-    environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?see .env.example}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?see .env.example}
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana-data:/var/lib/grafana
-    configs:
-      - source: grafana-datasources
-        target: /etc/grafana/provisioning/datasources/datasources.yaml
+      ConnectionStrings__Postgres: *postgres-connection
     depends_on:
-      - loki
-      - prometheus
-      - tempo
+      postgres:
+        condition: service_healthy
+
+  server:
+    build: ./Server
+    image: fotolo-server
+    command: ["--Role=api"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__Postgres: *postgres-connection
+      ConnectionStrings__Blobs: ${BLOBS_CONNECTION_STRING}
+      Jwt__Key: ${JWT_KEY}
+      Otlp__LogsEndpoint: http://loki:3100/otlp/v1/logs
+      Otlp__MetricsEndpoint: http://prometheus:9090/api/v1/otlp/v1/metrics
+      Otlp__TracesEndpoint: http://tempo:4318/v1/traces
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      loki:
+        condition: service_started
+      prometheus:
+        condition: service_started
+      tempo:
+        condition: service_started
     restart: unless-stopped
 
-configs:
-  tempo-config:
-    content: |
-      stream_over_http_enabled: true
-      server:
-        http_listen_port: 3200
-      distributor:
-        receivers:
-          otlp:
-            protocols:
-              grpc:
-                endpoint: 0.0.0.0:4317
-              http:
-                endpoint: 0.0.0.0:4318
-      storage:
-        trace:
-          backend: local
-          wal:
-            path: /var/tempo/wal
-          local:
-            path: /var/tempo/blocks
-
-  grafana-datasources:
-    content: |
-      apiVersion: 1
-      datasources:
-        - name: Prometheus
-          type: prometheus
-          uid: prometheus
-          url: http://prometheus:9090
-          isDefault: true
-        - name: Loki
-          type: loki
-          uid: loki
-          url: http://loki:3100
-        - name: Tempo
-          type: tempo
-          uid: tempo
-          url: http://tempo:3200
-          jsonData:
-            tracesToLogsV2:
-              datasourceUid: loki
-              filterByTraceID: true
-            serviceMap:
-              datasourceUid: prometheus
-        - name: Postgres
-          type: grafana-postgresql-datasource
-          url: postgres:5432
-          user: ${POSTGRES_USER:?see .env.example}
-          jsonData:
-            database: ${POSTGRES_DB:-app}
-            sslmode: disable
-          secureJsonData:
-            password: ${POSTGRES_PASSWORD:?see .env.example}
-
-volumes:
-  postgres-data:
-  loki-data:
-  prometheus-data:
-  grafana-data:
-  tempo-data:
+  # Same image as the server, started as the vote worker. Keep it at one replica:
+  # votes have to be counted one at a time, in order
+  vote-worker:
+    image: fotolo-server
+    pull_policy: never   # built by the server service, not on Docker Hub
+    command: ["--Role=voteworker"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__Postgres: *postgres-connection
+      Otlp__LogsEndpoint: http://loki:3100/otlp/v1/logs
+      Otlp__MetricsEndpoint: http://prometheus:9090/api/v1/otlp/v1/metrics
+      Otlp__TracesEndpoint: http://tempo:4318/v1/traces
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      loki:
+        condition: service_started
+      prometheus:
+        condition: service_started
+      tempo:
+        condition: service_started
+    restart: unless-stopped
