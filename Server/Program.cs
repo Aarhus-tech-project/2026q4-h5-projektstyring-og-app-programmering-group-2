@@ -1,12 +1,13 @@
 using Azure.Storage.Blobs;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using System.Text;
-using Server.Services;
 using Server.Repositories;
+using Server.Services;
+using System.Text;
 
 namespace Server;
 
@@ -35,7 +36,6 @@ public class Program
 
         builder.Services.AddAuthorization();
 
-        builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(o =>
         {
@@ -55,13 +55,15 @@ public class Program
         builder.Services.AddScoped<MediaService>();
         builder.Services.AddScoped<LoginRepository>();
         builder.Services.AddScoped<PostsRepository>();
-        builder.Services.AddExceptionHandler<ApiExceptionHandler>();    
+        builder.Services.AddExceptionHandler<ApiExceptionHandler>();
         builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")).UseSnakeCaseNamingConvention());
         builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
         builder.Services.AddOpenApi();
         builder.Services.AddScoped<TokenService>();
         builder.Services.AddScoped<AuthService>();
         builder.Services.AddTelemetry(builder.Configuration);
+        builder.Services.AddControllers(o => o.Filters.Add<ValidationFilter>());
+        builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
         var app = builder.Build();
         app.UseExceptionHandler();

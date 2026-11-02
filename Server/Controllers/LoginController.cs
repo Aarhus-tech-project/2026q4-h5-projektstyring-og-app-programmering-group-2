@@ -9,13 +9,15 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Server.Repositories;
+using Validator;
 using Server.Exceptions;
+
 
 namespace Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class LoginController(ILogger<LoginController> logger, LoginRepository _loginRepository, TokenService tokenGenerator, AuthService authService) : ControllerBase
+public class LoginController(ILogger<LoginController> logger, LoginRepository _loginRepository, TokenService tokenGenerator, AuthService authService, UserLoginValidator userLoginValidaor, UserRegisterValidator userRegisterValidator) : ControllerBase
 {
     public record TokenResponse(string AccessToken, string RefreshToken);
 
@@ -23,6 +25,8 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     public async Task<ActionResult<TokenResponse>> Login([FromBody] UserLoginDTO login)
     {
         logger.LogInformation("Hello World");
+
+        var result = await userLoginValidaor.ValidateAsync(login);
 
         User? user = await _loginRepository.Login(login);
 
@@ -57,11 +61,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDTO login)
     {
-        bool EmailSyntaxResult = _loginRepository.ValidEmailSyntax(login.Email);
-            if (!EmailSyntaxResult) { throw new InvalidEmailSyntaxException(); }
-
-        bool EmailTjekResult = await _loginRepository.MarkusesEmailTjek(login.Email);
-            if (!EmailTjekResult) { throw new EmailFindesAlleredeException(); }
+        var result = await userRegisterValidator.ValidateAsync(login);
 
         await _loginRepository.Register(login);
         return Ok();
