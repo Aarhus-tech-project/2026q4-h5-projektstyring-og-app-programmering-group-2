@@ -32,15 +32,39 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
             .ToListAsync(stoppingToken);
 
         var peakDropped = new HashSet<Guid>();
+        var countedAt = DateTimeOffset.UtcNow;
 
         foreach (var vote in uncountedVotes)
         {
+            vote.CountedAt = countedAt;
+
             float winnerOld = vote.Winner.Elo;
             float loserOld = vote.Loser.Elo;
+            vote.WinnerEloBefore = winnerOld;
+            vote.LoserEloBefore = loserOld;
 
-            ApplyUser(vote.Winner.User, winnerOld, vote.Winner.Elo, win: true, peakDropped);
-            ApplyUser(vote.Loser.User, loserOld, vote.Loser.Elo, win: false, peakDropped);
+            float winnerNew = winnerOld;
+            float loserNew = loserOld;
+            CalculateNewElo(ref winnerNew, ref loserNew);
+
+            vote.Winner.Elo = winnerNew;
+            vote.Winner.Wins++;
+            vote.Loser.Elo = loserNew;
+            vote.Loser.Losses++;
+
+            ApplyUser(vote.Winner.User, winnerOld, winnerNew, win: true, peakDropped);
+            ApplyUser(vote.Loser.User, loserOld, loserNew, win: false, peakDropped);
         }
+
+        if (peakDropped.Count == 0) return;
+
+        var postsOfDropped = await db.Posts
+            .Where(p => peakDropped.Contains(p.UserId) && p.DeletedAt == null)
+            .Include(p => p.User)
+            .ToListAsync(stoppingToken);
+
+        foreach (var group in postsOfDropped.GroupBy(p => p.UserId))
+            group.First().User.Elo = group.Max(p => p.Elo);
     }
 
     static void ApplyUser(User user, float oldElo, float newElo, bool win, HashSet<Guid> peakDropped)
