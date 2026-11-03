@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, TextInput, View, FlatList } from 'react-native';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
@@ -8,8 +9,10 @@ import { useTheme } from '@/hooks/use-theme';
 import { useCallback, useEffect, useState } from 'react';
 import { SymbolView } from 'expo-symbols';
 import { ExpandableImage } from '@/components/ui/expandable-image';
-import { getMyProfile, Profile as ProfileData } from '../../lib/api';
+import { getMyProfile, Profile as ProfileData, uploadAvatar } from '../../lib/api';
 import { useFocusEffect } from 'expo-router';
+
+
 
 export default function Profile() {
   const theme = useTheme()
@@ -20,6 +23,24 @@ export default function Profile() {
     getMyProfile().then(setProfile)
       .catch((error) => console.error('Failed to load profile posts', error))
   }, []))
+
+  async function pickAvatar() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    try {
+      await uploadAvatar(asset.uri);
+      setProfile(await getMyProfile());
+    } catch (error) {
+      console.error('Failed to upload avatar', error)
+    }
+  }
 
   const posts = tab === 'photos' ? (profile?.posts ?? []) : []
   return (
@@ -52,7 +73,18 @@ export default function Profile() {
               </ThemedText>
             </View>
             <View style={styles.headerRight}>
-              <Image source={profile?.avatarUrl ?? require('./Markus.png')} style={[styles.profilePic, { borderColor: theme.border }]} contentFit="cover"/>
+             <Pressable onPress={pickAvatar}>
+                {({ pressed }) => (
+                  <>
+                    <Image
+                      source={profile?.avatarThumbnailUrl ?? require('./Markus.png')}
+                      style={[styles.profilePic, { borderColor: theme.border }]}
+                      contentFit="cover"
+                    />
+                    {pressed && <View style={styles.profilePicPressed} />}
+                  </>
+                )}
+              </Pressable>
             </View>
           </View>
           <ThemedView type="backgroundElement" style={[styles.TextBox, { borderColor: theme.border }]}>
@@ -106,6 +138,11 @@ const styles = StyleSheet.create({
   favorite: {
     
   },
+  profilePicPressed: {
+  ...StyleSheet.absoluteFill,
+  borderRadius: 55,
+  backgroundColor: 'rgba(0, 0, 0, 0.35)',
+},
 
   scrollable: {
     flex: 1,

@@ -63,6 +63,11 @@ erDiagram
         real winner_elo_before "set when counted"
         real loser_elo_before "set when counted"
     }
+    user_favorites {
+        uuid user_id PK, FK
+        uuid post_id PK, FK
+        timestamptz created_at
+    }
 
     users ||--o{ sessions : "logged in on"
     users ||--o{ posts : creates
@@ -71,6 +76,8 @@ erDiagram
     posts ||--o{ matchups : "appears in"
     matchups ||--o| votes : "decided by"
     posts ||--o{ votes : "wins / loses"
+    users ||--o{ user_favorites : favorites
+    posts ||--o{ user_favorites : "favorited as"
 ```
 
 - **Votes are counted later, not when they're cast.** `POST /api/posts/vote` only inserts a `votes` row with `counted_at = null`. It never touches `posts`.

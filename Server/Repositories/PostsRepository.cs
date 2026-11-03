@@ -115,4 +115,14 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
     {
         return await db.Posts.Where(p => p.UserId == userId && p.DeletedAt == null).OrderByDescending(p => p.CreatedAt).ToListAsync();
     }
+
+    public async Task SetAvatar(Guid userId, Media media)
+    {
+        if (!await db.Media.AnyAsync(m => m.Hash == media.Hash))
+        db.Media.Add(media);
+
+        var user = await db.Users.FirstAsync(u => u.Id == userId);
+        user.AvatarHash = media.Hash;
+        await db.SaveChangesAsync();
+    }
 }
