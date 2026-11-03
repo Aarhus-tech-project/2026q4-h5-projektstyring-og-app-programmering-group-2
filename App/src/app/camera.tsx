@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import { Button, Linking, View } from 'react-native';
 import { api } from '../../lib/api';
 
-import * as MediaLibrary from 'expo-media-library/legacy';
+import * as MediaLibrary from 'expo-media-library';
 
 export default function TabTwoScreen() {
   const [permission, requestPermission] = useCameraPermissions();

@@ -9,6 +9,9 @@ public class User
     public string Email { get; set; } = null!;
     public string PasswordHash { get; set; } = null!;
     public string? Description { get; set; }
+    public float Elo { get; set; } = 1000;
+    public int Wins { get; set; }
+    public int Losses { get; set; }
     public DateTime CreatedAt { get; set; }
     public byte[]? AvatarHash { get; set; }
     public Media? Avatar { get; set; }
@@ -36,3 +39,5 @@ public class UserAccessTokenDTO
     public string Username { get; set; } = null!;
     public string Email { get; set; } = null!;
 }
+
+public record Profile(string Username, string? Description, string? AvatarThumbnailUrl, string? AvatarUrl, float Elo, int Wins, int Losses, List<PublicPostDTO> Posts);

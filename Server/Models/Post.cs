@@ -14,5 +14,3 @@ public class Post
 }
 
 public record PublicPostDTO(Guid Id, string ThumbnailUrl, string ImageUrl, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt);
-
-public record ProfileDTO(string Username, string? Description, string? AvatarThumbnailUrl, string? AvatarUrl, float Elo, int Wins, int Losses, List<PublicPostDTO> Posts);
