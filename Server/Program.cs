@@ -50,7 +50,13 @@ public class Program
         var app = builder.Build();
 
         if (isApi)
-        {
+        {   
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Users.FirstOrDefault(u => u.Email == "");
+            }
+
             app.UseExceptionHandler();
             app.UseAuthentication();
             app.UseAuthorization();
