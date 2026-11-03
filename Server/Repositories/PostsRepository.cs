@@ -34,65 +34,86 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
     {
         try
         {
-            var posts = await db.Posts
-                .Where(p => p.DeletedAt == null)
-                .OrderBy(p => EF.Functions.Random())
-                .Take(2)
-                .ToListAsync();
+            var postA = await RandomPost(exclude: Guid.Empty);
+            var postB = postA is null ? null : await RandomPost(exclude: postA.Id);
 
-            if (posts.Count < 2) throw new FailedToCreateInDatabaseException();
+            if (postA is null || postB is null) throw new NotEnoughPostsException();
+
+            postA.RandKey = Random.Shared.NextDouble();
+            postB.RandKey = Random.Shared.NextDouble();
 
             Matchup matchup = new()
             {
                 VoterId = voterId,
-                PostA = posts[0],
-                PostB = posts[1]
+                PostA = postA,
+                PostB = postB
             };
 
             db.Matchups.Add(matchup);
             await db.SaveChangesAsync();
-            return matchup; 
+            return matchup;
         }
-        catch (System.Exception ex)
+        catch (System.Exception ex) when (ex is not ApiException)
         {
             logger.LogError(ex, "Failed to create matchup");
             throw new FailedToCreateInDatabaseException();
         }
     }
 
-    public async Task SubmitVote(VoteRequest voteRequest)
+    async Task<Post?> RandomPost(Guid exclude)
     {
-        if (db.Votes.Any(v => v.MatchupId == voteRequest.MatchupId))
-        {
-            logger.LogInformation("User tried to vote on a matchup already containing a vote");
-            throw new VoteAlreadySubmittedException();
-        }
-            
-        var matchup = await db.Matchups.FirstOrDefaultAsync(m => m.Id == voteRequest.MatchupId);
-        if (matchup == null)
-        {
-            logger.LogInformation("User tried to vote on a matchup that doesnt exist");
-            throw new MatchupDoesntExistException();
-        }
+        double r = Random.Shared.NextDouble();
+        var live = db.Posts.Where(p => p.DeletedAt == null && p.Id != exclude);
 
-        db.Votes.Add(new Vote()
-        {
-            MatchupId = voteRequest.MatchupId,
-            WinnerId = voteRequest.WinnerPostId,
-            LoserId = voteRequest.LooserPostId,
-            WinnerWasA = voteRequest.WinnerPostId == matchup.PostAId
-        });
+        return await live.Where(p => p.RandKey >= r).OrderBy(p => p.RandKey).FirstOrDefaultAsync()
+            ?? await live.OrderBy(p => p.RandKey).FirstOrDefaultAsync();
+    }
 
+    public async Task SubmitVote(Guid voterId, VoteRequest voteRequest)
+    {
+        var (matchupId, winnerId, loserId) = (voteRequest.MatchupId, voteRequest.WinnerPostId, voteRequest.LooserPostId);
+
+        int inserted;
         try
         {
-            await db.SaveChangesAsync();
+            inserted = await db.Database.ExecuteSqlAsync($"""
+                INSERT INTO votes (matchup_id, winner_id, loser_id, winner_was_a)
+                SELECT m.id, {winnerId}, {loserId}, m.post_a_id = {winnerId}
+                FROM matchups m
+                WHERE m.id = {matchupId}
+                  AND m.voter_id = {voterId}
+                  AND ((m.post_a_id = {winnerId} AND m.post_b_id = {loserId})
+                    OR (m.post_b_id = {winnerId} AND m.post_a_id = {loserId}))
+                ON CONFLICT (matchup_id) DO NOTHING
+                """);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to create vote in database");
             throw new FailedToCreateInDatabaseException();
         }
-        
+
+        if (inserted == 1) return;
+
+        var matchup = await db.Matchups
+            .Where(m => m.Id == matchupId)
+            .Select(m => new { m.VoterId, HasVote = m.Vote != null })
+            .FirstOrDefaultAsync();
+
+        if (matchup is null || matchup.VoterId != voterId)
+        {
+            logger.LogInformation("User tried to vote on a matchup that doesnt exist or isnt theirs");
+            throw new MatchupDoesntExistException();
+        }
+
+        if (matchup.HasVote)
+        {
+            logger.LogInformation("User tried to vote on a matchup already containing a vote");
+            throw new VoteAlreadySubmittedException();
+        }
+
+        logger.LogInformation("User voted with posts that dont belong to the matchup");
+        throw new InvalidVoteException();
     }
 
     public async Task<List<Post>> GetRanking(string order)

@@ -6,6 +6,7 @@ public class Post
     public float Elo { get; set; } = 1000;
     public int Wins { get; set; }
     public int Losses { get; set; }
+    public double RandKey { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
 

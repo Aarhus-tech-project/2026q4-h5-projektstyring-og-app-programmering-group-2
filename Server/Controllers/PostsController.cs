@@ -17,9 +17,13 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
 
     private BlobContainerClient Media => blobs.GetBlobContainerClient("media");
     private BlobContainerClient Uploads => blobs.GetBlobContainerClient("uploads");
-    
+
+    private const long MaxUploadBytes = 25 * 1024 * 1024;
+
     [HttpPost]
     [Authorize]
+    [RequestSizeLimit(MaxUploadBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
     public async Task<IActionResult> Post([FromForm]PostRequest postRequest)
     {
         await using var processed = await mediaService.Process(postRequest.File);
@@ -37,7 +41,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     [Authorize]
     public async Task<IActionResult> Vote(VoteRequest voteRequest)
     {
-        await postsRepository.SubmitVote(voteRequest);
+        await postsRepository.SubmitVote(User.GetUserId(), voteRequest);
         return Ok();
     }
 
@@ -77,6 +81,8 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
 
     [HttpPut("me/avatar")]
     [Authorize]
+    [RequestSizeLimit(MaxUploadBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
     public async Task<IActionResult> SetAvatar([FromForm] PostRequest request)
     {
         await using var processed = await mediaService.Process(request.File);
