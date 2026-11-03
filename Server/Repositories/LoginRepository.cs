@@ -62,20 +62,19 @@ public class LoginRepository(AppDbContext db)
         return true;
     }
 
-    public async Task<User> GetUserViaUserID(string refreshToken)
+    public async Task<User?> GetUserViaUserID(string refreshToken)
     {
         string hashedRefreshToken = Hash(refreshToken);
 
-        Session? userSession = await db.Sessions.FirstOrDefaultAsync(s => s.RefreshTokenHash == hashedRefreshToken);
-
-        if (userSession == null) return null;
-        
-        return userSession.User;
+        return await db.Sessions
+            .Where(s => s.RefreshTokenHash == hashedRefreshToken)
+            .Select(s => s.User)
+            .FirstOrDefaultAsync();
     }
 
     public async Task RevokeAllUserSessions(User user)
     {
-        await db.Sessions.Where(s => s.UserId == user.Id).ExecuteUpdateAsync(s => s.SetProperty(x => x.RevokedAt, DateTime.UtcNow));
+        await db.Sessions.Where(s => s.UserId == user.Id).ExecuteUpdateAsync(s => s.SetProperty(s => s.RevokedAt, DateTime.UtcNow));
     }
 
     public static string Hash(string token) =>
