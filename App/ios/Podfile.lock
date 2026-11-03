@@ -34,6 +34,12 @@ PODS:
     - Yoga
   - ExpoAsset (58.0.18):
     - ExpoModulesCore
+  - ExpoCamera (58.0.14):
+    - ExpoModulesCore
+  - ExpoCameraBarcodeScanning (58.0.14):
+    - ExpoCamera
+    - ZXingObjC/OneD
+    - ZXingObjC/PDF417
   - ExpoDevice (58.0.5):
     - ExpoModulesCore
   - ExpoDomWebView (58.0.2):
@@ -46,6 +52,11 @@ PODS:
     - ExpoModulesCore
   - ExpoImage (58.0.17):
     - ExpoModulesCore
+    - libavif/libdav1d
+    - SDWebImage (~> 5.21.0)
+    - SDWebImageAVIFCoder (~> 0.11.0)
+    - SDWebImageSVGCoder (~> 1.7.0)
+    - SDWebImageWebPCoder (~> 0.14.6)
   - ExpoImagePicker (58.0.10):
     - ExpoModulesCore
   - ExpoKeepAwake (58.0.3):
@@ -53,6 +64,9 @@ PODS:
   - ExpoLinking (58.0.14):
     - ExpoModulesCore
   - ExpoLogBox (58.0.13):
+    - React-Core
+  - ExpoMediaLibrary (58.0.13):
+    - ExpoModulesCore
     - React-Core
   - ExpoModulesCore (58.0.24):
     - ExpoModulesJSI
@@ -120,6 +134,23 @@ PODS:
   - hermes-engine (260318099.0.4):
     - hermes-engine/Pre-built (= 260318099.0.4)
   - hermes-engine/Pre-built (260318099.0.4)
+  - libavif/core (1.0.0)
+  - libavif/libdav1d (1.0.0):
+    - libavif/core
+    - libdav1d (>= 0.6.0)
+  - libdav1d (1.2.0)
+  - libwebp (1.6.0):
+    - libwebp/demux (= 1.6.0)
+    - libwebp/mux (= 1.6.0)
+    - libwebp/sharpyuv (= 1.6.0)
+    - libwebp/webp (= 1.6.0)
+  - libwebp/demux (1.6.0):
+    - libwebp/webp
+  - libwebp/mux (1.6.0):
+    - libwebp/demux
+  - libwebp/sharpyuv (1.6.0)
+  - libwebp/webp (1.6.0):
+    - libwebp/sharpyuv
   - media-viewer (0.7.2):
     - ExpoModulesCore
     - SDWebImage
@@ -2245,10 +2276,23 @@ PODS:
   - SDWebImage (5.21.7):
     - SDWebImage/Core (= 5.21.7)
   - SDWebImage/Core (5.21.7)
+  - SDWebImageAVIFCoder (0.11.1):
+    - libavif/core (>= 0.11.0)
+    - SDWebImage (~> 5.10)
+  - SDWebImageSVGCoder (1.7.0):
+    - SDWebImage/Core (~> 5.6)
+  - SDWebImageWebPCoder (0.14.6):
+    - libwebp (~> 1.0)
+    - SDWebImage/Core (~> 5.17)
   - SocketRocket (0.7.1):
     - ReactNativeDependencies
   - Yoga (0.0.0):
     - React-Core-prebuilt
+  - ZXingObjC/Core (3.6.9)
+  - ZXingObjC/OneD (3.6.9):
+    - ZXingObjC/Core
+  - ZXingObjC/PDF417 (3.6.9):
+    - ZXingObjC/Core
 
 DEPENDENCIES:
   - boost (from `build/rndeps-facades/boost`)
@@ -2256,19 +2300,22 @@ DEPENDENCIES:
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - Expo (from `../node_modules/expo`)
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
+  - ExpoCamera (from `../node_modules/expo-camera/ios`)
+  - ExpoCameraBarcodeScanning (from `../node_modules/expo-camera/ios`)
   - ExpoDevice (from `../node_modules/expo-device/ios`)
   - "ExpoDomWebView (from `../node_modules/@expo/dom-webview/ios`)"
-  - ExpoFileSystem (from `../node_modules/expo-file-system/ios/ExpoFileSystem.podspec`)
-  - ExpoFont (from `../node_modules/expo-font/ios/ExpoFont.podspec`)
+  - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
+  - ExpoFont (from `../node_modules/expo-font/ios`)
   - ExpoGlassEffect (from `../node_modules/expo-glass-effect/ios`)
-  - ExpoImage (from `../node_modules/expo-image/ios/ExpoImage.podspec`)
+  - ExpoImage (from `../node_modules/expo-image/ios`)
   - ExpoImagePicker (from `../node_modules/expo-image-picker/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoLinking (from `../node_modules/expo-linking/ios`)
   - "ExpoLogBox (from `../node_modules/@expo/log-box`)"
-  - ExpoModulesCore (from `../node_modules/expo-modules-core/ExpoModulesCore.podspec`)
+  - ExpoMediaLibrary (from `../node_modules/expo-media-library/ios`)
+  - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoModulesJSI (from `../node_modules/expo-modules-jsi/apple`)
-  - ExpoModulesWorklets (from `../node_modules/expo-modules-core/ExpoModulesWorklets.podspec`)
+  - ExpoModulesWorklets (from `../node_modules/expo-modules-core`)
   - ExpoModulesWorkletsAdapter (from `../node_modules/expo-modules-core`)
   - ExpoRouter (from `../node_modules/expo-router/ios`)
   - ExpoSecureStore (from `../node_modules/expo-secure-store/ios`)
@@ -2374,7 +2421,14 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - libavif
+    - libdav1d
+    - libwebp
     - SDWebImage
+    - SDWebImageAVIFCoder
+    - SDWebImageSVGCoder
+    - SDWebImageWebPCoder
+    - ZXingObjC
 
 EXTERNAL SOURCES:
   boost:
@@ -2387,18 +2441,22 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo"
   ExpoAsset:
     :path: "../node_modules/expo-asset/ios"
+  ExpoCamera:
+    :path: "../node_modules/expo-camera/ios"
+  ExpoCameraBarcodeScanning:
+    :path: "../node_modules/expo-camera/ios"
   ExpoDevice:
     :path: "../node_modules/expo-device/ios"
   ExpoDomWebView:
     :path: "../node_modules/@expo/dom-webview/ios"
   ExpoFileSystem:
-    :podspec: "../node_modules/expo-file-system/ios/ExpoFileSystem.podspec"
+    :path: "../node_modules/expo-file-system/ios"
   ExpoFont:
-    :podspec: "../node_modules/expo-font/ios/ExpoFont.podspec"
+    :path: "../node_modules/expo-font/ios"
   ExpoGlassEffect:
     :path: "../node_modules/expo-glass-effect/ios"
   ExpoImage:
-    :podspec: "../node_modules/expo-image/ios/ExpoImage.podspec"
+    :path: "../node_modules/expo-image/ios"
   ExpoImagePicker:
     :path: "../node_modules/expo-image-picker/ios"
   ExpoKeepAwake:
@@ -2407,12 +2465,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-linking/ios"
   ExpoLogBox:
     :path: "../node_modules/@expo/log-box"
+  ExpoMediaLibrary:
+    :path: "../node_modules/expo-media-library/ios"
   ExpoModulesCore:
-    :podspec: "../node_modules/expo-modules-core/ExpoModulesCore.podspec"
+    :path: "../node_modules/expo-modules-core"
   ExpoModulesJSI:
     :path: "../node_modules/expo-modules-jsi/apple"
   ExpoModulesWorklets:
-    :podspec: "../node_modules/expo-modules-core/ExpoModulesWorklets.podspec"
+    :path: "../node_modules/expo-modules-core"
   ExpoModulesWorkletsAdapter:
     :path: "../node_modules/expo-modules-core"
   ExpoRouter:
@@ -2623,6 +2683,8 @@ SPEC CHECKSUMS:
   EXConstants: e90e362a4ffafaa03999f456bf81d7fb8021db9d
   Expo: b34c4572c14ac95174334d7b07ba59d475b35952
   ExpoAsset: 9548991f0332bd8ed8819299e0b413d713104a1a
+  ExpoCamera: 5d9ae8e9c52e102d9a21b2a903478dcd79ce3ddc
+  ExpoCameraBarcodeScanning: 31cb394606255ac478b9c33929e6b0a8f6c0925d
   ExpoDevice: 77a9816436a09a0bfc00f5ace649c6ccb219b96d
   ExpoDomWebView: b2a6d681b9d34c23b1f584321386ca8da1d36afb
   ExpoFileSystem: 6e11203047bfcbd318e6db7bb91210a95a4162b3
@@ -2633,7 +2695,8 @@ SPEC CHECKSUMS:
   ExpoKeepAwake: fd18a5d233329013c578030ad399d8e10b252b5f
   ExpoLinking: 0937be9faa1580dee244062cc4c5a77732dc2c4d
   ExpoLogBox: 624d64042d73abe0dc230a24b1a9f835adb2cec9
-  ExpoModulesCore: 9a2cf03554f19e0140a6dc079f1af1ccb9e804a0
+  ExpoMediaLibrary: 378277a96cb72d49a7c21dddefdbfa69d734506f
+  ExpoModulesCore: 41c9493da93ace34714079457745229de389b871
   ExpoModulesJSI: 744bbba28465e6fff44f48debe964b81b3ebebb1
   ExpoModulesWorklets: 1ffcd69fa7269a878dbc5ee7acd4e32af85c0406
   ExpoModulesWorkletsAdapter: fa45f4969290c7da2a5ad029104dac026f9e5eba
@@ -2650,6 +2713,9 @@ SPEC CHECKSUMS:
   fmt: ba0886e864ebb21d14c98b2e12e164b8002f5b93
   glog: 3cf7cb46f743c4bc758ae3e6d9c15bd1b4cfd6d4
   hermes-engine: a1158910bb7e300b9e3d2f1e2d433f817ec1a4b5
+  libavif: 5f8e715bea24debec477006f21ef9e95432e254d
+  libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
+  libwebp: af5937a13536ef73f3784d69cc342b98961acf33
   media-viewer: 6e3114de0b1cadcee9a982f7fe1f66245c03b210
   RCT-Folly: 82921e585c0400eda46fac1068297aa9dfb035e4
   RCTDeprecation: e134f2a2c096a6450f5fcbbe949531f913a2ff04
@@ -2736,9 +2802,13 @@ SPEC CHECKSUMS:
   RNSVG: c35beed3dcf6fd14b50ca1fc0d4214a17ec5334d
   RNWorklets: 488806637a21eb17812a48dadca7cb8c698c8cfd
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
+  SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
+  SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
+  SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   SocketRocket: 37aec555668fb852ec12e3c0de59a86ca58f0871
   Yoga: d1c536142c5ff8ec8cd856ab2a7c227a1d875c8e
+  ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
 PODFILE CHECKSUM: a2ba9ef7d2532a0635f904e5e0a03cd72cd663a9
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.17.0

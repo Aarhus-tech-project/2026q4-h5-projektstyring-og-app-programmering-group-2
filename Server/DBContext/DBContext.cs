@@ -20,6 +20,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         b.Entity<User>().Property(u => u.Email).HasColumnType("citext");
         b.Entity<User>().HasIndex(u => u.Email).IsUnique();
+        b.Entity<User>().Property(u => u.Elo).HasDefaultValue(1000f);
 
         b.Entity<Media>(e =>
         {

@@ -59,7 +59,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
 
     [HttpGet("me")]
     [Authorize]
-    public async Task<ActionResult<ProfileDTO>> Me()
+    public async Task<ActionResult<Profile>> Me()
     {
         Guid userId = User.GetUserId();
 
@@ -72,7 +72,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         string? avatarThumbnailUrl = user.AvatarHash == null ? null : MediaUrl(user.AvatarHash, suffix: "_thumb");
         string? avatarUrl = user.AvatarHash == null ? null : MediaUrl(user.AvatarHash);
 
-        return new ProfileDTO(user.Username, user.Description, avatarThumbnailUrl, avatarUrl, elo, wins, losses, posts.Select(ToDto).ToList());
+        return new Profile(user.Username, user.Description, avatarThumbnailUrl, avatarUrl, elo, wins, losses, posts.Select(ToDto).ToList());
     }
 
     [HttpPut("me/avatar")]

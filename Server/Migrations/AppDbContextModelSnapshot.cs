@@ -244,10 +244,20 @@ namespace Server.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<float>("Elo")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("real")
+                        .HasDefaultValue(1000f)
+                        .HasColumnName("elo");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("citext")
                         .HasColumnName("email");
+
+                    b.Property<int>("Losses")
+                        .HasColumnType("integer")
+                        .HasColumnName("losses");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -258,6 +268,10 @@ namespace Server.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("username");
+
+                    b.Property<int>("Wins")
+                        .HasColumnType("integer")
+                        .HasColumnName("wins");
 
                     b.HasKey("Id")
                         .HasName("pk_users");
