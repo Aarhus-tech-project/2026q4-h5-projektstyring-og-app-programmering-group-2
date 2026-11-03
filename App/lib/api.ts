@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import createClient from "openapi-fetch";
 import type { components, paths } from "./api-types";
-
+import { File } from "expo-file-system";
 export const api = createClient<paths>({
   baseUrl: process.env.EXPO_PUBLIC_API_URL,
 });
@@ -91,5 +91,20 @@ export async function getMyProfile() {
   const {data, error} = await api.GET("/api/Posts/me");
   if (error) throw error;
   return data;
+}
+//-------------------------------------------------------------
+
+//-------------------------------------------------------------
+// Upload Avatar
+
+export async function uploadAvatar(uri: string) {
+  const form = new FormData();
+  form.append("File", new File(uri) as any);
+
+  const { error } = await api.PUT("/api/Posts/me/avatar", {
+    body: form as any,
+    bodySerializer: (body) => body,
+  });
+  if (error) throw error;
 }
 //-------------------------------------------------------------

@@ -46,6 +46,8 @@ PODS:
     - ExpoModulesCore
   - ExpoImage (58.0.17):
     - ExpoModulesCore
+  - ExpoImagePicker (58.0.10):
+    - ExpoModulesCore
   - ExpoKeepAwake (58.0.3):
     - ExpoModulesCore
   - ExpoLinking (58.0.14):
@@ -2260,6 +2262,7 @@ DEPENDENCIES:
   - ExpoFont (from `../node_modules/expo-font/ios/ExpoFont.podspec`)
   - ExpoGlassEffect (from `../node_modules/expo-glass-effect/ios`)
   - ExpoImage (from `../node_modules/expo-image/ios/ExpoImage.podspec`)
+  - ExpoImagePicker (from `../node_modules/expo-image-picker/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoLinking (from `../node_modules/expo-linking/ios`)
   - "ExpoLogBox (from `../node_modules/@expo/log-box`)"
@@ -2396,6 +2399,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-glass-effect/ios"
   ExpoImage:
     :podspec: "../node_modules/expo-image/ios/ExpoImage.podspec"
+  ExpoImagePicker:
+    :path: "../node_modules/expo-image-picker/ios"
   ExpoKeepAwake:
     :path: "../node_modules/expo-keep-awake/ios"
   ExpoLinking:
@@ -2624,6 +2629,7 @@ SPEC CHECKSUMS:
   ExpoFont: 1d6500b0c451edb1f9676276b477fb1838190ccb
   ExpoGlassEffect: 008d906ff11ffeb03a8e702af9d6a471c16c10eb
   ExpoImage: 04f6e13379ea155eec04e99499baefba1c313f77
+  ExpoImagePicker: a466134ec92fed0b38bbf9062c7eb5f3c8c49d94
   ExpoKeepAwake: fd18a5d233329013c578030ad399d8e10b252b5f
   ExpoLinking: 0937be9faa1580dee244062cc4c5a77732dc2c4d
   ExpoLogBox: 624d64042d73abe0dc230a24b1a9f835adb2cec9
@@ -2735,4 +2741,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: a2ba9ef7d2532a0635f904e5e0a03cd72cd663a9
 
-COCOAPODS: 1.17.0
+COCOAPODS: 1.16.2

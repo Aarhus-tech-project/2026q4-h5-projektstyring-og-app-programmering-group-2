@@ -74,6 +74,19 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         return new ProfileDTO(user.Username, user.Description, avatarThumbnailUrl, avatarUrl, elo, wins, losses, posts.Select(ToDto).ToList());
     }
 
+    [HttpPut("me/avatar")]
+    [Authorize]
+    public async Task<IActionResult> SetAvatar([FromForm] PostRequest request)
+    {
+        await using var processed = await mediaService.Process(request.File);
+
+        await Upload(Media, processed.Proccesed, processed.Media.Hash);
+        await Upload(Media, processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
+
+        await postsRepository.SetAvatar(User.GetUserId(), processed.Media);
+        return NoContent();
+    }
+
     PublicPostDTO ToDto(Post p)
     {
         return new(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash), p.Elo, p.Wins, p.Losses, p.CreatedAt);
