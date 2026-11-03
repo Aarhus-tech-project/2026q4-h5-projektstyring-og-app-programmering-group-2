@@ -5,6 +5,8 @@ import { useRef, useState } from 'react';
 import { Button, Linking, View } from 'react-native';
 import { api } from '../../lib/api';
 
+import * as MediaLibrary from 'expo-media-library/legacy';
+
 export default function TabTwoScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const camera = useRef<CameraView>(null);
@@ -15,7 +17,7 @@ export default function TabTwoScreen() {
     return (
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <Button title="Allow camera"
-            onPress={() => (permission.canAskAgain ? requestPermission() : Linking.openSettings())}
+            onPress={() => (permission.canAskAgain ? requestPermission() : Linking.openSettings(), MediaLibrary.usePermissions())}
           />
       </View>
     );
@@ -32,6 +34,8 @@ export default function TabTwoScreen() {
 
   const submitFoto = async () => {
     const file = new File(uri!);
+    await MediaLibrary.saveToLibraryAsync(file.uri);
+
 
     const form = new FormData();
     form.append('File', file);
