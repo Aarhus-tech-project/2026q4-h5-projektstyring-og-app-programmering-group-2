@@ -11,6 +11,7 @@ namespace Server;
 [Route("api/[controller]")]
 public class PostsController(ILogger<PostsController> logger, BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService, TokenService tokenService) : Controller
 {
+    public record DescriptionRequest(string? Description);
     public record PostRequest(IFormFile File);
     public record VoteRequest(Guid MatchupId, Guid WinnerPostId, Guid LooserPostId);
 
@@ -84,6 +85,17 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         await Upload(Media, processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
 
         await postsRepository.SetAvatar(User.GetUserId(), processed.Media);
+        return NoContent();
+    }
+
+    [HttpPut("me/description")]
+    [Authorize]
+    public async Task<IActionResult> SetDescription(DescriptionRequest request)
+    {
+        string? description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+        if (description?.Length > 250) return BadRequest("Description can be at most 250 characters");
+
+        await postsRepository.SetDescription(User.GetUserId(), description);
         return NoContent();
     }
 

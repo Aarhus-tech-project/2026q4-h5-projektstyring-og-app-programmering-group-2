@@ -108,3 +108,14 @@ export async function uploadAvatar(uri: string) {
   if (error) throw error;
 }
 //-------------------------------------------------------------
+
+//-------------------------------------------------------------
+// Update Description
+
+export async function updateDescription(description:string) {
+  const { error } = await api.PUT("/api/Posts/me/description", {
+    body: { description },
+  });
+  if (error) throw error;
+}
+//-------------------------------------------------------------

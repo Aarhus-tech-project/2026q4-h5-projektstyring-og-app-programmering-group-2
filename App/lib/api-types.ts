@@ -234,6 +234,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/Posts/me/description": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DescriptionRequest"];
+                    "text/json": components["schemas"]["DescriptionRequest"];
+                    "application/*+json": components["schemas"]["DescriptionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/Login/login": {
         parameters: {
             query?: never;
@@ -433,6 +472,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        DescriptionRequest: {
+            description: null | string;
+        };
         /** Format: binary */
         IFormFile: string;
         MatchupDTO: {

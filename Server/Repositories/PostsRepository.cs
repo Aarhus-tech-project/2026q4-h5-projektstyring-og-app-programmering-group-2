@@ -125,4 +125,11 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
         user.AvatarHash = media.Hash;
         await db.SaveChangesAsync();
     }
+
+    public async Task SetDescription(Guid userId, string? description)
+    {
+        var user = await db.Users.FirstAsync(u => u.Id == userId);
+        user.Description = description;
+        await db.SaveChangesAsync();
+    }
 }

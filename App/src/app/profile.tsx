@@ -9,8 +9,9 @@ import { useTheme } from '@/hooks/use-theme';
 import { useCallback, useEffect, useState } from 'react';
 import { SymbolView } from 'expo-symbols';
 import { ExpandableImage } from '@/components/ui/expandable-image';
-import { getMyProfile, Profile as ProfileData, uploadAvatar } from '../../lib/api';
+import { getMyProfile, Profile as ProfileData, updateDescription, uploadAvatar } from '../../lib/api';
 import { useFocusEffect } from 'expo-router';
+import { ModalDescription } from '@/components/ui/modalDescription';
 
 
 
@@ -18,6 +19,8 @@ export default function Profile() {
   const theme = useTheme()
   const [tab, setTab] = useState<'photos' | 'favorites'>('photos')
   const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [editing, setEditing] = useState(false)
+
 
   useFocusEffect(useCallback(() => {
     getMyProfile().then(setProfile)
@@ -41,6 +44,16 @@ export default function Profile() {
       console.error('Failed to upload avatar', error)
     }
   }
+
+  async function saveDescription(text: string) {
+  try {
+    await updateDescription(text)
+    setProfile(await getMyProfile())
+  } catch (error) {
+    console.error('Failed to update description', error)
+  }
+}
+
 
   const posts = tab === 'photos' ? (profile?.posts ?? []) : []
   return (
@@ -87,9 +100,14 @@ export default function Profile() {
               </Pressable>
             </View>
           </View>
+         <Pressable onPress={() => setEditing(true)}>
           <ThemedView type="backgroundElement" style={[styles.TextBox, { borderColor: theme.border }]}>
-            <TextInput style={styles.TextBoxText} editable={false} numberOfLines={12} multiline scrollEnabled={false}>{profile?.description ?? 'Hi. Welcome to my profile'}</TextInput>
+            <ThemedText style={styles.TextBoxText} themeColor={profile?.description ? 'text' : 'textSecondary'}>
+              {profile?.description || 'Hi. Welcome to my profile'}
+            </ThemedText>
           </ThemedView>
+        </Pressable>
+
 
           <View style={[styles.body, {borderColor: theme.border}]}>
             <Pressable style={styles.tab} onPress={() => setTab('photos')}>
@@ -111,6 +129,13 @@ export default function Profile() {
         </>
       }
     />
+    {editing && (
+  <ModalDescription
+    description={profile?.description}
+    onSave={saveDescription}
+    onClose={() => setEditing(false)}
+  />
+)}
     </SafeAreaView>
     </ThemedView>
   );
