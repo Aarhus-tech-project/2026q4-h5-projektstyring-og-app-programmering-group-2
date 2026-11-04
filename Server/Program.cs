@@ -28,7 +28,6 @@ public class Program
         if (isApi)
         {
             builder.Services.AddJwtAuth(builder.Configuration);
-
             builder.Services.AddControllers();
             if (builder.Environment.IsDevelopment())
                 builder.Services.AddSwaggerDocs();
@@ -38,6 +37,7 @@ public class Program
             builder.Services.AddScoped<PostsRepository>();
             builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<AuthService>();
+            builder.Services.AddRateLimiting();
             builder.Services.AddExceptionHandler<ApiExceptionHandler>();
             builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
             builder.Services.AddControllers(o => o.Filters.Add<ValidationFilter>());
@@ -59,6 +59,7 @@ public class Program
 
             app.UseExceptionHandler();
             app.UseAuthentication();
+            app.UseRateLimiter();
             app.UseAuthorization();
             app.MapControllers();
 

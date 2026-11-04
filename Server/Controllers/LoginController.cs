@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Server.Exceptions;
 using Server.Models;
+using Server.Repositories;
 using Server.Services;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Server.Repositories;
 using Validator;
-using Server.Exceptions;
 
 
 namespace Server.Controllers;
@@ -67,6 +68,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
         return Ok();
     }
 
+    [EnableRateLimiting("strict")]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDTO login)
     {
