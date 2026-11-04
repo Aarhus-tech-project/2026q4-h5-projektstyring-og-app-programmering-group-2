@@ -7,7 +7,7 @@ import { useRef, useState } from 'react';
 import { Button, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { api } from '../../lib/api';
 
-import * as MediaLibrary from 'expo-media-library';
+import * as MediaLibrary from 'expo-media-library/legacy';
 
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
