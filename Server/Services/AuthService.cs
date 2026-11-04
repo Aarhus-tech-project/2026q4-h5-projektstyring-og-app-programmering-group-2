@@ -16,7 +16,7 @@ namespace Server.Services
         {
             var session = new Session
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 UserId = user.Id,
                 RefreshTokenHash = Hash(refreshToken),
                 DeviceName = deviceName,
