@@ -35,7 +35,6 @@ public class Program
             builder.Services.AddScoped<MediaService>();
             builder.Services.AddScoped<LoginRepository>();
             builder.Services.AddScoped<PostsRepository>();
-            builder.Services.AddSingleton<PostPool>();
             builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddRateLimiting();

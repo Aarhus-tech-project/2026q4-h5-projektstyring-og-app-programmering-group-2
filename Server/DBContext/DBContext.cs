@@ -38,7 +38,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
             e.Property(p => p.RandKey).HasDefaultValueSql("random()");
 
-            e.HasIndex(p => p.Elo).HasFilter("deleted_at IS NULL");
+            e.HasIndex(p => new { p.Elo, p.RandKey }).HasFilter("deleted_at IS NULL");
             e.HasIndex(p => p.RandKey).HasFilter("deleted_at IS NULL");
 
             e.HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId);

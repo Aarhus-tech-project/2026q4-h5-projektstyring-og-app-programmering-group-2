@@ -4,14 +4,13 @@ using static Server.PostsController;
 
 namespace Server;
 
-public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db, PostPool postPool)
+public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
 {
     public async Task<Post> CreatePost(Guid userId, Media media)
     {
         try
         {
-            if (!await db.Media.AnyAsync(m => m.Hash == media.Hash))
-                db.Media.Add(media);
+            await InsertMediaIfMissing(media);
 
             Post post = new()
             {
@@ -21,7 +20,6 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db, P
 
             db.Posts.Add(post);
             await db.SaveChangesAsync();
-            postPool.Invalidate();
             return post;
         }
         catch (System.Exception ex)
@@ -29,6 +27,16 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db, P
             logger.LogError(ex, "Failed to create post");
             throw new FailedToCreateInDatabaseException();
         }
+    }
+
+    async Task InsertMediaIfMissing(Media media)
+    {
+        await db.Database.ExecuteSqlAsync($"""
+            INSERT INTO media (hash, kind, width, height, thumbhash, original_format, original_size_bytes, camera_make, camera_model, taken_at)
+            VALUES ({media.Hash}, {media.Kind.ToString()}, {media.Width}, {media.Height}, {media.Thumbhash}, {media.OriginalFormat},
+                    {media.OriginalSizeBytes}, {media.CameraMake}, {media.CameraModel}, {media.TakenAt})
+            ON CONFLICT (hash) DO NOTHING
+            """);
     }
 
     public async Task<List<Post>> GetFavorites(Guid userId)
@@ -74,8 +82,6 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db, P
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.DeletedAt, p => p.DeletedAt ?? DateTimeOffset.UtcNow));
 
         if (updated == 0) throw new PostDoesntExistException();
-
-        postPool.Invalidate();
     }
 
     public async Task DeleteFavorite(Guid userId, Guid postId)
@@ -91,35 +97,27 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db, P
 
     public async Task<(Matchup Matchup, Post PostA, Post PostB)> GetOrCreateMatchup(Guid voterId)
     {
-        var snapshot = await postPool.Get();
-
         var latest = await db.Matchups
             .AsNoTracking()
             .Where(m => m.VoterId == voterId)
             .OrderByDescending(m => m.IssuedAt)
-            .Select(m => new { Matchup = m, Voted = m.Vote != null })
+            .Select(m => new { Matchup = m, Voted = m.Vote != null, m.PostA, m.PostB })
             .FirstOrDefaultAsync();
 
-        if (latest is { Voted: false }
-            && snapshot.ById.TryGetValue(latest.Matchup.PostAId, out var openA)
-            && snapshot.ById.TryGetValue(latest.Matchup.PostBId, out var openB))
-            return (latest.Matchup, openA, openB);
+        if (latest is { Voted: false } && latest.PostA.DeletedAt == null && latest.PostB.DeletedAt == null)
+            return (latest.Matchup, latest.PostA, latest.PostB);
 
-        var pool = snapshot.ByElo;
+        Post a = await RandomPost(voterId, exclude: null) ?? throw new NotEnoughPostsException();
 
-        int a = RandomIndex(pool, voterId, exclude: -1);
-        if (a < 0) throw new NotEnoughPostsException();
-
-        int b = Random.Shared.NextDouble() < HailMaryChance
-            ? RandomIndex(pool, voterId, exclude: a)
-            : NearbyIndex(pool, voterId, a);
-        if (b < 0) throw new NotEnoughPostsException();
+        Post b = (Random.Shared.NextDouble() < HailMaryChance
+            ? await RandomPost(voterId, exclude: a.Id)
+            : await NearbyPost(voterId, a)) ?? throw new NotEnoughPostsException();
 
         Matchup matchup = new()
         {
             VoterId = voterId,
-            PostAId = pool[a].Id,
-            PostBId = pool[b].Id
+            PostAId = a.Id,
+            PostBId = b.Id
         };
 
         try
@@ -133,35 +131,40 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db, P
             throw new FailedToCreateInDatabaseException();
         }
 
-        return (matchup, pool[a], pool[b]);
+        return (matchup, a, b);
     }
 
-    static int RandomIndex(Post[] pool, Guid voterId, int exclude)
+    async Task<Post?> RandomPost(Guid voterId, Guid? exclude)
     {
-        if (pool.Length == 0) return -1;
+        double start = Random.Shared.NextDouble();
 
-        for (int tries = 0; tries < 16; tries++)
-        {
-            int i = Random.Shared.Next(pool.Length);
-            if (i != exclude && pool[i].UserId != voterId) return i;
-        }
+        var candidates = db.Posts
+            .AsNoTracking()
+            .Where(p => p.DeletedAt == null && p.UserId != voterId && p.Id != exclude)
+            .OrderBy(p => p.RandKey);
 
-        var others = Enumerable.Range(0, pool.Length).Where(i => i != exclude && pool[i].UserId != voterId).ToArray();
-        return others.Length == 0 ? -1 : others[Random.Shared.Next(others.Length)];
+        return await candidates.FirstOrDefaultAsync(p => p.RandKey >= start)
+            ?? await candidates.FirstOrDefaultAsync();
     }
 
-    static int NearbyIndex(Post[] pool, Guid voterId, int a)
+    async Task<Post?> NearbyPost(Guid voterId, Post a)
     {
-        Span<int> nearby = stackalloc int[NearbyEachSide * 2];
-        int n = 0;
+        var nearby = await db.Posts
+            .FromSql($"""
+                (SELECT * FROM posts
+                 WHERE deleted_at IS NULL AND user_id <> {voterId} AND (elo, rand_key) > ({a.Elo}, {a.RandKey})
+                 ORDER BY elo, rand_key
+                 LIMIT {NearbyEachSide})
+                UNION ALL
+                (SELECT * FROM posts
+                 WHERE deleted_at IS NULL AND user_id <> {voterId} AND (elo, rand_key) < ({a.Elo}, {a.RandKey})
+                 ORDER BY elo DESC, rand_key DESC
+                 LIMIT {NearbyEachSide})
+                """)
+            .AsNoTracking()
+            .ToListAsync();
 
-        for (int i = a + 1, found = 0; i < pool.Length && found < NearbyEachSide; i++)
-            if (pool[i].UserId != voterId) { nearby[n++] = i; found++; }
-
-        for (int i = a - 1, found = 0; i >= 0 && found < NearbyEachSide; i--)
-            if (pool[i].UserId != voterId) { nearby[n++] = i; found++; }
-
-        return n == 0 ? -1 : nearby[Random.Shared.Next(n)];
+        return nearby.Count == 0 ? null : nearby[Random.Shared.Next(nearby.Count)];
     }
 
     public async Task SubmitVote(Guid voterId, VoteRequest voteRequest)
@@ -213,11 +216,13 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db, P
 
     public async Task<List<Post>> GetRanking(string order)
     {
-        var pool = (await postPool.Get()).ByElo;
+        var posts = db.Posts.AsNoTracking().Where(p => p.DeletedAt == null);
 
-        return order == "worst"
-            ? pool.Take(10).ToList()
-            : pool.TakeLast(10).Reverse().ToList();
+        return await (order == "worst"
+            ? posts.OrderBy(p => p.Elo).ThenBy(p => p.RandKey)
+            : posts.OrderByDescending(p => p.Elo).ThenByDescending(p => p.RandKey))
+            .Take(10)
+            .ToListAsync();
     }
 
     public async Task<User?> GetUser(Guid userId)
@@ -232,12 +237,11 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db, P
 
     public async Task SetAvatar(Guid userId, Media media)
     {
-        if (!await db.Media.AnyAsync(m => m.Hash == media.Hash))
-        db.Media.Add(media);
+        await InsertMediaIfMissing(media);
 
-        var user = await db.Users.FirstAsync(u => u.Id == userId);
-        user.AvatarHash = media.Hash;
-        await db.SaveChangesAsync();
+        await db.Users
+            .Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.AvatarHash, media.Hash));
     }
 
     public async Task SetDescription(Guid userId, string? description)

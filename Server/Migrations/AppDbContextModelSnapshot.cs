@@ -170,10 +170,6 @@ namespace Server.Migrations
                     b.HasKey("Id")
                         .HasName("pk_posts");
 
-                    b.HasIndex("Elo")
-                        .HasDatabaseName("ix_posts_elo")
-                        .HasFilter("deleted_at IS NULL");
-
                     b.HasIndex("MediaHash")
                         .HasDatabaseName("ix_posts_media_hash");
 
@@ -183,6 +179,10 @@ namespace Server.Migrations
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_posts_user_id");
+
+                    b.HasIndex("Elo", "RandKey")
+                        .HasDatabaseName("ix_posts_elo_rand_key")
+                        .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("posts", (string)null);
                 });
