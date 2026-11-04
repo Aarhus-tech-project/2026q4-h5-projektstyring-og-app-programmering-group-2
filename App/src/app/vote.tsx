@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ExpandableImage } from '@/components/ui/expandable-image';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { getMatchup, submitVote, type Matchup } from '../../lib/api';
+import { SymbolView } from 'expo-symbols';
 
 type Post = Matchup['postA'];
 
@@ -18,25 +18,66 @@ function VoteCard({ post, label, disabled, onVote }: {
   onVote: () => void;
 }) {
   const theme = useTheme();
+  const [favorited, setFavorited] = useState(false);
 
   return (
     <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
       <View style={styles.imageWrapper}>
-        <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} borderRadius={10} />
+        <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} borderRadius={0} />
       </View>
       <Pressable
         onPress={onVote}
         disabled={disabled}
         style={({ pressed }) => [
           styles.voteButton,
-          { backgroundColor: pressed ? theme.backgroundSelected : theme.background, borderColor: theme.border },
           disabled && styles.disabled,
         ]}>
-        <ThemedText type="smallBold">{label}</ThemedText>
+        <ThemedText type="smallBold" style={styles.text}>{label}</ThemedText>
+      </Pressable>
+      <Pressable style={styles.star} onPress={() => setFavorited(!favorited)}>
+        <SymbolView
+          name={{ ios: favorited ? 'star.fill' : 'star', android: 'star', web: 'star' }}
+          tintColor={favorited ? '#FFD84D' : theme.textSecondary}
+          size={32}
+        />
       </Pressable>
     </ThemedView>
   );
 }
+function VoteCardBottom({ post, label, disabled, onVote }: {
+  post: Post;
+  label: string;
+  disabled: boolean;
+  onVote: () => void;
+}) {
+  const theme = useTheme();
+  const [favorited, setFavorited] = useState(false);
+
+  return (
+    <ThemedView type="backgroundElement" style={[styles.cardBottom, { borderColor: theme.border }]}>
+      <View style={styles.imageWrapperBottom}>
+        <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} borderRadius={0} />
+      </View>
+      <Pressable
+        onPress={onVote}
+        disabled={disabled}
+        style={({ pressed }) => [
+          styles.voteButtonBottom,
+          disabled && styles.disabled,
+        ]}>
+        <ThemedText type="smallBold" style={styles.text} >{label}</ThemedText>
+      </Pressable>
+      <Pressable style={styles.starBottom} onPress={() => setFavorited(!favorited)}>
+        <SymbolView
+          name={{ ios: favorited ? 'star.fill' : 'star', android: 'star', web: 'star' }}
+          tintColor={favorited ? '#FFD84D' : theme.textSecondary}
+          size={32}
+        />
+      </Pressable>
+    </ThemedView>
+  );
+}
+
 
 export default function VoteScreen() {
   const theme = useTheme();
@@ -100,19 +141,20 @@ export default function VoteScreen() {
       <View style={styles.cards}>
         <VoteCard
           post={matchup.postA}
-          label="Vote for this one"
+          label="Vote"
           disabled={voting}
           onVote={() => vote(matchup.postA, matchup.postB)}
         />
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.vs}>
           VS
         </ThemedText>
-        <VoteCard
-          post={matchup.postB}
-          label="Vote for this one"
-          disabled={voting}
-          onVote={() => vote(matchup.postB, matchup.postA)}
-        />
+       <VoteCardBottom
+  post={matchup.postB}
+  label="Vote"
+  disabled={voting}
+  onVote={() => vote(matchup.postB, matchup.postA)}
+/>
+
       </View>
     );
   }
@@ -130,6 +172,9 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  text: {
+    color: 'black',
+  },
   title: {
     textAlign: 'center',
     marginVertical: Spacing.three,
@@ -143,32 +188,77 @@ const styles = StyleSheet.create({
   },
   cards: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingBottom: BottomTabInset + Spacing.three,
+    paddingHorizontal: Spacing.one,
+    paddingBottom: BottomTabInset + Spacing.six,
   },
   card: {
     flex: 1,
     padding: Spacing.two,
     gap: Spacing.two,
     borderWidth: 1,
-    borderRadius: 14,
+    paddingBottom: 60,
+    borderRadius: 40,
   },
   imageWrapper: {
     flex: 1,
     width: '100%',
+    overflow: 'hidden',
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36
   },
   voteButton: {
-    alignItems: 'center',
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.four,
-    borderWidth: 1,
-    borderRadius: 10,
-  },
+  position: 'absolute',
+  bottom: -30,
+  left: 20,
+  paddingVertical: Spacing.four,
+  paddingHorizontal: Spacing.six,
+  backgroundColor: '#B2F2BB',
+  borderWidth: 2,
+  borderColor: '#000',
+  borderRadius: 16,
+},
+cardBottom: {
+  flex: 1,
+  padding: Spacing.two,
+  paddingTop: 60,
+  gap: Spacing.two,
+  borderWidth: 1,
+  borderRadius: 40,
+},
+imageWrapperBottom: {
+  flex: 1,
+  width: '100%',
+  overflow: 'hidden',
+  borderBottomLeftRadius: 36,
+  borderBottomRightRadius: 36,
+},
+voteButtonBottom: {
+  position: 'absolute',
+  top: -30,
+  right: 20,
+  paddingVertical: Spacing.four,
+  paddingHorizontal: Spacing.six,
+  backgroundColor: '#B2F2BB',
+  borderWidth: 2,
+  borderColor: '#000',
+  borderRadius: 16,
+},
+star: {
+  position: 'absolute',
+  bottom: 14,
+  right: 40,
+},
+starBottom: {
+  position: 'absolute',
+  top: 14,
+  left: 35,
+},
+
   disabled: {
     opacity: 0.5,
   },
   vs: {
     textAlign: 'center',
-    marginVertical: Spacing.two,
+    padding: 25,
   },
 });

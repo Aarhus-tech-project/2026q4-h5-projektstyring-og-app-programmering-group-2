@@ -46,8 +46,13 @@
       "expo-image",
       "expo-secure-store",
       "expo-asset",
-      ["expo-camera", { "cameraPermission": "Fotolo needs camera access to take photos." }]
-
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Fotolo needs camera access to take photos."
+        }
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

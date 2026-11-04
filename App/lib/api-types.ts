@@ -43,6 +43,97 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/Posts/favorites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PublicPostDTO"][];
+                        "application/json": components["schemas"]["PublicPostDTO"][];
+                        "text/json": components["schemas"]["PublicPostDTO"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/Posts/favorite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    postId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete: {
+            parameters: {
+                query?: {
+                    postId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/Posts/vote": {
         parameters: {
             query?: never;
@@ -180,9 +271,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ProfileDTO"];
-                        "application/json": components["schemas"]["ProfileDTO"];
-                        "text/json": components["schemas"]["ProfileDTO"];
+                        "text/plain": components["schemas"]["Profile"];
+                        "application/json": components["schemas"]["Profile"];
+                        "text/json": components["schemas"]["Profile"];
                     };
                 };
             };
@@ -485,7 +576,7 @@ export interface components {
             /** Format: date-time */
             issuedAt: string;
         };
-        ProfileDTO: {
+        Profile: {
             username: string;
             description: null | string;
             avatarThumbnailUrl: null | string;
