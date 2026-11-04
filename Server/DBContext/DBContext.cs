@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Post> Posts => Set<Post>();
     public DbSet<Matchup> Matchups => Set<Matchup>();
     public DbSet<Vote> Votes => Set<Vote>();
+    public DbSet<UserFavorite> UserFavorites => Set<UserFavorite>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -68,6 +69,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(v => v.CreatedAt).HasFilter("counted_at IS NULL");
 
             e.ToTable(t => t.HasCheckConstraint("ck_votes_different_posts", "winner_id <> loser_id"));
+        });
+
+        b.Entity<UserFavorite>(e =>
+        {
+            // One row per user and post, so a post can't be favorited twice by the same user
+            e.HasKey(f => new { f.UserId, f.PostId });
+            e.Property(f => f.CreatedAt).HasDefaultValueSql("now()");
+
+            e.HasOne(f => f.User).WithMany().HasForeignKey(f => f.UserId);
+            e.HasOne(f => f.Post).WithMany().HasForeignKey(f => f.PostId);
+
+            // The key covers lookups by user; this covers "who favorited this post"
+            e.HasIndex(f => f.PostId);
         });
     }
 }

@@ -300,6 +300,31 @@ namespace Server.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("UserFavorite", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("post_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("UserId", "PostId")
+                        .HasName("pk_user_favorites");
+
+                    b.HasIndex("PostId")
+                        .HasDatabaseName("ix_user_favorites_post_id");
+
+                    b.ToTable("user_favorites", (string)null);
+                });
+
             modelBuilder.Entity("Vote", b =>
                 {
                     b.Property<Guid>("MatchupId")
@@ -426,6 +451,27 @@ namespace Server.Migrations
                         .HasConstraintName("fk_users_media_avatar_hash");
 
                     b.Navigation("Avatar");
+                });
+
+            modelBuilder.Entity("UserFavorite", b =>
+                {
+                    b.HasOne("Post", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_favorites_posts_post_id");
+
+                    b.HasOne("User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_favorites_users_user_id");
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Vote", b =>

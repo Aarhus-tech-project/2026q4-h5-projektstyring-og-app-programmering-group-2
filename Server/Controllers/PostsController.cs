@@ -37,6 +37,30 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         return StatusCode(202, post.Id);
     }
 
+    [HttpGet("favorites")]
+    [Authorize]
+    public async Task<ActionResult<List<PublicPostDTO>>> Favorites()
+    {
+        List<Post> posts = await postsRepository.GetFavorites(User.GetUserId());
+        return posts.Select(ToDto).ToList();
+    }
+
+    [HttpPost("favorite")]
+    [Authorize]
+    public async Task<IActionResult> AddFavorite(Guid postId)
+    {
+        await postsRepository.CreateFavorite(User.GetUserId(), postId);
+        return NoContent();
+    }
+
+    [HttpDelete("favorite")]
+    [Authorize]
+    public async Task<IActionResult> DeleteFavorite(Guid postId)
+    {
+        await postsRepository.DeleteFavorite(User.GetUserId(), postId);
+        return NoContent();
+    }
+
     [HttpPost("vote")]
     [Authorize]
     public async Task<IActionResult> Vote(VoteRequest voteRequest)

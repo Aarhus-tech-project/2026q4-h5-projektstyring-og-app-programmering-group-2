@@ -14,4 +14,5 @@
     public class ImageTooLargeException() : ApiException("Image dimensions are too large", 413);
     public class UnsupportedImageException() : ApiException("Unsupported or corrupt image", 400);
     public class NotEnoughPostsException() : ApiException("Not enough posts to create a matchup", 404);
+    public class PostDoesntExistException() : ApiException("Post doesnt exist", 404);
 }
