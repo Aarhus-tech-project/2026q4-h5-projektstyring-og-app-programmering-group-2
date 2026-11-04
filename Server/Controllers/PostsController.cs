@@ -81,9 +81,9 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     [Authorize]
     public async Task<ActionResult<MatchupDTO>> Matchup()
     {
-        Matchup matchup = await postsRepository.CreateMatchup(User.GetUserId());
+        var (matchup, postA, postB) = await postsRepository.GetOrCreateMatchup(User.GetUserId());
 
-        return new MatchupDTO(matchup.Id, ToDto(matchup.PostA), ToDto(matchup.PostB), matchup.IssuedAt);
+        return new MatchupDTO(matchup.Id, ToDto(postA), ToDto(postB), matchup.IssuedAt);
     }
 
     [HttpGet("ranking")]
