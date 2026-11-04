@@ -9,7 +9,7 @@ namespace Server;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PostsController(ILogger<PostsController> logger, BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService, TokenService tokenService) : Controller
+public class PostsController(ILogger<PostsController> logger, BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService) : Controller
 {
     public record DescriptionRequest(string? Description);
     public record PostRequest(IFormFile File);
