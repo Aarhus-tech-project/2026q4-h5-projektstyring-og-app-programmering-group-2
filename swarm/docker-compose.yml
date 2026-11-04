@@ -169,10 +169,29 @@ services:
       - --web.enable-otlp-receiver
     volumes:
       - prometheus-data:/prometheus
+    configs:
+      - source: prometheus-config
+        target: /etc/prometheus/prometheus.yml
     networks: [backend]
     deploy:
       <<: *on-manager
       replicas: 1
+
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    command:
+      - --path.rootfs=/host
+    volumes:
+      - type: bind
+        source: /
+        target: /host
+        read_only: true
+    networks: [backend]
+    deploy:
+      mode: global
+      restart_policy:
+        condition: any
+        delay: 5s
 
   tempo:
     image: grafana/tempo:3.1.1
@@ -209,6 +228,10 @@ services:
     configs:
       - source: grafana-datasources
         target: /etc/grafana/provisioning/datasources/datasources.yaml
+      - source: grafana-dashboards
+        target: /etc/grafana/provisioning/dashboards/dashboards.yaml
+      - source: grafana-dashboard
+        target: /etc/grafana/dashboards/fotolo-overview.json
     networks: [backend]
     deploy:
       <<: *on-manager
@@ -226,8 +249,17 @@ configs:
     name: fotolo-tempo-config-v1
     file: ./tempo.yaml
   grafana-datasources:
-    name: fotolo-grafana-datasources-v1
+    name: fotolo-grafana-datasources-v3
     file: ./grafana-datasources.yaml
+  grafana-dashboards:
+    name: fotolo-grafana-dashboards-v1
+    file: ./grafana-dashboards.yaml
+  grafana-dashboard:
+    name: fotolo-grafana-dashboard-v2
+    file: ./grafana-dashboard.json
+  prometheus-config:
+    name: fotolo-prometheus-config-v1
+    file: ./prometheus.yml
 
 volumes:
   postgres18-data:

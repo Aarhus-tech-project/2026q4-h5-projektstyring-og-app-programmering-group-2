@@ -72,6 +72,10 @@ services:
     configs:
       - source: grafana-datasources
         target: /etc/grafana/provisioning/datasources/datasources.yaml
+      - source: grafana-dashboards
+        target: /etc/grafana/provisioning/dashboards/dashboards.yaml
+      - source: grafana-dashboard
+        target: /etc/grafana/dashboards/fotolo-overview.json
     depends_on:
       - loki
       - prometheus
@@ -109,6 +113,8 @@ configs:
           uid: prometheus
           url: http://prometheus:9090
           isDefault: true
+          jsonData:
+            timeInterval: 60s
         - name: Loki
           type: loki
           uid: loki
@@ -125,6 +131,7 @@ configs:
               datasourceUid: prometheus
         - name: Postgres
           type: grafana-postgresql-datasource
+          uid: postgres
           url: postgres:5432
           user: ${POSTGRES_USER:?see .env.example}
           jsonData:
@@ -132,6 +139,12 @@ configs:
             sslmode: disable
           secureJsonData:
             password: ${POSTGRES_PASSWORD:?see .env.example}
+
+  grafana-dashboards:
+    file: ./swarm/grafana-dashboards.yaml
+
+  grafana-dashboard:
+    file: ./swarm/grafana-dashboard.json
 
 volumes:
   postgres18-data:

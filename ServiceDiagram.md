@@ -19,13 +19,14 @@ flowchart LR
         worker["vote-worker<br/>same image, Role=voteworker<br/>(1 replica, no port)"]
         migrate["migrate<br/>EF migrations bundle<br/>(one-shot job per deploy)"]
 
-        db[("PostgreSQL 17")]
+        db[("PostgreSQL 18")]
 
         subgraph obs["Monitoring"]
             prom[("Prometheus<br/>metrics")]
             loki[("Loki<br/>logs")]
             tempo[("Tempo<br/>traces")]
             grafana["Grafana"]
+            nodeexp["node-exporter<br/>(every node)"]
         end
     end
 
@@ -50,6 +51,7 @@ flowchart LR
     grafana -.-> loki
     grafana -.-> tempo
     grafana -.-> db
+    prom -. "scrapes host CPU / RAM / disk" .-> nodeexp
 ```
 
 - **Deployment:** everything runs as one Docker Swarm stack, defined in `swarm/docker-compose.yml`. On every push to `main`, CI builds the `server` and `migrations` images for amd64 and arm64 and pushes them to GHCR. `docker stack deploy` pulls them. Stateful services (Postgres, Loki, Prometheus, Tempo, Grafana) are pinned to the manager node, because their volumes are local to it.
@@ -66,7 +68,7 @@ flowchart LR
 - **The app fetches media directly from Azure.** Media never goes through the stack. The DB stores only the hash, and the API builds the URLs.
 - **Credentials:** the backend authenticates to Azure with a connection string (`ConnectionStrings:Blobs`). The app never holds storage credentials.
 - **Postgres** runs as a single container with a volume on the manager node.
-- **Monitoring:** the backend and the worker push logs to Loki, metrics to Prometheus and traces to Tempo, all over OTLP. Grafana shows all three, plus app data queried straight from Postgres. Its port should be firewalled or reached over an SSH tunnel.
+- **Monitoring:** the backend and the worker push logs to Loki, metrics to Prometheus and traces to Tempo, all over OTLP. node-exporter runs on every node and Prometheus scrapes it for host CPU, RAM and disk. Grafana shows all of it, plus app data queried straight from Postgres, and loads the `Fotolo overview` dashboard from `swarm/grafana-dashboard.json` on startup. Its port should be firewalled or reached over an SSH tunnel.
 - **Local development** runs the same services with `docker compose` (`docker-compose.yml`), or just the infrastructure (`docker-compose.infra.yml`) while running the backend with `dotnet run`. Both point at a real Azure storage account. There is no local emulator.
 
 ## Media upload flow

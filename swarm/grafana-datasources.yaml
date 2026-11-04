@@ -6,6 +6,8 @@ datasources:
     uid: prometheus
     url: http://prometheus:9090
     isDefault: true
+    jsonData:
+      timeInterval: 60s
   - name: Loki
     type: loki
     uid: loki
@@ -22,6 +24,7 @@ datasources:
         datasourceUid: prometheus
   - name: Postgres
     type: grafana-postgresql-datasource
+    uid: postgres
     url: postgres:5432
     user: ${POSTGRES_USER}
     jsonData:

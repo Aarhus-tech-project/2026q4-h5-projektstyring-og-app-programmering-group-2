@@ -1,0 +1,6 @@
+scrape_configs:
+  - job_name: node
+    dns_sd_configs:
+      - names: [tasks.node-exporter]
+        type: A
+        port: 9100
