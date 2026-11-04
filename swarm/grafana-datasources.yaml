@@ -1,4 +1,4 @@
-# Grafana itself expands the ${...} below from its own environment (set in docker-compose.swarm.yml)
+# Grafana itself expands the ${...} below from its own environment (set in docker-compose.yml)
 apiVersion: 1
 datasources:
   - name: Prometheus

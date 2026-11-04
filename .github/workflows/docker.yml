@@ -16,7 +16,7 @@ jobs:
         include:
           - image: server
             context: ./Server
-          # EF migrations bundle, run as a one-shot job by docker-compose.swarm.yml
+          # EF migrations bundle, run as a one-shot job by swarm/docker-compose.yml
           - image: migrations
             context: ./Server
             target: migrations

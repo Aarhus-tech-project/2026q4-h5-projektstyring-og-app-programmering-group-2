@@ -2,14 +2,16 @@
 # worker and (optionally) cloudflared. Same services as docker-compose.yml, but it pulls the images
 # CI pushes to GHCR instead of building them, since `docker stack deploy` can't build.
 #
-# One-time setup on the manager node:
+# This folder is everything the server needs: copy all of swarm/ to the manager node, then
 #
-#   docker swarm init
+#   cp .env.example .env              # and fill it in
+#   docker swarm init                 # once
 #
-# Deploy or update. `docker stack deploy` does not read .env by itself, so load it into the shell first:
+# Deploy or update, from inside the folder. `docker stack deploy` does not read .env by itself,
+# so load it into the shell first:
 #
 #   set -a; . ./.env; set +a
-#   docker stack deploy -c docker-compose.swarm.yml --with-registry-auth --detach=false fotolo
+#   docker stack deploy -c docker-compose.yml --with-registry-auth --detach=false fotolo
 #
 # The GHCR packages are private by default. Either make them public or `docker login ghcr.io` first;
 # --with-registry-auth passes that login on to the other nodes.
@@ -192,7 +194,7 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?see .env.example}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?see .env.example}
-      # Read by swarm/grafana-datasources.yaml
+      # Read by grafana-datasources.yaml
       POSTGRES_USER: ${POSTGRES_USER:?see .env.example}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?see .env.example}
       POSTGRES_DB: ${POSTGRES_DB:-app}
@@ -222,10 +224,10 @@ networks:
 configs:
   tempo-config:
     name: fotolo-tempo-config-v1
-    file: ./swarm/tempo.yaml
+    file: ./tempo.yaml
   grafana-datasources:
     name: fotolo-grafana-datasources-v1
-    file: ./swarm/grafana-datasources.yaml
+    file: ./grafana-datasources.yaml
 
 volumes:
   postgres-data:
