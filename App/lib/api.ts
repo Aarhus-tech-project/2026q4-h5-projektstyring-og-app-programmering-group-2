@@ -26,16 +26,20 @@ api.use({
 
 async function refresh() {
   const refreshToken = await SecureStore.getItemAsync("refreshtoken");
+  console.log(refreshToken);
   if (!refreshToken) return null;
 
-  const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}api/login/refresh`, {
+  const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL?.replace(/\/+$/, "")}/api/login/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(refreshToken),
   });
+  console.log(res);
   if (!res.ok) return null;
 
+  
   const data = await res.json();
+  console.log(data.refreshToken);
   await SecureStore.setItemAsync("accesstoken", data.accessToken);
   await SecureStore.setItemAsync("refreshtoken", data.refreshToken);
   return data.accessToken;
