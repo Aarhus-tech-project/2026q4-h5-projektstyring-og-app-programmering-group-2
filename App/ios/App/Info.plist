@@ -38,6 +38,12 @@
 	<string>12.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Fotolo needs camera access to take photos.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Allow Fotolo to save photos you take.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow Fotolo to use your photos for your profile picture.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

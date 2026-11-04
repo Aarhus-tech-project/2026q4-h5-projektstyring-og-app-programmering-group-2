@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
+using Server.Exceptions;
 using SkiaSharp;
 using ThumbHashes;
 
@@ -19,6 +20,9 @@ public sealed record ProcessedMedia(Media Media, Stream Original, MemoryStream P
 
 public class MediaService
 {
+    private const long MaxPixels = 50_000_000;
+    private static readonly SemaphoreSlim ProcessingSlots = new(Environment.ProcessorCount);
+
     public async Task<ProcessedMedia> Process(IFormFile file, int maxSize = 2048, int thumbnailSize = 400, int quality = 80)
     {
         // Read the upload once. Streams from file.OpenReadStream() share one underlying buffer,
@@ -32,8 +36,24 @@ public class MediaService
 
         var exif = ReadExif(bytes);
 
-        using var codec = SKCodec.Create(new MemoryStream(bytes, writable: false)) ?? throw new InvalidDataException("Unsupported image format");
-        using var source = SKBitmap.Decode(codec);
+        using var codec = SKCodec.Create(new MemoryStream(bytes, writable: false)) ?? throw new UnsupportedImageException();
+        if ((long)codec.Info.Width * codec.Info.Height > MaxPixels)
+            throw new ImageTooLargeException();
+
+        await ProcessingSlots.WaitAsync();
+        try
+        {
+            return Process(bytes, file.Length, exif, codec, maxSize, thumbnailSize, quality);
+        }
+        finally
+        {
+            ProcessingSlots.Release();
+        }
+    }
+
+    private static ProcessedMedia Process(byte[] bytes, long originalSize, Exif exif, SKCodec codec, int maxSize, int thumbnailSize, int quality)
+    {
+        using var source = SKBitmap.Decode(codec) ?? throw new UnsupportedImageException();
         using var sourceImage = SKImage.FromBitmap(source);
 
         // Bake the EXIF orientation into the pixels, since the WebP encoder writes no EXIF
@@ -63,7 +83,7 @@ public class MediaService
             Height = info.Height,
             Thumbhash = Thumbhash(image),
             OriginalFormat = codec.EncodedFormat.ToString().ToLowerInvariant(),
-            OriginalSizeBytes = file.Length,
+            OriginalSizeBytes = originalSize,
             CameraMake = exif.Make,
             CameraModel = exif.Model,
             TakenAt = exif.TakenAt,
@@ -131,7 +151,7 @@ public class MediaService
             using var stream = new MemoryStream(bytes, writable: false);
             directories = ImageMetadataReader.ReadMetadata(stream);
         }
-        catch (ImageProcessingException)
+        catch (Exception e) when (e is ImageProcessingException or IOException)
         {
             return new Exif(null, null, null);
         }

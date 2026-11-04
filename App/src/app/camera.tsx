@@ -7,13 +7,13 @@ import { useRef, useState } from 'react';
 import { Button, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { api } from '../../lib/api';
 
-import * as MediaLibrary from 'expo-media-library/legacy';
+import { Asset, usePermissions } from 'expo-media-library';
 
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
 export default function TabTwoScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [, requestMediaPermission] = MediaLibrary.usePermissions();
+  const [, requestMediaPermission] = usePermissions();
   const camera = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
 
@@ -39,7 +39,7 @@ export default function TabTwoScreen() {
 
   const submitFoto = async () => {
     const file = new File(uri!);
-    await MediaLibrary.saveToLibraryAsync(file.uri);
+    await Asset.create(file.uri);
 
     const form = new FormData();
     form.append('File', file);

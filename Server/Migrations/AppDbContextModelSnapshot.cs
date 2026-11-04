@@ -153,6 +153,12 @@ namespace Server.Migrations
                         .HasColumnType("bytea")
                         .HasColumnName("media_hash");
 
+                    b.Property<double>("RandKey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("double precision")
+                        .HasColumnName("rand_key")
+                        .HasDefaultValueSql("random()");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
                         .HasColumnName("user_id");
@@ -164,8 +170,16 @@ namespace Server.Migrations
                     b.HasKey("Id")
                         .HasName("pk_posts");
 
+                    b.HasIndex("Elo")
+                        .HasDatabaseName("ix_posts_elo")
+                        .HasFilter("deleted_at IS NULL");
+
                     b.HasIndex("MediaHash")
                         .HasDatabaseName("ix_posts_media_hash");
+
+                    b.HasIndex("RandKey")
+                        .HasDatabaseName("ix_posts_rand_key")
+                        .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_posts_user_id");
