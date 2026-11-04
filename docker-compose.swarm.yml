@@ -1,0 +1,235 @@
+# Full stack for Docker Swarm: Postgres, the observability stack, migrations, the API, the vote
+# worker and (optionally) cloudflared. Same services as docker-compose.yml, but it pulls the images
+# CI pushes to GHCR instead of building them, since `docker stack deploy` can't build.
+#
+# One-time setup on the manager node:
+#
+#   docker swarm init
+#
+# Deploy or update. `docker stack deploy` does not read .env by itself, so load it into the shell first:
+#
+#   set -a; . ./.env; set +a
+#   docker stack deploy -c docker-compose.swarm.yml --with-registry-auth --detach=false fotolo
+#
+# The GHCR packages are private by default. Either make them public or `docker login ghcr.io` first;
+# --with-registry-auth passes that login on to the other nodes.
+#
+# Volumes are local to the node they're created on, so every stateful service is pinned to the
+# manager. With several managers, add a node label and constrain on that instead.
+
+x-postgres-connection: &postgres-connection "Host=postgres;Port=5432;Database=${POSTGRES_DB:-app};Username=${POSTGRES_USER:?see .env.example};Password=${POSTGRES_PASSWORD:?see .env.example}"
+
+x-server-image: &server-image ghcr.io/aarhus-tech-project/2026q4-h5-projektstyring-og-app-programmering-group-2/server:${IMAGE_TAG:-latest}
+
+x-otlp-env: &otlp-env
+  Otlp__LogsEndpoint: http://loki:3100/otlp/v1/logs
+  Otlp__MetricsEndpoint: http://prometheus:9090/api/v1/otlp/v1/metrics
+  Otlp__TracesEndpoint: http://tempo:4318/v1/traces
+
+x-on-manager: &on-manager
+  placement:
+    constraints:
+      - node.role == manager
+  restart_policy:
+    condition: any
+    delay: 5s
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    networks: [backend]
+    deploy:
+      <<: *on-manager
+      replicas: 1
+      update_config:
+        order: stop-first   # two Postgres on one data directory corrupts it
+
+  # Swarm ignores depends_on, so nothing waits for this. It retries until Postgres is up, and the
+  # server/worker restart until the schema is there. Runs once per `docker stack deploy`.
+  # The retry window is ~10 min on purpose: on a fresh node, pulling the Postgres image alone can
+  # take minutes, and Swarm only gives `postgres` a DNS name once its healthcheck passes
+  migrate:
+    image: ghcr.io/aarhus-tech-project/2026q4-h5-projektstyring-og-app-programmering-group-2/migrations:${IMAGE_TAG:-latest}
+    environment:
+      ConnectionStrings__Postgres: *postgres-connection
+    networks: [backend]
+    deploy:
+      mode: replicated-job
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 60
+
+  server:
+    image: *server-image
+    command: ["--Role=api"]
+    environment:
+      <<: *otlp-env
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__Postgres: *postgres-connection
+      ConnectionStrings__Blobs: ${BLOBS_CONNECTION_STRING:?see .env.example}
+      Jwt__Key: ${JWT_KEY:?see .env.example}
+    # Swarm starts the server before Postgres is up (no depends_on). The warm-up query in
+    # Program.cs then throws and the process hangs instead of exiting, so without this check a
+    # task can sit at "Running" forever without listening. Plain TCP probe, the image has no curl
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    ports:
+      # Swarm's routing mesh: reachable on this port on every node, load-balanced over the replicas
+      - target: 8080
+        published: ${SERVER_PORT:-8080}
+        protocol: tcp
+        mode: ingress
+    networks: [backend]
+    deploy:
+      replicas: ${SERVER_REPLICAS:-2}
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: any
+        delay: 5s
+
+  # Same image as the server, started as the vote worker. Must stay at exactly one replica, also
+  # during updates (stop-first): votes have to be counted one at a time, in order
+  vote-worker:
+    image: *server-image
+    command: ["--Role=voteworker"]
+    environment:
+      <<: *otlp-env
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__Postgres: *postgres-connection
+    networks: [backend]
+    deploy:
+      replicas: 1
+      update_config:
+        order: stop-first
+        failure_action: rollback
+      rollback_config:
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+
+  # Cloudflare Tunnel to the server, as in ServiceDiagram.md. Off by default: set
+  # CLOUDFLARE_TUNNEL_TOKEN and CLOUDFLARED_REPLICAS=2, and point the tunnel's public hostname
+  # at http://server:8080
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    networks: [backend]
+    deploy:
+      replicas: ${CLOUDFLARED_REPLICAS:-0}
+      restart_policy:
+        condition: any
+        delay: 5s
+
+  loki:
+    image: grafana/loki:latest
+    command:
+      - -config.file=/etc/loki/local-config.yaml
+      - -reporting.enabled=false
+    volumes:
+      - loki-data:/loki
+    networks: [backend]
+    deploy:
+      <<: *on-manager
+      replicas: 1
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-otlp-receiver
+    volumes:
+      - prometheus-data:/prometheus
+    networks: [backend]
+    deploy:
+      <<: *on-manager
+      replicas: 1
+
+  tempo:
+    image: grafana/tempo:2.8.1
+    user: "0"
+    command:
+      - -config.file=/etc/tempo/tempo.yaml
+    volumes:
+      - tempo-data:/var/tempo
+    configs:
+      - source: tempo-config
+        target: /etc/tempo/tempo.yaml
+    networks: [backend]
+    deploy:
+      <<: *on-manager
+      replicas: 1
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?see .env.example}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?see .env.example}
+      # Read by swarm/grafana-datasources.yaml
+      POSTGRES_USER: ${POSTGRES_USER:?see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+    ports:
+      # Not meant to be public: firewall this port, or drop it and use an SSH tunnel
+      - target: 3000
+        published: ${GRAFANA_PORT:-3000}
+        protocol: tcp
+        mode: ingress
+    volumes:
+      - grafana-data:/var/lib/grafana
+    configs:
+      - source: grafana-datasources
+        target: /etc/grafana/provisioning/datasources/datasources.yaml
+    networks: [backend]
+    deploy:
+      <<: *on-manager
+      replicas: 1
+
+networks:
+  backend:
+    driver: overlay
+    attachable: true   # lets `docker run --network fotolo_backend ...` join for debugging
+
+# Swarm configs can't be changed in place. After editing one of these files, bump the -vN in its
+# name or the deploy fails with "only updates to Labels are allowed"
+configs:
+  tempo-config:
+    name: fotolo-tempo-config-v1
+    file: ./swarm/tempo.yaml
+  grafana-datasources:
+    name: fotolo-grafana-datasources-v1
+    file: ./swarm/grafana-datasources.yaml
+
+volumes:
+  postgres-data:
+  loki-data:
+  prometheus-data:
+  grafana-data:
+  tempo-data:

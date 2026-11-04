@@ -16,6 +16,10 @@ jobs:
         include:
           - image: server
             context: ./Server
+          # EF migrations bundle, run as a one-shot job by docker-compose.swarm.yml
+          - image: migrations
+            context: ./Server
+            target: migrations
     steps:
       - uses: actions/checkout@v7
 
@@ -38,6 +42,7 @@ jobs:
       - uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.context }}
+          target: ${{ matrix.target }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
