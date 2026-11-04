@@ -1,5 +1,5 @@
 import { ExpandableImage } from '@/components/ui/expandable-image';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
@@ -8,6 +8,7 @@ import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { getRanking, RankedPost } from '../../lib/api';
 import { SegmentedControl } from '@expo/ui/community/segmented-control'
+import { useFocusEffect } from 'expo-router';
 
 
 
@@ -59,14 +60,14 @@ export default function RankingScreen() {
   const [top, setTop] = useState<RankedPost[]>([]);
   const [worst, setWorst] = useState<RankedPost[]>([]);
   
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     Promise.all([getRanking('top'), getRanking('worst')])
       .then(([topPosts, worstPosts]) => {
         setTop(topPosts);
         setWorst(worstPosts);
       })
       .catch((error) => console.error('Failed to load ranking', error));
-  }, []);
+  }, []));
 
   const posts = tab === 0 ? top : worst;
 
