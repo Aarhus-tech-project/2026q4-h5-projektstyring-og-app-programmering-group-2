@@ -24,7 +24,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     [Authorize]
     [RequestSizeLimit(MaxUploadBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
-    public async Task<IActionResult> Post([FromForm]PostRequest postRequest)
+    public async Task<IActionResult> AddPost([FromForm]PostRequest postRequest)
     {
         await using var processed = await mediaService.Process(postRequest.File);
 
@@ -35,6 +35,14 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         Post post = await postsRepository.CreatePost(User.GetUserId(), processed.Media);
 
         return StatusCode(202, post.Id);
+    }
+
+    [HttpDelete]
+    [Authorize]
+    public async Task<IActionResult> DeletePost(Guid postId)
+    {
+        await postsRepository.DeletePost(User.GetUserId(), postId);
+        return NoContent();
     }
 
     [HttpGet("favorites")]

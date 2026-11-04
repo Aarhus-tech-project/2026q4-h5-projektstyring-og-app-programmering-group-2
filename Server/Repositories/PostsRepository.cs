@@ -66,6 +66,15 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
 
     }
 
+    public async Task DeletePost(Guid userId, Guid postId)
+    {
+        int updated = await db.Posts
+            .Where(p => p.Id == postId && p.UserId == userId)
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.DeletedAt, p => p.DeletedAt ?? DateTimeOffset.UtcNow));
+
+        if (updated == 0) throw new PostDoesntExistException();
+    }
+
     public async Task DeleteFavorite(Guid userId, Guid postId)
     {
         await db.UserFavorites
