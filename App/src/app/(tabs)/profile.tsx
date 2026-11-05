@@ -9,16 +9,16 @@ import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutLeft } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getMyProfile, Profile as ProfileData, updateDescription, uploadAvatar } from '../../lib/api';
-
-
+import { getMyProfile, Profile as ProfileData, signOut, updateDescription, uploadAvatar } from '../../../lib/api';
 
 export default function Profile() {
   const theme = useTheme()
   const [tab, setTab] = useState<'photos' | 'favorites'>('photos')
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [editing, setEditing] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
 
   useFocusEffect(useCallback(() => {
@@ -74,6 +74,10 @@ export default function Profile() {
           <ThemedText type='subtitle'>{profile?.username}</ThemedText>
           </View>
           <View style={styles.header}>
+            <Pressable onPress={() => setSettingsOpen(true)} style={styles.menuButton}>
+              <SymbolView name={{ ios: 'line.3.horizontal', android: 'menu', web: 'menu' }} tintColor={theme.text} size={24} />
+            </Pressable>
+
             <View style={styles.headerLeft}>
               <ThemedView type="backgroundElement" style={styles.eloBorder}>
                 <ThemedText type="smallBold" style={styles.eloText} adjustsFontSizeToFit>{Math.round(Number(profile?.elo ?? 1500))} ELO</ThemedText>
@@ -84,17 +88,18 @@ export default function Profile() {
                 <ThemedText type="smallBold" style={{ color: '#F87171' }}>{profile?.losses ?? 0} L</ThemedText>
               </ThemedText>
             </View>
+
             <View style={styles.headerRight}>
-            <View style={[styles.profilePic, { borderColor: theme.border }]}>
-              {profile?.avatarUrl && profile.avatarThumbnailUrl && (
-                <ExpandableImage thumbnailUrl={profile.avatarThumbnailUrl} imageUrl={profile.avatarUrl} borderRadius={55} />
-              )}
-            </View>
-            <Pressable onPress={editAvatar} style={styles.editBadge}>
-            <ThemedView type="backgroundElement" style={[styles.editBadgeInner, { borderColor: theme.border }]}>
-              <SymbolView name={{ ios: 'pencil', android: 'edit', web: 'edit' }} tintColor={theme.text} size={14} />
-            </ThemedView>
-          </Pressable>
+              <View style={[styles.profilePic, { borderColor: theme.border }]}>
+                {profile?.avatarUrl && profile.avatarThumbnailUrl && (
+                  <ExpandableImage thumbnailUrl={profile.avatarThumbnailUrl} imageUrl={profile.avatarUrl} borderRadius={55} />
+                )}
+              </View>
+              <Pressable onPress={editAvatar} style={styles.editBadge}>
+                <ThemedView type="backgroundElement" style={[styles.editBadgeInner, { borderColor: theme.border }]}>
+                  <SymbolView name={{ ios: 'pencil', android: 'edit', web: 'edit' }} tintColor={theme.text} size={14} />
+                </ThemedView>
+              </Pressable>
             </View>
           </View>
          <Pressable onPress={() => setEditing(true)}>
@@ -104,8 +109,6 @@ export default function Profile() {
             </ThemedText>
           </ThemedView>
         </Pressable>
-
-
           <View style={[styles.body, {borderColor: theme.border}]}>
             <Pressable style={styles.tab} onPress={() => setTab('photos')}>
               <SymbolView
@@ -132,11 +135,30 @@ export default function Profile() {
     onSave={saveDescription}
     onClose={() => setEditing(false)}
   />
+  
 )}
+  {settingsOpen && (
+    <>
+      <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.backdrop}>
+        <Pressable style={{ flex: 1 }} onPress={() => setSettingsOpen(false)} />
+      </Animated.View>
+      <Animated.View
+        entering={SlideInLeft}
+        exiting={SlideOutLeft}
+        style={[styles.panel, { backgroundColor: theme.background, borderColor: theme.border }]}>
+        <ThemedText type="subtitle">Settings</ThemedText>
+        <Pressable onPress={signOut}>
+          <ThemedText style={{ color: '#F87171' }}>Log out</ThemedText>
+        </Pressable>
+      </Animated.View>
+    </>
+  )}
+
     </SafeAreaView>
     </ThemedView>
   );
 }
+
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
@@ -299,4 +321,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  backdrop: {
+  ...StyleSheet.absoluteFill,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  panel: {
+    position: 'absolute',
+    top: 25,
+    bottom: 0,
+    left: 0,
+    width: '37%',
+    padding: Spacing.four,
+    gap: Spacing.three,
+    borderRightWidth: 1,
+  },
+  menuButton: {
+  alignSelf: 'flex-start',
+},
 });

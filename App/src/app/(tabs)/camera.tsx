@@ -5,7 +5,7 @@ import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'ex
 import { Image } from 'expo-image';
 import { useRef, useState } from 'react';
 import { Button, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
-import { api } from '../../lib/api';
+import { api } from '../../../lib/api';
 
 import { Asset, usePermissions } from 'expo-media-library';
 

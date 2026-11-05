@@ -10,7 +10,7 @@ import { SymbolView } from 'expo-symbols';
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getRanking, RankedPost } from '../../lib/api';
+import { getRanking, RankedPost } from '../../../lib/api';
 
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 

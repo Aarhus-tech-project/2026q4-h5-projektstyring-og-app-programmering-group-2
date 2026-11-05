@@ -1,7 +1,8 @@
+import { File } from "expo-file-system";
+import { router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import createClient from "openapi-fetch";
 import type { components, paths } from "./api-types";
-import { File } from "expo-file-system";
 export const api = createClient<paths>({
   baseUrl: process.env.EXPO_PUBLIC_API_URL,
 });
@@ -18,9 +19,10 @@ api.use({
         accessToken = await (refreshing ??= refresh().finally(() => (refreshing = null)));
       }
     }
-
     if (accessToken) request.headers.set("Authorization", `Bearer ${accessToken}`);
-    return request;
+    {
+      return request;
+    }
   },
 });
 
@@ -35,6 +37,10 @@ async function refresh() {
     body: JSON.stringify(refreshToken),
   });
   console.log(res);
+  if (res.status === 401) {
+    await logout();
+    return null;
+  }
   if (!res.ok) return null;
 
   
@@ -71,6 +77,20 @@ export async function isLoggedIn() {
 }
 // ------------------------------------------------------------
 
+export async function signOut() {
+  const refreshToken = await SecureStore.getItemAsync("refreshtoken");
+  await api.POST("/api/Login/logout", {
+    params: { header: { refreshToken: refreshToken ?? "" } },
+  });
+  await logout();
+}
+
+async function logout() {
+  await SecureStore.deleteItemAsync("accesstoken");
+  await SecureStore.deleteItemAsync("refreshtoken");
+  router.push("/login");
+}
+
 export type Matchup = components["schemas"]["MatchupDTO"];
 
 export async function getMatchup() {
@@ -96,6 +116,7 @@ export async function getMyProfile() {
   if (error) throw error;
   return data;
 }
+
 //-------------------------------------------------------------
 
 //-------------------------------------------------------------
