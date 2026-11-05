@@ -1,6 +1,6 @@
 import { ExpandableImage } from '@/components/ui/expandable-image';
 import { useCallback, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -9,19 +9,28 @@ import { useTheme } from '@/hooks/use-theme';
 import { getRanking, RankedPost } from '../../lib/api';
 import { SegmentedControl } from '@expo/ui/community/segmented-control'
 import { useFocusEffect } from 'expo-router';
+import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
+import { SymbolView } from 'expo-symbols';
 
-
+const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
 const medalColors = ['#FFD84D', '#C9CED6', '#E8A15C'];
+const shameColors = ['#EF4444', '#DC2626', '#B91C1C'];
+
+const periods = ['Trending', 'This week', 'All time'];
+
+type Trend = 'up' | 'down';
 
 type LeaderboardRowProps = {
   placement: number;
   photo: RankedPost;
+  medals: string[];
+  trend?: Trend;
 };
 
-function LeaderboardRow({ placement, photo }: LeaderboardRowProps) {
+function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps) {
   const theme = useTheme();
-  const medal = medalColors[placement - 1];
+  const medal = medals[placement - 1];
 
   return (
     <View style={styles.row}>
@@ -43,6 +52,11 @@ function LeaderboardRow({ placement, photo }: LeaderboardRowProps) {
         <View style={styles.info}>
 
           <ThemedText type="small" themeColor="textSecondary">
+            {trend && (
+              <ThemedText type="smallBold" style={{ color: trend === 'up' ? '#4ADE80' : '#F87171' }}>
+                {trend === 'up' ? '▲  ' : '▼  '}
+              </ThemedText>
+            )}
             <ThemedText type="smallBold">{photo.elo} Elo</ThemedText>
             {'  ·  '}
             <ThemedText type="small" style={{ color: '#4ADE80' }}>{photo.wins} wins</ThemedText>
@@ -55,8 +69,52 @@ function LeaderboardRow({ placement, photo }: LeaderboardRowProps) {
   );
 }
 
+function FlipButton({ worst, onPress }: { worst: boolean; onPress: () => void }) {
+  const theme = useTheme();
+  const icon = (
+    <SymbolView
+      name={{ ios: worst ? 'arrow.down' : 'arrow.up', android: worst ? 'arrow_downward' : 'arrow_upward', web: worst ? 'arrow_downward' : 'arrow_upward' }}
+      tintColor={worst ? '#F87171' : theme.text}
+      size={18}
+    />
+  );
+
+  return (
+    <Pressable onPress={onPress} hitSlop={8}>
+      {useGlass ? (
+        <GlassView
+          style={styles.flip}
+          glassEffectStyle="regular"
+          isInteractive
+          tintColor={worst ? 'rgba(239,68,68,0.25)' : undefined}>
+          {icon}
+        </GlassView>
+      ) : (
+        <View
+          style={[
+            styles.flip,
+            {
+              backgroundColor: worst ? 'rgba(239,68,68,0.15)' : theme.backgroundElement,
+              borderColor: worst ? 'rgba(239,68,68,0.5)' : theme.border,
+              borderWidth: 1,
+            },
+          ]}>
+          {icon}
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
+function trendingMix(top: RankedPost[], worst: RankedPost[]): { post: RankedPost; trend: Trend }[] {
+  const rising = top.slice(0, 5).map((post) => ({ post, trend: 'up' as const }));
+  const falling = worst.slice(0, 5).map((post) => ({ post, trend: 'down' as const }));
+  return rising.flatMap((r, i) => (falling[i] ? [r, falling[i]] : [r])).concat(falling.slice(rising.length));
+}
+
 export default function RankingScreen() {
-  const [tab, setTab] = useState(0);
+  const [period, setPeriod] = useState(0);
+  const [worstMode, setWorstMode] = useState(false);
   const [top, setTop] = useState<RankedPost[]>([]);
   const [worst, setWorst] = useState<RankedPost[]>([]);
   
@@ -69,22 +127,36 @@ export default function RankingScreen() {
       .catch((error) => console.error('Failed to load ranking', error));
   }, []));
 
-  const posts = tab === 0 ? top : worst;
+  const trending = period === 0;
+  const showWorst = !trending && worstMode;
+  const rows: { post: RankedPost; trend?: Trend }[] = trending
+    ? trendingMix(top, worst)
+    : (showWorst ? worst : top).map((post) => ({ post }));
 
   return (
     <ThemedView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <SegmentedControl
-          values={['Top Rated', 'Worst Rated']}
-          selectedIndex={tab}
-          onChange={(event) => setTab(event.nativeEvent.selectedSegmentIndex)}
-          appearance="dark"
-          style={styles.segmented}
-        />
+        <View style={styles.topBar}>
+          <SegmentedControl
+            values={periods}
+            selectedIndex={period}
+            onChange={(event) => setPeriod(event.nativeEvent.selectedSegmentIndex)}
+            appearance="dark"
+            style={styles.segmented}
+          />
+          {!trending && <FlipButton worst={worstMode} onPress={() => setWorstMode(!worstMode)} />}
+        </View>
         <FlatList
-          data={posts}
-          keyExtractor={(photo) => photo.id}
-          renderItem={({ item, index }) => <LeaderboardRow placement={index + 1} photo={item} />}
+          data={rows}
+          keyExtractor={(row) => `${row.trend ?? ''}${row.post.id}`}
+          renderItem={({ item, index }) => (
+            <LeaderboardRow
+              placement={index + 1}
+              photo={item.post}
+              medals={showWorst ? shameColors : medalColors}
+              trend={item.trend}
+            />
+          )}
           contentContainerStyle={styles.list}
         />
       </SafeAreaView>
@@ -93,9 +165,23 @@ export default function RankingScreen() {
 }
 
 const styles = StyleSheet.create({
-  segmented: {
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
     marginHorizontal: Spacing.four,
     marginVertical: Spacing.three,
+  },
+  segmented: {
+    flex: 1,
+  },
+  flip: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   list: {
     gap: Spacing.three,
