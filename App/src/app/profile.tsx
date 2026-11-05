@@ -1,17 +1,16 @@
-import { Pressable, StyleSheet, TextInput, View, FlatList } from 'react-native';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import * as ImagePicker from 'expo-image-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { Image } from 'expo-image';
-import { useTheme } from '@/hooks/use-theme';
-import { useCallback, useEffect, useState } from 'react';
-import { SymbolView } from 'expo-symbols';
+import { ThemedView } from '@/components/themed-view';
 import { ExpandableImage } from '@/components/ui/expandable-image';
-import { getMyProfile, Profile as ProfileData, updateDescription, uploadAvatar } from '../../lib/api';
-import { useFocusEffect } from 'expo-router';
 import { ModalDescription } from '@/components/ui/modalDescription';
+import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import * as ImagePicker from 'expo-image-picker';
+import { useFocusEffect } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
+import { useCallback, useState } from 'react';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { getMyProfile, Profile as ProfileData, updateDescription, uploadAvatar } from '../../lib/api';
 
 
 
@@ -27,7 +26,7 @@ export default function Profile() {
       .catch((error) => console.error('Failed to load profile posts', error))
   }, []))
 
-  async function pickAvatar() {
+  async function editAvatar() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
@@ -43,6 +42,11 @@ export default function Profile() {
     } catch (error) {
       console.error('Failed to upload avatar', error)
     }
+  }
+
+  async function showAvatar() 
+  {
+
   }
 
   async function saveDescription(text: string) {
@@ -86,18 +90,16 @@ export default function Profile() {
               </ThemedText>
             </View>
             <View style={styles.headerRight}>
-             <Pressable onPress={pickAvatar}>
-                {({ pressed }) => (
-                  <>
-                    <Image
-                      source={profile?.avatarThumbnailUrl ?? require('./Markus.png')}
-                      style={[styles.profilePic, { borderColor: theme.border }]}
-                      contentFit="cover"
-                    />
-                    {pressed && <View style={styles.profilePicPressed} />}
-                  </>
-                )}
-              </Pressable>
+            <View style={[styles.profilePic, { borderColor: theme.border }]}>
+              {profile?.avatarUrl && profile.avatarThumbnailUrl && (
+                <ExpandableImage thumbnailUrl={profile.avatarThumbnailUrl} imageUrl={profile.avatarUrl} borderRadius={55} />
+              )}
+            </View>
+            <Pressable onPress={editAvatar} style={styles.editBadge}>
+            <ThemedView type="backgroundElement" style={[styles.editBadgeInner, { borderColor: theme.border }]}>
+              <SymbolView name={{ ios: 'pencil', android: 'edit', web: 'edit' }} tintColor={theme.text} size={14} />
+            </ThemedView>
+          </Pressable>
             </View>
           </View>
          <Pressable onPress={() => setEditing(true)}>
@@ -288,5 +290,18 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     alignSelf: 'center',
+  },
+  editBadge: {
+  position: 'absolute',
+  right: 0,
+  bottom: 0,
+  },
+  editBadgeInner: {
+    width: 35,
+    height: 35,
+    borderRadius: 15,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
