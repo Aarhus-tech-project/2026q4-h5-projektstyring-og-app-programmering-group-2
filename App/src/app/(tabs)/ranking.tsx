@@ -1,15 +1,16 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ExpandableImage } from '@/components/ui/expandable-image';
+import { PeriodPicker } from '@/components/ui/period-picker';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { SegmentedControl } from '@expo/ui/community/segmented-control';
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getRanking, RankedPost } from '../../../lib/api';
 
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
@@ -69,8 +70,9 @@ function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps
   );
 }
 
-function FlipButton({ worst, onPress }: { worst: boolean; onPress: () => void }) {
+function FlipButton({ worst, size, onPress }: { worst: boolean; size: number; onPress: () => void }) {
   const theme = useTheme();
+  const shape = { width: size, height: size, borderRadius: size / 2 };
   const icon = (
     <SymbolView
       name={{ ios: worst ? 'arrow.down' : 'arrow.up', android: worst ? 'arrow_downward' : 'arrow_upward', web: worst ? 'arrow_downward' : 'arrow_upward' }}
@@ -83,7 +85,7 @@ function FlipButton({ worst, onPress }: { worst: boolean; onPress: () => void })
     <Pressable onPress={onPress} hitSlop={8}>
       {useGlass ? (
         <GlassView
-          style={styles.flip}
+          style={[styles.flip, shape]}
           glassEffectStyle="regular"
           isInteractive
           tintColor={worst ? 'rgba(239,68,68,0.25)' : undefined}>
@@ -93,6 +95,7 @@ function FlipButton({ worst, onPress }: { worst: boolean; onPress: () => void })
         <View
           style={[
             styles.flip,
+            shape,
             {
               backgroundColor: worst ? 'rgba(239,68,68,0.15)' : theme.backgroundElement,
               borderColor: worst ? 'rgba(239,68,68,0.5)' : theme.border,
@@ -117,6 +120,9 @@ export default function RankingScreen() {
   const [worstMode, setWorstMode] = useState(false);
   const [top, setTop] = useState<RankedPost[]>([]);
   const [worst, setWorst] = useState<RankedPost[]>([]);
+  const [barHeight, setBarHeight] = useState(36);
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + Spacing.three * 2 + barHeight;
   
   useFocusEffect(useCallback(() => {
     Promise.all([getRanking('top'), getRanking('worst')])
@@ -133,52 +139,79 @@ export default function RankingScreen() {
     ? trendingMix(top, worst)
     : (showWorst ? worst : top).map((post) => ({ post }));
 
+  const flipProgress = useSharedValue(trending ? 0 : 1);
+  const flipVisible = useSharedValue(trending ? 0 : 1);
+  const flipSize = useSharedValue(barHeight);
+
+  useEffect(() => {
+    flipSize.set(barHeight);
+  }, [barHeight, flipSize]);
+
+  useEffect(() => {
+    const timing = { duration: 220, easing: Easing.out(Easing.cubic) };
+    if (trending) {
+      flipVisible.set(0);
+      flipProgress.set(withTiming(0, timing));
+    } else {
+      flipProgress.set(withTiming(1, timing, (finished) => {
+        if (finished) flipVisible.set(1);
+      }));
+    }
+  }, [trending, flipProgress, flipVisible]);
+
+  const flipStyle = useAnimatedStyle(() => ({
+    width: flipProgress.get() * (flipSize.get() + Spacing.two),
+    opacity: flipVisible.get(),
+  }));
+
   return (
     <ThemedView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <View style={styles.topBar}>
-          <SegmentedControl
-            values={periods}
-            selectedIndex={period}
-            onChange={(event) => setPeriod(event.nativeEvent.selectedSegmentIndex)}
-            appearance="dark"
-            style={styles.segmented}
+      <FlatList
+        data={rows}
+        keyExtractor={(row) => `${row.trend ?? ''}${row.post.id}`}
+        renderItem={({ item, index }) => (
+          <LeaderboardRow
+            placement={index + 1}
+            photo={item.post}
+            medals={showWorst ? shameColors : medalColors}
+            trend={item.trend}
           />
-          {!trending && <FlipButton worst={worstMode} onPress={() => setWorstMode(!worstMode)} />}
+        )}
+        contentContainerStyle={[styles.list, { paddingTop: headerHeight }]}
+        scrollIndicatorInsets={{ top: headerHeight - insets.top }}
+      />
+      <View style={[styles.topBar, { top: insets.top + Spacing.three }]}>
+        <View
+          style={styles.segmented}
+          onLayout={(event) => setBarHeight(Math.round(event.nativeEvent.layout.height))}>
+          <PeriodPicker values={periods} selectedIndex={period} onChange={setPeriod} />
         </View>
-        <FlatList
-          data={rows}
-          keyExtractor={(row) => `${row.trend ?? ''}${row.post.id}`}
-          renderItem={({ item, index }) => (
-            <LeaderboardRow
-              placement={index + 1}
-              photo={item.post}
-              medals={showWorst ? shameColors : medalColors}
-              trend={item.trend}
-            />
-          )}
-          contentContainerStyle={styles.list}
-        />
-      </SafeAreaView>
+        <Animated.View
+          style={[styles.flipSlot, { height: barHeight }, flipStyle, { pointerEvents: trending ? 'none' : 'auto' }]}
+          aria-hidden={trending}>
+          <FlipButton worst={worstMode} size={barHeight} onPress={() => setWorstMode(!worstMode)} />
+        </Animated.View>
+      </View>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   topBar: {
+    position: 'absolute',
+    left: Spacing.four,
+    right: Spacing.four,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
-    marginHorizontal: Spacing.four,
-    marginVertical: Spacing.three,
   },
   segmented: {
     flex: 1,
   },
+  flipSlot: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
   flip: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',

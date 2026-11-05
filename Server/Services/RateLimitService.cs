@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Threading.RateLimiting;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Server;
 
@@ -11,7 +12,7 @@ public static class RateLimitingExtensions
             o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
                 RateLimitPartition.GetFixedWindowLimiter(
-                    ctx.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? ctx.Connection.RemoteIpAddress?.ToString() ?? "anon",
+                    ctx.User.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? ctx.Connection.RemoteIpAddress?.ToString() ?? "anon",
                     _ => new FixedWindowRateLimiterOptions { PermitLimit = 100, Window = TimeSpan.FromMinutes(1) }));
             o.AddPolicy("strict", ctx =>
             RateLimitPartition.GetFixedWindowLimiter(

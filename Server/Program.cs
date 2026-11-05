@@ -1,5 +1,6 @@
 using Azure.Storage.Blobs;
 using FluentValidation;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Server.Repositories;
 using Server.Services;
@@ -38,6 +39,15 @@ public class Program
             builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddRateLimiting();
+            builder.Services.Configure<ForwardedHeadersOptions>(o =>
+            {
+                o.ForwardedHeaders = ForwardedHeaders.XForwardedFor;
+                o.ForwardedForHeaderName = "CF-Connecting-IP";
+                o.KnownProxies.Clear();
+                o.KnownIPNetworks.Clear();
+                if (builder.Configuration["TrustedProxyNetwork"] is { } trusted)
+                    o.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(trusted));
+            });
             builder.Services.AddExceptionHandler<ApiExceptionHandler>();
             builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
             builder.Services.AddControllers(o => o.Filters.Add<ValidationFilter>());
@@ -57,6 +67,7 @@ public class Program
                 db.Users.FirstOrDefault(u => u.Email == "");
             }
 
+            app.UseForwardedHeaders();
             app.UseExceptionHandler();
             app.UseAuthentication();
             app.UseRateLimiter();

@@ -22,6 +22,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
 {
     public record TokenResponse(string AccessToken, string RefreshToken);
 
+    [EnableRateLimiting("strict")]
     [HttpPost("login")]
     public async Task<ActionResult<TokenResponse>> Login([FromBody] UserLoginDTO login)
     {
@@ -78,6 +79,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
         return Ok();
     }
 
+    [EnableRateLimiting("strict")]
     [HttpPost("refresh")]
     public async Task<ActionResult<TokenResponse>> Refresh([FromBody] string refreshToken)
     {

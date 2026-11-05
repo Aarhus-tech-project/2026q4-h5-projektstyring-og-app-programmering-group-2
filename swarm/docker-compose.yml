@@ -83,6 +83,7 @@ services:
       ConnectionStrings__Postgres: *postgres-connection
       ConnectionStrings__Blobs: ${BLOBS_CONNECTION_STRING:?see .env.example}
       Jwt__Key: ${JWT_KEY:?see .env.example}
+      TrustedProxyNetwork: 10.250.0.0/24
     # Swarm starts the server before Postgres is up (no depends_on). The warm-up query in
     # Program.cs then throws and the process hangs instead of exiting, so without this check a
     # task can sit at "Running" forever without listening. Plain TCP probe, the image has no curl
@@ -98,7 +99,7 @@ services:
         published: ${SERVER_PORT:-8080}
         protocol: tcp
         mode: ingress
-    networks: [backend]
+    networks: [backend, edge]
     deploy:
       replicas: ${SERVER_REPLICAS:-2}
       update_config:
@@ -142,7 +143,7 @@ services:
     command: ["tunnel", "--no-autoupdate", "run"]
     environment:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
-    networks: [backend]
+    networks: [edge]
     deploy:
       replicas: ${CLOUDFLARED_REPLICAS:-0}
       restart_policy:
@@ -241,6 +242,11 @@ networks:
   backend:
     driver: overlay
     attachable: true   # lets `docker run --network fotolo_backend ...` join for debugging
+  edge:
+    driver: overlay
+    ipam:
+      config:
+        - subnet: 10.250.0.0/24
 
 # Swarm configs can't be changed in place. After editing one of these files, bump the -vN in its
 # name or the deploy fails with "only updates to Labels are allowed"
