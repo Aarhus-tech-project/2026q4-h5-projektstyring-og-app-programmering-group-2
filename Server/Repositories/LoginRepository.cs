@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using Server.Exceptions;
 using Server.Models;
 using System.ComponentModel;
 using System.Net.Mail;
@@ -37,7 +39,14 @@ public class LoginRepository(AppDbContext db)
         user.PasswordHash = new PasswordHasher<User>().HashPassword(user, login.Password);
 
         db.Users.Add(user);
-        await db.SaveChangesAsync();
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "ix_users_email" })
+        {
+            throw new EmailAlreadyInUseException();
+        }
         return true;
     }
 

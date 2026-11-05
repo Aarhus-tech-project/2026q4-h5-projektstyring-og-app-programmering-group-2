@@ -1,13 +1,19 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ExpandableImage } from '@/components/ui/expandable-image';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SymbolView } from 'expo-symbols';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { toast } from 'sonner-native';
 import { getMatchup, submitVote, type Matchup } from '../../../lib/api';
+import { useAuthStatus } from '../../../lib/auth';
+import { ApiError, errorMessage } from '../../../lib/errors';
 
 type Post = Matchup['postA'];
 
@@ -79,82 +85,91 @@ function VoteCardBottom({ post, label, disabled, onVote }: {
 }
 
 
-export default function VoteScreen() {
+function VoteSkeleton() {
   const theme = useTheme();
-  const [matchup, setMatchup] = useState<Matchup | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [voting, setVoting] = useState(false);
+  return (
+    <View style={styles.cards}>
+      <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
+        <Skeleton style={[styles.imageWrapper, { borderRadius: 0 }]} />
+      </ThemedView>
+      <ThemedText type="smallBold" themeColor="textSecondary" style={styles.vs}>
+        VS
+      </ThemedText>
+      <ThemedView type="backgroundElement" style={[styles.cardBottom, { borderColor: theme.border }]}>
+        <Skeleton style={[styles.imageWrapperBottom, { borderRadius: 0 }]} />
+      </ThemedView>
+    </View>
+  );
+}
 
-  const fetchMatchup = () =>
-    getMatchup()
-      .then((m) => {
-        console.log('matchup', m);
-        setMatchup(m);
-      })
-      .catch((e) => {
-        console.error('Failed to load matchup', e);
-        setError('Could not load a matchup. Are you logged in?');
-      });
+export default function VoteScreen() {
+  const queryClient = useQueryClient();
+  const auth = useAuthStatus();
+  const matchupQuery = useQuery({
+    queryKey: ['matchup'],
+    queryFn: getMatchup,
+    enabled: auth === 'signedIn',
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
 
-  const load = async () => {
-    setError(null);
-    setMatchup(null);
-    await fetchMatchup();
-  };
+  const voteMutation = useMutation({
+    mutationFn: ({ matchup, winner, loser }: { matchup: Matchup; winner: Post; loser: Post }) =>
+      submitVote(matchup.id, winner.id, loser.id),
+    onSuccess: () => queryClient.resetQueries({ queryKey: ['matchup'] }),
+    onError: (error) => {
+      if (error instanceof ApiError && [400, 404, 409].includes(error.status)) {
+        toast.error('That matchup expired. Here is a new one.');
+        queryClient.resetQueries({ queryKey: ['matchup'] });
+        return;
+      }
+      toast.error(errorMessage(error, 'Could not submit your vote.'));
+    },
+  });
 
-  useEffect(() => {
-    fetchMatchup();
-  }, []);
-
-  const vote = async (winner: Post, loser: Post) => {
-    if (!matchup) return;
-    setVoting(true);
-    try {
-      await submitVote(matchup.id, winner.id, loser.id);
-      await load();
-    } catch (e) {
-      console.error('Failed to vote', e);
-      setError('Could not submit your vote.');
-    } finally {
-      setVoting(false);
-    }
+  const matchup = matchupQuery.data;
+  const vote = (winner: Post, loser: Post) => {
+    if (!matchup || voteMutation.isPending) return;
+    voteMutation.mutate({ matchup, winner, loser });
   };
 
   let content;
-  if (error) {
-    content = (
-      <View style={styles.center}>
-        <ThemedText themeColor="textSecondary">{error}</ThemedText>
-        <Pressable onPress={load} style={[styles.voteButton, { borderColor: theme.border }]}>
-          <ThemedText type="smallBold">Try again</ThemedText>
-        </Pressable>
-      </View>
+  if (matchupQuery.isError && !matchup) {
+    const noMatchup = matchupQuery.error instanceof ApiError && matchupQuery.error.status === 404;
+    content = noMatchup ? (
+      <StateView
+        icon={{ ios: 'photo.on.rectangle', android: 'photo_library', web: 'photo_library' }}
+        title="Nothing to vote on yet"
+        message="There aren't enough photos for a matchup. Upload one or check back later."
+        actionLabel="Check again"
+        onAction={() => matchupQuery.refetch()}
+        busy={matchupQuery.isFetching}
+      />
+    ) : (
+      <ErrorState error={matchupQuery.error} onRetry={() => matchupQuery.refetch()} retrying={matchupQuery.isFetching} />
     );
+  } else if (!matchup && matchupQuery.fetchStatus === 'paused') {
+    content = <OfflineState />;
   } else if (!matchup) {
-    content = (
-      <View style={styles.center}>
-        <ActivityIndicator color={theme.text} />
-      </View>
-    );
+    content = <VoteSkeleton />;
   } else {
     content = (
       <View style={styles.cards}>
         <VoteCard
           post={matchup.postA}
           label="Vote"
-          disabled={voting}
+          disabled={voteMutation.isPending}
           onVote={() => vote(matchup.postA, matchup.postB)}
         />
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.vs}>
           VS
         </ThemedText>
-       <VoteCardBottom
-  post={matchup.postB}
-  label="Vote"
-  disabled={voting}
-  onVote={() => vote(matchup.postB, matchup.postA)}
-/>
-
+        <VoteCardBottom
+          post={matchup.postB}
+          label="Vote"
+          disabled={voteMutation.isPending}
+          onVote={() => vote(matchup.postB, matchup.postA)}
+        />
       </View>
     );
   }

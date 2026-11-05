@@ -1,4 +1,4 @@
-package com.anonymous.App
+package com.mesasoftware.fotolo
 
 import android.app.Application
 import android.content.res.Configuration

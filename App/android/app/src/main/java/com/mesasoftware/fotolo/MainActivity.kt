@@ -1,4 +1,4 @@
-package com.anonymous.App
+package com.mesasoftware.fotolo
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

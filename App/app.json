@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "App",
+    "name": "Fotolo",
     "slug": "fotolo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "app",
+    "scheme": "fotolo",
     "userInterfaceStyle": "dark",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.anonymous.App"
+      "bundleIdentifier": "com.mesasoftware.fotolo"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,10 +19,9 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.App",
+      "package": "com.mesasoftware.fotolo",
       "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.CAMERA"
       ]
     },
     "web": {
@@ -43,7 +42,7 @@
         "expo-image-picker",
         {
           "photosPermission": "Allow Fotolo to use your photos for your profile picture.",
-          "cameraPermission": false,
+          "cameraPermission": "Fotolo needs camera access to take photos.",
           "microphonePermission": false
         }
       ],
@@ -53,7 +52,20 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Fotolo needs camera access to take photos."
+          "cameraPermission": "Fotolo needs camera access to take photos.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Fotolo to access your photos.",
+          "savePhotosPermission": "Allow Fotolo to save the photos you take.",
+          "isAccessMediaLocationEnabled": false,
+          "granularPermissions": [
+            "photo"
+          ]
         }
       ],
       "expo-web-browser"

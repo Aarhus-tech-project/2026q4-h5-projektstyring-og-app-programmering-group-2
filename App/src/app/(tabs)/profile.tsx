@@ -2,29 +2,100 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ExpandableImage } from '@/components/ui/expandable-image';
 import { ModalDescription } from '@/components/ui/modalDescription';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAssets } from 'expo-asset';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutLeft } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getMyProfile, Profile as ProfileData, signOut, updateDescription, uploadAvatar } from '../../../lib/api';
+import { toast } from 'sonner-native';
+import { getMyProfile, signOut, updateDescription, uploadAvatar } from '../../../lib/api';
+import { useAuthStatus } from '../../../lib/auth';
+import { errorMessage } from '../../../lib/errors';
+
+function ProfileSkeleton() {
+  return (
+    <View>
+      <View style={styles.username}>
+        <Skeleton style={{ width: 140, height: 22 }} />
+      </View>
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Skeleton style={{ width: 140, height: 46, borderRadius: 999 }} />
+          <Skeleton style={{ width: 90, height: 14 }} />
+        </View>
+        <Skeleton style={{ width: 110, height: 110, borderRadius: 55 }} />
+      </View>
+      <Skeleton style={{ height: 104, borderRadius: 14 }} />
+      <View style={styles.skeletonGrid}>
+        {Array.from({ length: 9 }, (_, i) => (
+          <View key={i} style={styles.gridItems}>
+            <Skeleton style={{ flex: 1, borderRadius: 0 }} />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
 
 export default function Profile() {
   const theme = useTheme()
   const [tab, setTab] = useState<'photos' | 'favorites'>('photos')
-  const [profile, setProfile] = useState<ProfileData | null>(null)
   const [editing, setEditing] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const queryClient = useQueryClient()
+  const auth = useAuthStatus()
 
-
+  const profileQuery = useQuery({
+    queryKey: ['profile'],
+    queryFn: getMyProfile,
+    enabled: auth === 'signedIn',
+  })
+  const profile = profileQuery.data
   useFocusEffect(useCallback(() => {
-    getMyProfile().then(setProfile)
-      .catch((error) => console.error('Failed to load profile posts', error))
-  }, []))
+    queryClient.invalidateQueries({ queryKey: ['profile'] }, { cancelRefetch: false })
+  }, [queryClient]))
+  const [defaultAvatar] = useAssets(require('@/assets/images/default-avatar.jpg'))
+  const defaultAvatarUri = defaultAvatar?.[0]?.localUri ?? defaultAvatar?.[0]?.uri
+  const avatarUrl = profile?.avatarUrl ?? defaultAvatarUri
+  const avatarThumbnailUrl = profile?.avatarThumbnailUrl ?? defaultAvatarUri
+
+  const avatarMutation = useMutation({
+    mutationFn: uploadAvatar,
+    onSuccess: () => {
+      toast.success('Profile picture updated')
+      return queryClient.invalidateQueries({ queryKey: ['profile'] })
+    },
+    onError: (error) => toast.error(errorMessage(error, 'Could not update your profile picture.')),
+  })
+
+  const descriptionMutation = useMutation({
+    mutationFn: updateDescription,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile'] }),
+    onError: (error) => toast.error(errorMessage(error, 'Could not save your description.')),
+  })
+
+  const signOutMutation = useMutation({
+    mutationFn: signOut,
+    onError: () => toast.error('Logged out on this device, but the server could not be reached.'),
+  })
+
+  async function onRefresh() {
+    setRefreshing(true)
+    try {
+      await profileQuery.refetch()
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   async function editAvatar() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -35,23 +106,28 @@ export default function Profile() {
     });
     if (result.canceled) return;
 
-    const asset = result.assets[0];
-    try {
-      await uploadAvatar(asset.uri);
-      setProfile(await getMyProfile());
-    } catch (error) {
-      console.error('Failed to upload avatar', error)
-    }
+    avatarMutation.mutate(result.assets[0].uri);
   }
 
   async function saveDescription(text: string) {
-  try {
-    await updateDescription(text)
-    setProfile(await getMyProfile())
-  } catch (error) {
-    console.error('Failed to update description', error)
+    await descriptionMutation.mutateAsync(text)
   }
-}
+
+  if (!profile) {
+    return (
+      <ThemedView style={styles.screen}>
+        <SafeAreaView style={styles.scrollable}>
+          {profileQuery.isError ? (
+            <ErrorState error={profileQuery.error} onRetry={() => profileQuery.refetch()} retrying={profileQuery.isFetching} />
+          ) : profileQuery.fetchStatus === 'paused' ? (
+            <OfflineState />
+          ) : (
+            <ProfileSkeleton />
+          )}
+        </SafeAreaView>
+      </ThemedView>
+    )
+  }
 
 
   const posts = tab === 'photos' ? (profile?.posts ?? []) : []
@@ -62,7 +138,23 @@ export default function Profile() {
       data={posts}
       keyExtractor={(photo) => photo.id}
       numColumns={3}
-      contentContainerStyle={{ paddingBottom: BottomTabInset + Spacing.four }}
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: BottomTabInset + Spacing.four }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.textSecondary} />}
+      ListEmptyComponent={
+        tab === 'photos' ? (
+          <StateView
+            icon={{ ios: 'camera', android: 'photo_camera', web: 'photo_camera' }}
+            title="No photos yet"
+            message="Photos you upload from the Camera tab show up here."
+          />
+        ) : (
+          <StateView
+            icon={{ ios: 'star', android: 'star', web: 'star' }}
+            title="No favorites yet"
+            message="Star photos while voting to save them here."
+          />
+        )
+      }
       renderItem={({ item }) => (
         <View style={styles.gridItems}>
           <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} />
@@ -91,11 +183,16 @@ export default function Profile() {
 
             <View style={styles.headerRight}>
               <View style={[styles.profilePic, { borderColor: theme.border }]}>
-                {profile?.avatarUrl && profile.avatarThumbnailUrl && (
-                  <ExpandableImage thumbnailUrl={profile.avatarThumbnailUrl} imageUrl={profile.avatarUrl} borderRadius={55} />
+                {avatarUrl && avatarThumbnailUrl && (
+                  <ExpandableImage thumbnailUrl={avatarThumbnailUrl} imageUrl={avatarUrl} borderRadius={55} />
+                )}
+                {avatarMutation.isPending && (
+                  <View style={styles.avatarBusy}>
+                    <ActivityIndicator color="#FFFFFF" />
+                  </View>
                 )}
               </View>
-              <Pressable onPress={editAvatar} style={styles.editBadge}>
+              <Pressable onPress={editAvatar} disabled={avatarMutation.isPending} style={styles.editBadge}>
                 <ThemedView type="backgroundElement" style={[styles.editBadgeInner, { borderColor: theme.border }]}>
                   <SymbolView name={{ ios: 'pencil', android: 'edit', web: 'edit' }} tintColor={theme.text} size={14} />
                 </ThemedView>
@@ -105,7 +202,7 @@ export default function Profile() {
          <Pressable onPress={() => setEditing(true)}>
           <ThemedView type="backgroundElement" style={[styles.TextBox, { borderColor: theme.border }]}>
             <ThemedText style={styles.TextBoxText} themeColor={profile?.description ? 'text' : 'textSecondary'}>
-              {profile?.description || 'Hi. Welcome to my profile'}
+              {profile?.description}
             </ThemedText>
           </ThemedView>
         </Pressable>
@@ -147,8 +244,10 @@ export default function Profile() {
         exiting={SlideOutLeft}
         style={[styles.panel, { backgroundColor: theme.background, borderColor: theme.border }]}>
         <ThemedText type="subtitle">Settings</ThemedText>
-        <Pressable onPress={signOut}>
-          <ThemedText style={{ color: '#F87171' }}>Log out</ThemedText>
+        <Pressable onPress={() => signOutMutation.mutate()} disabled={signOutMutation.isPending}>
+          {signOutMutation.isPending
+            ? <ActivityIndicator color="#F87171" style={{ alignSelf: 'flex-start' }} />
+            : <ThemedText style={{ color: '#F87171' }}>Log out</ThemedText>}
         </Pressable>
       </Animated.View>
     </>
@@ -320,6 +419,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarBusy: {
+    ...StyleSheet.absoluteFill,
+    borderRadius: 55,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+  },
+  skeletonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: Spacing.six,
   },
   backdrop: {
   ...StyleSheet.absoluteFill,

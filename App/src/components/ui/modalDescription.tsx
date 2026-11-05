@@ -19,9 +19,12 @@ export function ModalDescription({ description, onSave, onClose }: ModalDescript
 
   async function save() {
     setSaving(true);
-    await onSave(text);
-    setSaving(false);
-    onClose();
+    try {
+      await onSave(text);
+      onClose();
+    } catch {
+      setSaving(false);
+    }
   }
 
   return (

@@ -6,6 +6,7 @@
     }
 
     public class InvalidLoginException() : ApiException("Invalid email or password", 401);
+    public class EmailAlreadyInUseException() : ApiException("That email is already in use", 409);
     public class BlobUploadInternalServerException() : ApiException("Internal server error", 502);
     public class FailedToCreateInDatabaseException() : ApiException("Failed to create", 500);
     public class VoteAlreadySubmittedException() : ApiException("Vote already submitted", 409);

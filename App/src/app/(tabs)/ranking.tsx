@@ -2,13 +2,16 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { ExpandableImage } from '@/components/ui/expandable-image';
 import { PeriodPicker } from '@/components/ui/period-picker';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getRanking, RankedPost } from '../../../lib/api';
@@ -109,6 +112,20 @@ function FlipButton({ worst, size, onPress }: { worst: boolean; size: number; on
   );
 }
 
+function SkeletonRow() {
+  const theme = useTheme();
+  return (
+    <View style={styles.row}>
+      <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
+        <Skeleton style={[styles.imageWrapper, { borderRadius: 10 }]} />
+        <View style={styles.info}>
+          <Skeleton style={styles.skeletonLine} />
+        </View>
+      </ThemedView>
+    </View>
+  );
+}
+
 function trendingMix(top: RankedPost[], worst: RankedPost[]): { post: RankedPost; trend: Trend }[] {
   const rising = top.slice(0, 5).map((post) => ({ post, trend: 'up' as const }));
   const falling = worst.slice(0, 5).map((post) => ({ post, trend: 'down' as const }));
@@ -116,28 +133,47 @@ function trendingMix(top: RankedPost[], worst: RankedPost[]): { post: RankedPost
 }
 
 export default function RankingScreen() {
+  const theme = useTheme();
   const [period, setPeriod] = useState(0);
   const [worstMode, setWorstMode] = useState(false);
-  const [top, setTop] = useState<RankedPost[]>([]);
-  const [worst, setWorst] = useState<RankedPost[]>([]);
   const [barHeight, setBarHeight] = useState(36);
+  const [refreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + Spacing.three * 2 + barHeight;
-  
-  useFocusEffect(useCallback(() => {
-    Promise.all([getRanking('top'), getRanking('worst')])
-      .then(([topPosts, worstPosts]) => {
-        setTop(topPosts);
-        setWorst(worstPosts);
-      })
-      .catch((error) => console.error('Failed to load ranking', error));
-  }, []));
 
   const trending = period === 0;
   const showWorst = !trending && worstMode;
-  const rows: { post: RankedPost; trend?: Trend }[] = trending
-    ? trendingMix(top, worst)
-    : (showWorst ? worst : top).map((post) => ({ post }));
+  const topQuery = useQuery({ queryKey: ['ranking', 'top'], queryFn: () => getRanking('top') });
+  const worstQuery = useQuery({ queryKey: ['ranking', 'worst'], queryFn: () => getRanking('worst') });
+  const active = trending ? [topQuery, worstQuery] : [showWorst ? worstQuery : topQuery];
+  const loading = active.some((query) => query.isPending);
+  const offline = active.some((query) => query.isPending && query.fetchStatus === 'paused');
+  const failed = active.find((query) => query.isError && !query.data);
+  const retrying = active.some((query) => query.isFetching);
+
+  const top = topQuery.data ?? [];
+  const worst = worstQuery.data ?? [];
+  const rows: { post: RankedPost; trend?: Trend }[] = loading || failed
+    ? []
+    : trending
+      ? trendingMix(top, worst)
+      : (showWorst ? worst : top).map((post) => ({ post }));
+
+  const refetchActive = () => Promise.all(active.map((query) => query.refetch()));
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refetchActive();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const queryClient = useQueryClient();
+  useFocusEffect(useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['ranking'] }, { cancelRefetch: false });
+  }, [queryClient]));
 
   const flipProgress = useSharedValue(trending ? 0 : 1);
   const flipVisible = useSharedValue(trending ? 0 : 1);
@@ -177,6 +213,33 @@ export default function RankingScreen() {
             trend={item.trend}
           />
         )}
+        ListEmptyComponent={
+          offline ? (
+            <OfflineState />
+          ) : loading ? (
+            <View style={styles.skeletons}>
+              <SkeletonRow />
+              <SkeletonRow />
+              <SkeletonRow />
+            </View>
+          ) : failed ? (
+            <ErrorState error={failed.error} onRetry={refetchActive} retrying={retrying} />
+          ) : (
+            <StateView
+              icon={{ ios: 'trophy', android: 'leaderboard', web: 'leaderboard' }}
+              title="No photos ranked yet"
+              message="Once people start voting, the best and worst photos show up here."
+            />
+          )
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.textSecondary}
+            progressViewOffset={headerHeight}
+          />
+        }
         contentContainerStyle={[styles.list, { paddingTop: headerHeight }]}
         scrollIndicatorInsets={{ top: headerHeight - insets.top }}
       />
@@ -216,7 +279,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  skeletons: {
+    gap: Spacing.three,
+  },
+  skeletonLine: {
+    width: '60%',
+    height: 14,
+  },
   list: {
+    flexGrow: 1,
     gap: Spacing.three,
     paddingHorizontal: Spacing.four,
     paddingBottom: BottomTabInset + Spacing.four,
