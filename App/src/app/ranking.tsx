@@ -1,16 +1,16 @@
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 import { ExpandableImage } from '@/components/ui/expandable-image';
+import { BottomTabInset, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { SegmentedControl } from '@expo/ui/community/segmented-control';
+import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
+import { useFocusEffect } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { getRanking, RankedPost } from '../../lib/api';
-import { SegmentedControl } from '@expo/ui/community/segmented-control'
-import { useFocusEffect } from 'expo-router';
-import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { SymbolView } from 'expo-symbols';
 
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
@@ -57,7 +57,7 @@ function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps
                 {trend === 'up' ? '▲  ' : '▼  '}
               </ThemedText>
             )}
-            <ThemedText type="smallBold">{photo.elo} Elo</ThemedText>
+            <ThemedText type="smallBold">{Math.round(Number(photo.elo))} Elo</ThemedText>
             {'  ·  '}
             <ThemedText type="small" style={{ color: '#4ADE80' }}>{photo.wins} wins</ThemedText>
             {'  ·  '}
