@@ -44,11 +44,6 @@ export default function Profile() {
     }
   }
 
-  async function showAvatar() 
-  {
-
-  }
-
   async function saveDescription(text: string) {
   try {
     await updateDescription(text)
