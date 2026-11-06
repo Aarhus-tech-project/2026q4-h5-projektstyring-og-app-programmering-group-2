@@ -14,4 +14,4 @@ public class Post
     public Media Media { get; set; } = null!;
 }
 
-public record PublicPostDTO(Guid Id, string ThumbnailUrl, string ImageUrl, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt);
+public record PublicPostDTO(Guid Id, string ThumbnailUrl, string ImageUrl, string? Thumbhash, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt);

@@ -140,7 +140,8 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
 
     PublicPostDTO ToDto(Post p)
     {
-        return new(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash), p.Elo, p.Wins, p.Losses, p.CreatedAt);
+        string? thumbhash = p.Media.Thumbhash == null ? null : Convert.ToBase64String(p.Media.Thumbhash);
+        return new(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash), thumbhash, p.Elo, p.Wins, p.Losses, p.CreatedAt);
     }
 
     string MediaUrl(byte[] hash, string suffix = "", string extension = ".webp")

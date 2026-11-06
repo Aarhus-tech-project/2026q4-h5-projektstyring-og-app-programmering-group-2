@@ -31,7 +31,7 @@ function VoteCard({ post, label, disabled, onVote }: {
   return (
     <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
       <View style={styles.imageWrapper}>
-        <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} borderRadius={0} />
+        <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} thumbhash={post.thumbhash} borderRadius={0} />
       </View>
       <Pressable
         onPress={onVote}
@@ -66,7 +66,7 @@ function VoteCardBottom({ post, label, disabled, onVote }: {
   return (
     <ThemedView type="backgroundElement" style={[styles.cardBottom, { borderColor: theme.border }]}>
       <View style={styles.imageWrapperBottom}>
-        <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} borderRadius={0} />
+        <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} thumbhash={post.thumbhash} borderRadius={0} />
       </View>
       <Pressable
         onPress={onVote}

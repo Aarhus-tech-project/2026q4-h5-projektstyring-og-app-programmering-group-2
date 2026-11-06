@@ -162,7 +162,7 @@ export default function Profile() {
       }
       renderItem={({ item }) => (
         <View style={styles.gridItems}>
-          <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} />
+          <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} />
         </View>
       )}
       ListHeaderComponent={

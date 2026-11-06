@@ -40,7 +40,7 @@ function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps
     <View style={styles.row}>
       <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
         <View style={styles.imageWrapper} >
-          <ExpandableImage thumbnailUrl={photo.thumbnailUrl} imageUrl={photo.imageUrl} borderRadius={10} />
+          <ExpandableImage thumbnailUrl={photo.thumbnailUrl} imageUrl={photo.imageUrl} thumbhash={photo.thumbhash} borderRadius={10} />
 
           <View
             style={[

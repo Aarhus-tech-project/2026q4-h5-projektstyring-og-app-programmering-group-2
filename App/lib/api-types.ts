@@ -37,7 +37,26 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
+        delete: {
+            parameters: {
+                query?: {
+                    postId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -594,6 +613,7 @@ export interface components {
             id: string;
             thumbnailUrl: string;
             imageUrl: string;
+            thumbhash: null | string;
             /** Format: float */
             elo: number | string;
             /** Format: int32 */

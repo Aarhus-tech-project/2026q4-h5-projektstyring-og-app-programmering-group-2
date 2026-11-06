@@ -28,7 +28,7 @@ erDiagram
         text kind
         int width
         int height
-        bytea thumbhash
+        bytea thumbhash "blur placeholder sent to the app"
         text original_format
         bigint original_size_bytes
         text camera_make

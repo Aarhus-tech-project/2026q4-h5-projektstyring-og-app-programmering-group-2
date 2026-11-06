@@ -45,6 +45,7 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
             .AsNoTracking()
             .Where(f => f.UserId == userId && f.Post.DeletedAt == null)
             .OrderByDescending(f => f.CreatedAt)
+            .Include(f => f.Post).ThenInclude(p => p.Media)
             .Select(f => f.Post)
             .ToListAsync();
     }
@@ -99,13 +100,15 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
     {
         var latest = await db.Matchups
             .AsNoTracking()
+            .Include(m => m.Vote)
+            .Include(m => m.PostA).ThenInclude(p => p.Media)
+            .Include(m => m.PostB).ThenInclude(p => p.Media)
             .Where(m => m.VoterId == voterId)
             .OrderByDescending(m => m.IssuedAt)
-            .Select(m => new { Matchup = m, Voted = m.Vote != null, m.PostA, m.PostB })
             .FirstOrDefaultAsync();
 
-        if (latest is { Voted: false } && latest.PostA.DeletedAt == null && latest.PostB.DeletedAt == null)
-            return (latest.Matchup, latest.PostA, latest.PostB);
+        if (latest is { Vote: null } && latest.PostA.DeletedAt == null && latest.PostB.DeletedAt == null)
+            return (latest, latest.PostA, latest.PostB);
 
         Post a = await RandomPost(voterId, exclude: null) ?? throw new NotEnoughPostsException();
 
@@ -140,6 +143,7 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
 
         var candidates = db.Posts
             .AsNoTracking()
+            .Include(p => p.Media)
             .Where(p => p.DeletedAt == null && p.UserId != voterId && p.Id != exclude)
             .OrderBy(p => p.RandKey);
 
@@ -151,17 +155,20 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
     {
         var nearby = await db.Posts
             .FromSql($"""
-                (SELECT * FROM posts
-                 WHERE deleted_at IS NULL AND user_id <> {voterId} AND (elo, rand_key) > ({a.Elo}, {a.RandKey})
-                 ORDER BY elo, rand_key
-                 LIMIT {NearbyEachSide})
-                UNION ALL
-                (SELECT * FROM posts
-                 WHERE deleted_at IS NULL AND user_id <> {voterId} AND (elo, rand_key) < ({a.Elo}, {a.RandKey})
-                 ORDER BY elo DESC, rand_key DESC
-                 LIMIT {NearbyEachSide})
+                SELECT * FROM (
+                    (SELECT * FROM posts
+                     WHERE deleted_at IS NULL AND user_id <> {voterId} AND (elo, rand_key) > ({a.Elo}, {a.RandKey})
+                     ORDER BY elo, rand_key
+                     LIMIT {NearbyEachSide})
+                    UNION ALL
+                    (SELECT * FROM posts
+                     WHERE deleted_at IS NULL AND user_id <> {voterId} AND (elo, rand_key) < ({a.Elo}, {a.RandKey})
+                     ORDER BY elo DESC, rand_key DESC
+                     LIMIT {NearbyEachSide})
+                ) AS nearby
                 """)
             .AsNoTracking()
+            .Include(p => p.Media)
             .ToListAsync();
 
         return nearby.Count == 0 ? null : nearby[Random.Shared.Next(nearby.Count)];
@@ -216,7 +223,7 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
 
     public async Task<List<Post>> GetRanking(string order)
     {
-        var posts = db.Posts.AsNoTracking().Where(p => p.DeletedAt == null);
+        var posts = db.Posts.AsNoTracking().Include(p => p.Media).Where(p => p.DeletedAt == null);
 
         return await (order == "worst"
             ? posts.OrderBy(p => p.Elo).ThenBy(p => p.RandKey)
@@ -232,7 +239,7 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
 
     public async Task<List<Post>> GetUserPosts(Guid userId)
     {
-        return await db.Posts.Where(p => p.UserId == userId && p.DeletedAt == null).OrderByDescending(p => p.CreatedAt).ToListAsync();
+        return await db.Posts.Include(p => p.Media).Where(p => p.UserId == userId && p.DeletedAt == null).OrderByDescending(p => p.CreatedAt).ToListAsync();
     }
 
     public async Task SetAvatar(Guid userId, Media media)
