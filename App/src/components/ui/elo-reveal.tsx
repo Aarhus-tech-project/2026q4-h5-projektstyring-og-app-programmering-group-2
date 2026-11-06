@@ -45,20 +45,17 @@ export function EloReveal({ elo, wins, losses, rank }: {
   return (
     <Animated.View entering={FadeIn.duration(250)} style={styles.scrim}>
       <View style={styles.content}>
-        <View style={styles.rankSlot}>
-          {rank !== 'equal' && (
-            <Animated.View entering={FadeIn.delay(800).duration(300)}>
-              <SymbolView
-                name={rank === 'higher'
-                  ? { ios: 'arrow.up', android: 'arrow_upward', web: 'arrow_upward' }
-                  : { ios: 'arrow.down', android: 'arrow_downward', web: 'arrow_downward' }}
-                tintColor="rgba(255, 255, 255, 0.7)"
-                size={24}
-              />
-            </Animated.View>
-          )}
+        <View style={styles.eloRow}>
+          <View style={styles.rankSlot}>
+            {rank !== 'equal' && (
+              <Animated.Text entering={FadeIn.delay(800).duration(300)} style={styles.rank}>
+                {rank === 'higher' ? '▲' : '▼'}
+              </Animated.Text>
+            )}
+          </View>
+          <Text style={styles.elo}>{shownElo}</Text>
+          <View style={styles.rankSlot} />
         </View>
-        <Text style={styles.elo}>{shownElo}</Text>
         <Text style={styles.eloLabel}>ELO</Text>
         <Animated.View entering={FadeIn.delay(400).duration(300)}>
           <Text style={styles.record}>
@@ -123,9 +120,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
+  eloRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   rankSlot: {
-    height: 28,
-    justifyContent: 'center',
+    width: 36,
+    alignItems: 'center',
+  },
+  rank: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 22,
+    fontWeight: '700',
   },
   elo: {
     color: '#FFD84D',
