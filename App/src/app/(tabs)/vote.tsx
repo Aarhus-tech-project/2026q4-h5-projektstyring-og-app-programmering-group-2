@@ -4,10 +4,10 @@ import { ExpandableImage } from '@/components/ui/expandable-image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
+import { useFavorites, useToggleFavorite } from '@/hooks/use-favorites';
 import { useTheme } from '@/hooks/use-theme';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SymbolView } from 'expo-symbols';
-import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
@@ -24,7 +24,9 @@ function VoteCard({ post, label, disabled, onVote }: {
   onVote: () => void;
 }) {
   const theme = useTheme();
-  const [favorited, setFavorited] = useState(false);
+  const favorites = useFavorites();
+  const toggleFavorite = useToggleFavorite();
+  const favorited = favorites.data?.some((p) => p.id === post.id) ?? false;
 
   return (
     <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
@@ -40,7 +42,7 @@ function VoteCard({ post, label, disabled, onVote }: {
         ]}>
         <ThemedText type="smallBold" style={styles.text}>{label}</ThemedText>
       </Pressable>
-      <Pressable style={styles.star} onPress={() => setFavorited(!favorited)}>
+      <Pressable style={styles.star} onPress={() => toggleFavorite.mutate({ post, favorite: !favorited })}>
         <SymbolView
           name={{ ios: favorited ? 'star.fill' : 'star', android: 'star', web: 'star' }}
           tintColor={favorited ? '#FFD84D' : theme.textSecondary}
@@ -57,7 +59,9 @@ function VoteCardBottom({ post, label, disabled, onVote }: {
   onVote: () => void;
 }) {
   const theme = useTheme();
-  const [favorited, setFavorited] = useState(false);
+  const favorites = useFavorites();
+  const toggleFavorite = useToggleFavorite();
+  const favorited = favorites.data?.some((p) => p.id === post.id) ?? false;
 
   return (
     <ThemedView type="backgroundElement" style={[styles.cardBottom, { borderColor: theme.border }]}>
@@ -73,7 +77,7 @@ function VoteCardBottom({ post, label, disabled, onVote }: {
         ]}>
         <ThemedText type="smallBold" style={styles.text} >{label}</ThemedText>
       </Pressable>
-      <Pressable style={styles.starBottom} onPress={() => setFavorited(!favorited)}>
+      <Pressable style={styles.starBottom} onPress={() => toggleFavorite.mutate({ post, favorite: !favorited })}>
         <SymbolView
           name={{ ios: favorited ? 'star.fill' : 'star', android: 'star', web: 'star' }}
           tintColor={favorited ? '#FFD84D' : theme.textSecondary}

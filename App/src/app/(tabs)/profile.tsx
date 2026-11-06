@@ -5,6 +5,7 @@ import { ModalDescription } from '@/components/ui/modalDescription';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useFavorites } from '@/hooks/use-favorites';
 import { useTheme } from '@/hooks/use-theme';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAssets } from 'expo-asset';
@@ -60,8 +61,10 @@ export default function Profile() {
     enabled: auth === 'signedIn',
   })
   const profile = profileQuery.data
+  const favoritesQuery = useFavorites()
   useFocusEffect(useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['profile'] }, { cancelRefetch: false })
+    queryClient.invalidateQueries({ queryKey: ['favorites'] }, { cancelRefetch: false })
   }, [queryClient]))
   const [defaultAvatar] = useAssets(require('@/assets/images/default-avatar.jpg'))
   const defaultAvatarUri = defaultAvatar?.[0]?.localUri ?? defaultAvatar?.[0]?.uri
@@ -91,7 +94,7 @@ export default function Profile() {
   async function onRefresh() {
     setRefreshing(true)
     try {
-      await profileQuery.refetch()
+      await Promise.all([profileQuery.refetch(), favoritesQuery.refetch()])
     } finally {
       setRefreshing(false)
     }
@@ -130,7 +133,7 @@ export default function Profile() {
   }
 
 
-  const posts = tab === 'photos' ? (profile?.posts ?? []) : []
+  const posts = tab === 'photos' ? (profile?.posts ?? []) : (favoritesQuery.data ?? [])
   return (
     <ThemedView style={styles.screen}>
     <SafeAreaView style={styles.scrollable}>
@@ -147,7 +150,9 @@ export default function Profile() {
             title="No photos yet"
             message="Photos you upload from the Camera tab show up here."
           />
-        ) : (
+        ) : favoritesQuery.isError ? (
+          <ErrorState error={favoritesQuery.error} onRetry={() => favoritesQuery.refetch()} retrying={favoritesQuery.isFetching} />
+        ) : favoritesQuery.isPending ? undefined : (
           <StateView
             icon={{ ios: 'star', android: 'star', web: 'star' }}
             title="No favorites yet"

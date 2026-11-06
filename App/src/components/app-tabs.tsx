@@ -21,6 +21,7 @@ export default function AppTabs() {
     if (auth !== 'signedOut') return;
     queryClient.removeQueries({ queryKey: ['matchup'] });
     queryClient.removeQueries({ queryKey: ['profile'] });
+    queryClient.removeQueries({ queryKey: ['favorites'] });
     if (currentTab && protectedTabs.includes(currentTab)) router.navigate('/ranking');
   }, [auth, currentTab]);
 

@@ -170,3 +170,26 @@ export async function updateDescription(description: string) {
   });
   if (!response.ok) fail(response, error);
 }
+
+//-------------------------------------------------------------
+// Favorites
+
+export async function getFavorites() {
+  const { data, error, response } = await api.GET("/api/Posts/favorites");
+  if (!response.ok) fail(response, error);
+  return data ?? [];
+}
+
+export async function addFavorite(postId: string) {
+  const { error, response } = await api.POST("/api/Posts/favorite", {
+    params: { query: { postId } },
+  });
+  if (!response.ok) fail(response, error);
+}
+
+export async function removeFavorite(postId: string) {
+  const { error, response } = await api.DELETE("/api/Posts/favorite", {
+    params: { query: { postId } },
+  });
+  if (!response.ok) fail(response, error);
+}
