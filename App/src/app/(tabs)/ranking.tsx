@@ -14,14 +14,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getRanking, RankedPost } from '../../../lib/api';
+import { getRanking, RankedPost, RankingPeriod } from '../../../lib/api';
 
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
 const medalColors = ['#FFD84D', '#C9CED6', '#E8A15C'];
 const shameColors = ['#EF4444', '#DC2626', '#B91C1C'];
 
-const periods = ['Trending', 'This week', 'All time'];
+const periods: { label: string; key: RankingPeriod }[] = [
+  { label: 'Trending', key: 'trending' },
+  { label: 'This week', key: 'week' },
+  { label: 'All time', key: 'all' },
+];
 
 type Trend = 'up' | 'down';
 
@@ -143,8 +147,9 @@ export default function RankingScreen() {
 
   const trending = period === 0;
   const showWorst = !trending && worstMode;
-  const topQuery = useQuery({ queryKey: ['ranking', 'top'], queryFn: () => getRanking('top') });
-  const worstQuery = useQuery({ queryKey: ['ranking', 'worst'], queryFn: () => getRanking('worst') });
+  const periodKey = periods[period].key;
+  const topQuery = useQuery({ queryKey: ['ranking', periodKey, 'top'], queryFn: () => getRanking(periodKey, 'top') });
+  const worstQuery = useQuery({ queryKey: ['ranking', periodKey, 'worst'], queryFn: () => getRanking(periodKey, 'worst') });
   const active = trending ? [topQuery, worstQuery] : [showWorst ? worstQuery : topQuery];
   const loading = active.some((query) => query.isPending);
   const offline = active.some((query) => query.isPending && query.fetchStatus === 'paused');
@@ -247,7 +252,7 @@ export default function RankingScreen() {
         <View
           style={styles.segmented}
           onLayout={(event) => setBarHeight(Math.round(event.nativeEvent.layout.height))}>
-          <PeriodPicker values={periods} selectedIndex={period} onChange={setPeriod} />
+          <PeriodPicker values={periods.map((p) => p.label)}selectedIndex={period} onChange={setPeriod} />
         </View>
         <Animated.View
           style={[styles.flipSlot, { height: barHeight }, flipStyle, { pointerEvents: trending ? 'none' : 'auto' }]}

@@ -37,8 +37,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(p => p.Elo).HasDefaultValue(1000f);
             e.Property(p => p.CreatedAt).HasDefaultValueSql("now()");
             e.Property(p => p.RandKey).HasDefaultValueSql("random()");
+            e.Property(p => p.CreatedWeek).HasComputedColumnSql("(date_trunc('week', created_at AT TIME ZONE 'UTC'))::date", stored: true);
 
             e.HasIndex(p => new { p.Elo, p.RandKey }).HasFilter("deleted_at IS NULL");
+            e.HasIndex(p => new { p.CreatedWeek, p.Elo, p.RandKey }).HasFilter("deleted_at IS NULL");
             e.HasIndex(p => p.RandKey).HasFilter("deleted_at IS NULL");
 
             e.HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId);

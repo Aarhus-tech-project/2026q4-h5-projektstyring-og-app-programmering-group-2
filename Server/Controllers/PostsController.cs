@@ -87,9 +87,9 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     }
 
     [HttpGet("ranking")]
-    public async Task<ActionResult<List<PublicPostDTO>>> Ranking([FromQuery] string order = "top")
+    public async Task<ActionResult<List<PublicPostDTO>>> Ranking([FromQuery] RankingPeriod period = RankingPeriod.All, [FromQuery] RankingOrder order = RankingOrder.Top)
     {
-        List<Post> posts = await postsRepository.GetRanking(order);
+        List<Post> posts = await postsRepository.GetRanking(period, order);
         return posts.Select(ToDto).ToList();
     }
 

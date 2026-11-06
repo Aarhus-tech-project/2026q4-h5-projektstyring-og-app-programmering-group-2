@@ -239,7 +239,8 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    order?: string;
+                    period?: components["schemas"]["RankingPeriod"];
+                    order?: components["schemas"]["RankingOrder"];
                 };
                 header?: never;
                 path?: never;
@@ -623,6 +624,10 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        /** @enum {unknown} */
+        RankingOrder: "top" | "worst";
+        /** @enum {unknown} */
+        RankingPeriod: "trending" | "week" | "all";
         TokenResponse: {
             accessToken: string;
             refreshToken: string;

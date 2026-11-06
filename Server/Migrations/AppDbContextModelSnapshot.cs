@@ -134,6 +134,12 @@ namespace Server.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<DateOnly>("CreatedWeek")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("date")
+                        .HasColumnName("created_week")
+                        .HasComputedColumnSql("(date_trunc('week', created_at AT TIME ZONE 'UTC'))::date", true);
+
                     b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
@@ -182,6 +188,10 @@ namespace Server.Migrations
 
                     b.HasIndex("Elo", "RandKey")
                         .HasDatabaseName("ix_posts_elo_rand_key")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("CreatedWeek", "Elo", "RandKey")
+                        .HasDatabaseName("ix_posts_created_week_elo_rand_key")
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("posts", (string)null);

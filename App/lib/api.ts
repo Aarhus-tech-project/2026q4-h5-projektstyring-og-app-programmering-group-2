@@ -93,12 +93,13 @@ export async function signOut() {
 // ------------------------------------------------------------
 // Ranking Fetch - Top - Worst
 
-export type RankingOrder = "top" | "worst";
+export type RankingPeriod = components["schemas"]["RankingPeriod"];
+export type RankingOrder = components["schemas"]["RankingOrder"];
 export type RankedPost = components["schemas"]["PublicPostDTO"];
 
-export async function getRanking(order: RankingOrder) {
+export async function getRanking(period: RankingPeriod, order: RankingOrder) {
   const { data, error, response } = await api.GET("/api/Posts/ranking", {
-    params: { query: { order } },
+    params: { query: { period, order } },
   });
   if (!response.ok) fail(response, error);
   return data ?? [];

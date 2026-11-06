@@ -1,3 +1,20 @@
+using System.Text.Json.Serialization;
+
+[JsonConverter(typeof(JsonStringEnumConverter<RankingPeriod>))]
+public enum RankingPeriod
+{
+    [JsonStringEnumMemberName("trending")] Trending,
+    [JsonStringEnumMemberName("week")] Week,
+    [JsonStringEnumMemberName("all")] All
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<RankingOrder>))]
+public enum RankingOrder
+{
+    [JsonStringEnumMemberName("top")] Top,
+    [JsonStringEnumMemberName("worst")] Worst
+}
+
 public class Post
 {
     public Guid Id { get; set; }
@@ -8,6 +25,7 @@ public class Post
     public int Losses { get; set; }
     public double RandKey { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
+    public DateOnly CreatedWeek { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
 
     public User User { get; set; } = null!;

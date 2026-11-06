@@ -221,15 +221,29 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
         throw new InvalidVoteException();
     }
 
-    public async Task<List<Post>> GetRanking(string order)
+    public async Task<List<Post>> GetRanking(RankingPeriod period, RankingOrder order)
     {
+        if (period == RankingPeriod.Trending) return [];
+
         var posts = db.Posts.AsNoTracking().Include(p => p.Media).Where(p => p.DeletedAt == null);
 
-        return await (order == "worst"
+        if (period == RankingPeriod.Week)
+        {
+            var week = CurrentWeek();
+            posts = posts.Where(p => p.CreatedWeek == week);
+        }
+
+        return await (order == RankingOrder.Worst
             ? posts.OrderBy(p => p.Elo).ThenBy(p => p.RandKey)
             : posts.OrderByDescending(p => p.Elo).ThenByDescending(p => p.RandKey))
             .Take(10)
             .ToListAsync();
+    }
+
+    static DateOnly CurrentWeek()
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        return today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
     }
 
     public async Task<User?> GetUser(Guid userId)
