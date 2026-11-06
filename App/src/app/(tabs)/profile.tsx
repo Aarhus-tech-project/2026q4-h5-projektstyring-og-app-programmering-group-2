@@ -200,12 +200,18 @@ export default function Profile() {
             </View>
           </View>
          <Pressable onPress={() => setEditing(true)}>
-          <ThemedView type="backgroundElement" style={[styles.TextBox, { borderColor: theme.border }]}>
-            <ThemedText style={styles.TextBoxText} themeColor={profile?.description ? 'text' : 'textSecondary'}>
-              {profile?.description}
-            </ThemedText>
-          </ThemedView>
-        </Pressable>
+            <ThemedView type="backgroundElement" style={[styles.TextBox, { borderColor: theme.border }]}>
+              <ThemedText style={styles.TextBoxText} themeColor={profile.description ? 'text' : 'textSecondary'}>
+                {profile.description || 'Tap to add a description'}
+              </ThemedText>
+              <SymbolView
+                name={{ ios: 'pencil', android: 'edit', web: 'edit' }}
+                tintColor={theme.textSecondary}
+                size={14}
+                style={styles.descriptionEditIcon}
+              />
+            </ThemedView>
+          </Pressable>
           <View style={[styles.body, {borderColor: theme.border}]}>
             <Pressable style={styles.tab} onPress={() => setTab('photos')}>
               <SymbolView
@@ -335,6 +341,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 14,
     padding: Spacing.three,
+    marginHorizontal: Spacing.six,
+
   },
   TextBoxText: {
     textAlign: 'center',
@@ -448,5 +456,11 @@ const styles = StyleSheet.create({
   },
   menuButton: {
   alignSelf: 'flex-start',
+  },
+  descriptionEditIcon: {
+  position: 'absolute',
+  top: Spacing.two,
+  right: Spacing.two,
 },
+
 });
