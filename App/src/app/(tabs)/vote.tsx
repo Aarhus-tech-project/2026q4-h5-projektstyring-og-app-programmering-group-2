@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { EloReveal, type EloRank } from '@/components/ui/elo-reveal';
 import { ExpandableImage } from '@/components/ui/expandable-image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view';
@@ -7,8 +8,11 @@ import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useFavorites, useToggleFavorite } from '@/hooks/use-favorites';
 import { useTheme } from '@/hooks/use-theme';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { getMatchup, submitVote, type Matchup } from '../../../lib/api';
@@ -17,11 +21,20 @@ import { ApiError, errorMessage } from '../../../lib/errors';
 
 type Post = Matchup['postA'];
 
-function VoteCard({ post, label, disabled, onVote }: {
+const AUTO_ADVANCE_MS = 2500;
+
+function eloRank(post: Post, other: Post): EloRank {
+  const elo = Math.round(Number(post.elo));
+  const otherElo = Math.round(Number(other.elo));
+  return elo === otherElo ? 'equal' : elo > otherElo ? 'higher' : 'lower';
+}
+
+function VoteCard({ post, label, disabled, onVote, reveal }: {
   post: Post;
   label: string;
   disabled: boolean;
   onVote: () => void;
+  reveal: { rank: EloRank; picked: boolean } | null;
 }) {
   const theme = useTheme();
   const favorites = useFavorites();
@@ -32,8 +45,11 @@ function VoteCard({ post, label, disabled, onVote }: {
     <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
       <View style={styles.imageWrapper}>
         <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} thumbhash={post.thumbhash} borderRadius={0} />
+        {reveal && (
+          <EloReveal elo={Number(post.elo)} wins={Number(post.wins)} losses={Number(post.losses)} rank={reveal.rank} />
+        )}
       </View>
-      <Pressable
+      {!reveal && <Pressable
         onPress={onVote}
         disabled={disabled}
         style={({ pressed }) => [
@@ -41,7 +57,7 @@ function VoteCard({ post, label, disabled, onVote }: {
           disabled && styles.disabled,
         ]}>
         <ThemedText type="smallBold" style={styles.text}>{label}</ThemedText>
-      </Pressable>
+      </Pressable>}
       <Pressable style={styles.star} onPress={() => toggleFavorite.mutate({ post, favorite: !favorited })}>
         <SymbolView
           name={{ ios: favorited ? 'star.fill' : 'star', android: 'star', web: 'star' }}
@@ -49,14 +65,18 @@ function VoteCard({ post, label, disabled, onVote }: {
           size={32}
         />
       </Pressable>
+      {reveal?.picked && (
+        <Animated.View entering={FadeIn.duration(250)} style={styles.pickedRing} />
+      )}
     </ThemedView>
   );
 }
-function VoteCardBottom({ post, label, disabled, onVote }: {
+function VoteCardBottom({ post, label, disabled, onVote, reveal }: {
   post: Post;
   label: string;
   disabled: boolean;
   onVote: () => void;
+  reveal: { rank: EloRank; picked: boolean } | null;
 }) {
   const theme = useTheme();
   const favorites = useFavorites();
@@ -67,8 +87,11 @@ function VoteCardBottom({ post, label, disabled, onVote }: {
     <ThemedView type="backgroundElement" style={[styles.cardBottom, { borderColor: theme.border }]}>
       <View style={styles.imageWrapperBottom}>
         <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} thumbhash={post.thumbhash} borderRadius={0} />
+        {reveal && (
+          <EloReveal elo={Number(post.elo)} wins={Number(post.wins)} losses={Number(post.losses)} rank={reveal.rank} />
+        )}
       </View>
-      <Pressable
+      {!reveal && <Pressable
         onPress={onVote}
         disabled={disabled}
         style={({ pressed }) => [
@@ -76,7 +99,7 @@ function VoteCardBottom({ post, label, disabled, onVote }: {
           disabled && styles.disabled,
         ]}>
         <ThemedText type="smallBold" style={styles.text} >{label}</ThemedText>
-      </Pressable>
+      </Pressable>}
       <Pressable style={styles.starBottom} onPress={() => toggleFavorite.mutate({ post, favorite: !favorited })}>
         <SymbolView
           name={{ ios: favorited ? 'star.fill' : 'star', android: 'star', web: 'star' }}
@@ -84,6 +107,9 @@ function VoteCardBottom({ post, label, disabled, onVote }: {
           size={32}
         />
       </Pressable>
+      {reveal?.picked && (
+        <Animated.View entering={FadeIn.duration(250)} style={styles.pickedRing} />
+      )}
     </ThemedView>
   );
 }
@@ -109,6 +135,9 @@ function VoteSkeleton() {
 export default function VoteScreen() {
   const queryClient = useQueryClient();
   const auth = useAuthStatus();
+  const [reveal, setReveal] = useState<{ matchup: Matchup; pickedId: string } | null>(null);
+  const progress = useRef({ matchupId: '', ready: false, voted: false });
+  const autoAdvance = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const matchupQuery = useQuery({
     queryKey: ['matchup'],
     queryFn: getMatchup,
@@ -120,8 +149,15 @@ export default function VoteScreen() {
   const voteMutation = useMutation({
     mutationFn: ({ matchup, winner, loser }: { matchup: Matchup; winner: Post; loser: Post }) =>
       submitVote(matchup.id, winner.id, loser.id),
-    onSuccess: () => queryClient.resetQueries({ queryKey: ['matchup'] }),
+    onSuccess: async () => {
+      await queryClient.prefetchQuery({ queryKey: ['matchup'], queryFn: getMatchup, staleTime: 0 });
+      progress.current.voted = true;
+      finishReveal();
+    },
     onError: (error) => {
+      clearTimeout(autoAdvance.current);
+      progress.current.matchupId = '';
+      setReveal(null);
       if (error instanceof ApiError && [400, 404, 409].includes(error.status)) {
         toast.error('That matchup expired. Here is a new one.');
         queryClient.resetQueries({ queryKey: ['matchup'] });
@@ -131,11 +167,40 @@ export default function VoteScreen() {
     },
   });
 
-  const matchup = matchupQuery.data;
+  const matchup = reveal?.matchup ?? matchupQuery.data;
+  const nextMatchup = reveal && matchupQuery.data?.id !== reveal.matchup.id ? matchupQuery.data : undefined;
+
+  function finishReveal() {
+    const { matchupId, ready, voted } = progress.current;
+    if (!matchupId || !ready || !voted) return;
+    progress.current.matchupId = '';
+    clearTimeout(autoAdvance.current);
+    setReveal(null);
+    if (queryClient.getQueryData<Matchup>(['matchup'])?.id === matchupId) {
+      queryClient.resetQueries({ queryKey: ['matchup'] });
+    }
+  }
+
+  function skipWait() {
+    progress.current.ready = true;
+    finishReveal();
+  }
+
   const vote = (winner: Post, loser: Post) => {
-    if (!matchup || voteMutation.isPending) return;
+    if (!matchup || reveal || voteMutation.isPending) return;
+    progress.current = { matchupId: matchup.id, ready: false, voted: false };
+    setReveal({ matchup, pickedId: winner.id });
+    clearTimeout(autoAdvance.current);
+    autoAdvance.current = setTimeout(skipWait, AUTO_ADVANCE_MS);
     voteMutation.mutate({ matchup, winner, loser });
   };
+
+  useEffect(() => {
+    if (!nextMatchup) return;
+    Image.prefetch([nextMatchup.postA.thumbnailUrl, nextMatchup.postB.thumbnailUrl], 'memory-disk');
+  }, [nextMatchup]);
+
+  useEffect(() => () => clearTimeout(autoAdvance.current), []);
 
   let content;
   if (matchupQuery.isError && !matchup) {
@@ -160,19 +225,23 @@ export default function VoteScreen() {
     content = (
       <View style={styles.cards}>
         <VoteCard
+          key={`${matchup.id}-a`}
           post={matchup.postA}
           label="Vote"
-          disabled={voteMutation.isPending}
+          disabled={!!reveal || voteMutation.isPending}
           onVote={() => vote(matchup.postA, matchup.postB)}
+          reveal={reveal && { rank: eloRank(matchup.postA, matchup.postB), picked: reveal.pickedId === matchup.postA.id }}
         />
         <ThemedText type="smallBold" themeColor="textSecondary" style={styles.vs}>
           VS
         </ThemedText>
         <VoteCardBottom
+          key={`${matchup.id}-b`}
           post={matchup.postB}
           label="Vote"
-          disabled={voteMutation.isPending}
+          disabled={!!reveal || voteMutation.isPending}
           onVote={() => vote(matchup.postB, matchup.postA)}
+          reveal={reveal && { rank: eloRank(matchup.postB, matchup.postA), picked: reveal.pickedId === matchup.postB.id }}
         />
       </View>
     );
@@ -208,7 +277,8 @@ const styles = StyleSheet.create({
   cards: {
     flex: 1,
     paddingHorizontal: Spacing.one,
-    paddingBottom: BottomTabInset + Spacing.six,
+    paddingTop: Spacing.three,
+    paddingBottom: (Platform.OS === 'ios' ? BottomTabInset : 0) + Spacing.three,
   },
   card: {
     flex: 1,
@@ -275,6 +345,17 @@ starBottom: {
 
   disabled: {
     opacity: 0.5,
+  },
+  pickedRing: {
+    position: 'absolute',
+    top: -1,
+    left: -1,
+    right: -1,
+    bottom: -1,
+    borderWidth: 3,
+    borderRadius: 40,
+    borderColor: '#B2F2BB',
+    pointerEvents: 'none',
   },
   vs: {
     textAlign: 'center',
