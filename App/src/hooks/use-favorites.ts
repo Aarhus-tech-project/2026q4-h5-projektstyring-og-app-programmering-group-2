@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner-native';
-import { addFavorite, getFavorites, removeFavorite, type RankedPost } from '../../lib/api';
+import { addFavorite, getFavorites, removeFavorite, type Post } from '../../lib/api';
 import { useAuthStatus } from '../../lib/auth';
 import { errorMessage } from '../../lib/errors';
 
@@ -21,12 +21,12 @@ export function useToggleFavorite() {
 
   return useMutation({
     mutationKey: toggleKey,
-    mutationFn: ({ post, favorite }: { post: RankedPost; favorite: boolean }) =>
+    mutationFn: ({ post, favorite }: { post: Post; favorite: boolean }) =>
       favorite ? addFavorite(post.id) : removeFavorite(post.id),
     onMutate: async ({ post, favorite }) => {
       await queryClient.cancelQueries({ queryKey: favoritesKey });
-      const previous = queryClient.getQueryData<RankedPost[]>(favoritesKey);
-      queryClient.setQueryData<RankedPost[]>(favoritesKey, (old = []) => {
+      const previous = queryClient.getQueryData<Post[]>(favoritesKey);
+      queryClient.setQueryData<Post[]>(favoritesKey, (old = []) => {
         const rest = old.filter((p) => p.id !== post.id);
         return favorite ? [post, ...rest] : rest;
       });

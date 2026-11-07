@@ -254,9 +254,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["PublicPostDTO"][];
-                        "application/json": components["schemas"]["PublicPostDTO"][];
-                        "text/json": components["schemas"]["PublicPostDTO"][];
+                        "text/plain": components["schemas"]["RankedPostDTO"][];
+                        "application/json": components["schemas"]["RankedPostDTO"][];
+                        "text/json": components["schemas"]["RankedPostDTO"][];
                     };
                 };
             };
@@ -269,7 +269,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/Posts/me": {
+    "/api/Posts/profile": {
         parameters: {
             query?: never;
             header?: never;
@@ -306,7 +306,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/Posts/me/avatar": {
+    "/api/Posts/profile/avatar": {
         parameters: {
             query?: never;
             header?: never;
@@ -345,7 +345,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/Posts/me/description": {
+    "/api/Posts/profile/description": {
         parameters: {
             query?: never;
             header?: never;
@@ -601,6 +601,7 @@ export interface components {
             description: null | string;
             avatarThumbnailUrl: null | string;
             avatarUrl: null | string;
+            avatarThumbhash: null | string;
             /** Format: float */
             elo: number | string;
             /** Format: int32 */
@@ -623,6 +624,24 @@ export interface components {
             losses: number | string;
             /** Format: date-time */
             createdAt: string;
+        };
+        RankedPostDTO: {
+            /** Format: uuid */
+            id: string;
+            thumbnailUrl: string;
+            imageUrl: string;
+            thumbhash: null | string;
+            /** Format: float */
+            elo: number | string;
+            /** Format: int32 */
+            wins: number | string;
+            /** Format: int32 */
+            losses: number | string;
+            /** Format: date-time */
+            createdAt: string;
+            avatarThumbnailUrl: null | string;
+            avatarUrl: null | string;
+            avatarThumbhash: null | string;
         };
         /** @enum {unknown} */
         RankingOrder: "top" | "worst";

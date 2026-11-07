@@ -87,15 +87,15 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     }
 
     [HttpGet("ranking")]
-    public async Task<ActionResult<List<PublicPostDTO>>> Ranking([FromQuery] RankingPeriod period = RankingPeriod.All, [FromQuery] RankingOrder order = RankingOrder.Top)
+    public async Task<ActionResult<List<RankedPostDTO>>> Ranking([FromQuery] RankingPeriod period = RankingPeriod.All, [FromQuery] RankingOrder order = RankingOrder.Top)
     {
         List<Post> posts = await postsRepository.GetRanking(period, order);
-        return posts.Select(ToDto).ToList();
+        return posts.Select(ToRankedDto).ToList();
     }
 
-    [HttpGet("me")]
+    [HttpGet("profile")]
     [Authorize]
-    public async Task<ActionResult<Profile>> Me()
+    public async Task<ActionResult<Profile>> GetProfile()
     {
         Guid userId = User.GetUserId();
 
@@ -105,13 +105,12 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         int wins = posts.Sum(p => p.Wins);
         int losses = posts.Sum(p => p.Losses);
         float elo = posts.Count == 0 ? 1000 : posts.Max(p => p.Elo);
-        string? avatarThumbnailUrl = user.AvatarHash == null ? null : MediaUrl(user.AvatarHash, suffix: "_thumb");
-        string? avatarUrl = user.AvatarHash == null ? null : MediaUrl(user.AvatarHash);
+        var (avatarThumbnailUrl, avatarUrl, avatarThumbhash) = AvatarFields(user);
 
-        return new Profile(user.Username, user.Description, avatarThumbnailUrl, avatarUrl, elo, wins, losses, posts.Select(ToDto).ToList());
+        return new Profile(user.Username, user.Description, avatarThumbnailUrl, avatarUrl, avatarThumbhash, elo, wins, losses, posts.Select(ToDto).ToList());
     }
 
-    [HttpPut("me/avatar")]
+    [HttpPut("profile/avatar")]
     [Authorize]
     [RequestSizeLimit(MaxUploadBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
@@ -127,7 +126,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         return NoContent();
     }
 
-    [HttpPut("me/description")]
+    [HttpPut("profile/description")]
     [Authorize]
     public async Task<IActionResult> SetDescription(DescriptionRequest request)
     {
@@ -142,6 +141,21 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     {
         string? thumbhash = p.Media.Thumbhash == null ? null : Convert.ToBase64String(p.Media.Thumbhash);
         return new(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash), thumbhash, p.Elo, p.Wins, p.Losses, p.CreatedAt);
+    }
+
+    RankedPostDTO ToRankedDto(Post p)
+    {
+        string? thumbhash = p.Media.Thumbhash == null ? null : Convert.ToBase64String(p.Media.Thumbhash);
+        var (avatarThumbnailUrl, avatarUrl, avatarThumbhash) = AvatarFields(p.User);
+        return new(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash), thumbhash, p.Elo, p.Wins, p.Losses, p.CreatedAt,
+            avatarThumbnailUrl, avatarUrl, avatarThumbhash);
+    }
+
+    (string? ThumbnailUrl, string? Url, string? Thumbhash) AvatarFields(User user)
+    {
+        if (user.AvatarHash == null) return (null, null, null);
+        string? thumbhash = user.Avatar?.Thumbhash == null ? null : Convert.ToBase64String(user.Avatar.Thumbhash);
+        return (MediaUrl(user.AvatarHash, suffix: "_thumb"), MediaUrl(user.AvatarHash), thumbhash);
     }
 
     string MediaUrl(byte[] hash, string suffix = "", string extension = ".webp")

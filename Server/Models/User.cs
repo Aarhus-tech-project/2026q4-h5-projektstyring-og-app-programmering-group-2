@@ -40,4 +40,4 @@ public class UserAccessTokenDTO
     public string Email { get; set; } = null!;
 }
 
-public record Profile(string Username, string? Description, string? AvatarThumbnailUrl, string? AvatarUrl, float Elo, int Wins, int Losses, List<PublicPostDTO> Posts);
+public record Profile(string Username, string? Description, string? AvatarThumbnailUrl, string? AvatarUrl, string? AvatarThumbhash, float Elo, int Wins, int Losses, List<PublicPostDTO> Posts);

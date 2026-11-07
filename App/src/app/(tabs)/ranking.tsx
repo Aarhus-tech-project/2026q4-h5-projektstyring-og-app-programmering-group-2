@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Avatar } from '@/components/ui/avatar';
 import { ExpandableImage } from '@/components/ui/expandable-image';
 import { PeriodPicker } from '@/components/ui/period-picker';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -54,6 +55,16 @@ function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps
             <ThemedText type="smallBold" style={[styles.badgeText, { color: medal ? '#111111' : '#FFFFFF' }]}>
               {placement}
             </ThemedText>
+          </View>
+
+          <View style={styles.avatar}>
+            <Avatar
+              thumbnailUrl={photo.avatarThumbnailUrl}
+              imageUrl={photo.avatarUrl}
+              thumbhash={photo.avatarThumbhash}
+              size={40}
+              expandable={false}
+            />
           </View>
         </View>
 
@@ -316,6 +327,11 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     transform: [{ rotate: '-45deg' }],
+  },
+  avatar: {
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
   },
   card: {
     flex: 1,

@@ -225,7 +225,10 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
     {
         if (period == RankingPeriod.Trending) return [];
 
-        var posts = db.Posts.AsNoTracking().Include(p => p.Media).Where(p => p.DeletedAt == null);
+        var posts = db.Posts.AsNoTracking()
+            .Include(p => p.Media)
+            .Include(p => p.User).ThenInclude(u => u.Avatar)
+            .Where(p => p.DeletedAt == null);
 
         if (period == RankingPeriod.Week)
         {
@@ -248,7 +251,7 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
 
     public async Task<User?> GetUser(Guid userId)
     {
-        return await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        return await db.Users.Include(u => u.Avatar).FirstOrDefaultAsync(u => u.Id == userId);
     }
 
     public async Task<List<Post>> GetUserPosts(Guid userId)

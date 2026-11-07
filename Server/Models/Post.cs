@@ -33,3 +33,6 @@ public class Post
 }
 
 public record PublicPostDTO(Guid Id, string ThumbnailUrl, string ImageUrl, string? Thumbhash, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt);
+
+public record RankedPostDTO(Guid Id, string ThumbnailUrl, string ImageUrl, string? Thumbhash, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt,
+    string? AvatarThumbnailUrl, string? AvatarUrl, string? AvatarThumbhash);

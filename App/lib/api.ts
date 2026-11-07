@@ -95,7 +95,8 @@ export async function signOut() {
 
 export type RankingPeriod = components["schemas"]["RankingPeriod"];
 export type RankingOrder = components["schemas"]["RankingOrder"];
-export type RankedPost = components["schemas"]["PublicPostDTO"];
+export type Post = components["schemas"]["PublicPostDTO"];
+export type RankedPost = components["schemas"]["RankedPostDTO"];
 
 export async function getRanking(period: RankingPeriod, order: RankingOrder) {
   const { data, error, response } = await api.GET("/api/Posts/ranking", {
@@ -140,10 +141,10 @@ export async function uploadPost(uri: string) {
 //-------------------------------------------------------------
 // Get Own Profile Data
 
-export type Profile = components["schemas"]["ProfileDTO"];
+export type Profile = components["schemas"]["Profile"];
 
 export async function getMyProfile() {
-  const { data, error, response } = await api.GET("/api/Posts/me");
+  const { data, error, response } = await api.GET("/api/Posts/profile");
   if (!response.ok || !data) fail(response, error);
   return data;
 }
@@ -155,7 +156,7 @@ export async function uploadAvatar(uri: string) {
   const form = new FormData();
   form.append("File", new File(uri) as any);
 
-  const { error, response } = await api.PUT("/api/Posts/me/avatar", {
+  const { error, response } = await api.PUT("/api/Posts/profile/avatar", {
     body: form as any,
     bodySerializer: (body) => body,
   });
@@ -166,7 +167,7 @@ export async function uploadAvatar(uri: string) {
 // Update Description
 
 export async function updateDescription(description: string) {
-  const { error, response } = await api.PUT("/api/Posts/me/description", {
+  const { error, response } = await api.PUT("/api/Posts/profile/description", {
     body: { description },
   });
   if (!response.ok) fail(response, error);

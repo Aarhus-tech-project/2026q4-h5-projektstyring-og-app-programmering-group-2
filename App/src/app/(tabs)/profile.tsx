@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Avatar } from '@/components/ui/avatar';
 import { ExpandableImage } from '@/components/ui/expandable-image';
 import { ModalDescription } from '@/components/ui/modalDescription';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,7 +9,6 @@ import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useTheme } from '@/hooks/use-theme';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAssets } from 'expo-asset';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
@@ -66,11 +66,6 @@ export default function Profile() {
     queryClient.invalidateQueries({ queryKey: ['profile'] }, { cancelRefetch: false })
     queryClient.invalidateQueries({ queryKey: ['favorites'] }, { cancelRefetch: false })
   }, [queryClient]))
-  const [defaultAvatar] = useAssets(require('@/assets/images/default-avatar.jpg'))
-  const defaultAvatarUri = defaultAvatar?.[0]?.localUri ?? defaultAvatar?.[0]?.uri
-  const avatarUrl = profile?.avatarUrl ?? defaultAvatarUri
-  const avatarThumbnailUrl = profile?.avatarThumbnailUrl ?? defaultAvatarUri
-
   const avatarMutation = useMutation({
     mutationFn: uploadAvatar,
     onSuccess: () => {
@@ -187,21 +182,13 @@ export default function Profile() {
             </View>
 
             <View style={styles.headerRight}>
-              <View style={[styles.profilePic, { borderColor: theme.border }]}>
-                {avatarUrl && avatarThumbnailUrl && (
-                  <ExpandableImage thumbnailUrl={avatarThumbnailUrl} imageUrl={avatarUrl} borderRadius={55} />
-                )}
-                {avatarMutation.isPending && (
-                  <View style={styles.avatarBusy}>
-                    <ActivityIndicator color="#FFFFFF" />
-                  </View>
-                )}
-              </View>
-              <Pressable onPress={editAvatar} disabled={avatarMutation.isPending} style={styles.editBadge}>
-                <ThemedView type="backgroundElement" style={[styles.editBadgeInner, { borderColor: theme.border }]}>
-                  <SymbolView name={{ ios: 'pencil', android: 'edit', web: 'edit' }} tintColor={theme.text} size={14} />
-                </ThemedView>
-              </Pressable>
+              <Avatar
+                thumbnailUrl={profile.avatarThumbnailUrl}
+                imageUrl={profile.avatarUrl}
+                thumbhash={profile.avatarThumbhash}
+                busy={avatarMutation.isPending}
+                onEdit={editAvatar}
+              />
             </View>
           </View>
          <Pressable onPress={() => setEditing(true)}>
@@ -353,12 +340,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'white'
   },
-  profilePic: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 2,
-  },
   eloBorder: {
     borderWidth: 1,
     borderColor: '#FFD84D',
@@ -419,26 +400,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     alignSelf: 'center',
-  },
-  editBadge: {
-  position: 'absolute',
-  right: 0,
-  bottom: 0,
-  },
-  editBadgeInner: {
-    width: 35,
-    height: 35,
-    borderRadius: 15,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarBusy: {
-    ...StyleSheet.absoluteFill,
-    borderRadius: 55,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
   skeletonGrid: {
     flexDirection: 'row',
