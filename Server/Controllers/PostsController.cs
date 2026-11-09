@@ -11,7 +11,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
 {
     public record DescriptionRequest(string? Description);
     public record PostRequest(IFormFile File);
-    public record VoteRequest(Guid MatchupId, Guid WinnerPostId, Guid LooserPostId);
+    public record VoteRequest(Guid MatchupId, Guid WinnerPostId, Guid LoserPostId);
 
     private const long MaxUploadBytes = 25 * 1024 * 1024;
 
@@ -45,7 +45,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     public async Task<ActionResult<List<PublicPostDTO>>> Favorites()
     {
         List<Post> posts = await postsRepository.GetFavorites(User.GetUserId());
-        return posts.Select(ToDto).ToList();
+        return posts.Select(p => new PublicPostDTO(p, storage)).ToList();
     }
 
     [HttpPost("favorite")]
@@ -80,14 +80,14 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     {
         var (matchup, postA, postB) = await postsRepository.GetOrCreateMatchup(User.GetUserId());
 
-        return new MatchupDTO(matchup.Id, ToDto(postA), ToDto(postB), matchup.IssuedAt);
+        return new MatchupDTO(matchup.Id, new PublicPostDTO(postA, storage), new PublicPostDTO(postB, storage), matchup.IssuedAt);
     }
 
     [HttpGet("ranking")]
     public async Task<ActionResult<List<RankedPostDTO>>> Ranking([FromQuery] RankingPeriod period = RankingPeriod.All, [FromQuery] RankingOrder order = RankingOrder.Top)
     {
         List<Post> posts = await postsRepository.GetRanking(period, order);
-        return posts.Select(ToRankedDto).ToList();
+        return posts.Select(p => new RankedPostDTO(p, storage)).ToList();
     }
 
     [HttpGet("profile")]
@@ -98,13 +98,17 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
 
         var user = await postsRepository.GetUser(userId);
         if (user == null) return NotFound();
-        List<Post> posts = await postsRepository.GetUserPosts(userId);
-        int wins = posts.Sum(p => p.Wins);
-        int losses = posts.Sum(p => p.Losses);
-        float elo = posts.Count == 0 ? 1000 : posts.Max(p => p.Elo);
         var (avatarThumbnailUrl, avatarUrl, avatarThumbhash) = AvatarFields(user);
 
-        return new Profile(user.Username, user.Description, avatarThumbnailUrl, avatarUrl, avatarThumbhash, elo, wins, losses, posts.Select(ToDto).ToList());
+        return new Profile(user.Username, user.Description, avatarThumbnailUrl, avatarUrl, avatarThumbhash, user.Elo, user.Wins, user.Losses);
+    }
+
+    [HttpGet("profile/posts")]
+    [Authorize]
+    public async Task<ActionResult<PostPageDTO>> GetProfilePosts([FromQuery] Guid? before = null)
+    {
+        var (posts, nextCursor) = await postsRepository.GetUserPosts(User.GetUserId(), before);
+        return new PostPageDTO(posts.Select(p => new PublicPostDTO(p, storage)).ToList(), nextCursor);
     }
 
     [HttpPut("profile/avatar")]
@@ -131,20 +135,6 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
 
         await postsRepository.SetDescription(User.GetUserId(), description);
         return NoContent();
-    }
-
-    PublicPostDTO ToDto(Post p)
-    {
-        string? thumbhash = p.Media.Thumbhash == null ? null : Convert.ToBase64String(p.Media.Thumbhash);
-        return new(p.Id, storage.ThumbnailUrl(p.MediaHash), storage.ImageUrl(p.MediaHash), thumbhash, p.Elo, p.Wins, p.Losses, p.CreatedAt);
-    }
-
-    RankedPostDTO ToRankedDto(Post p)
-    {
-        string? thumbhash = p.Media.Thumbhash == null ? null : Convert.ToBase64String(p.Media.Thumbhash);
-        var (avatarThumbnailUrl, avatarUrl, avatarThumbhash) = AvatarFields(p.User);
-        return new(p.Id, storage.ThumbnailUrl(p.MediaHash), storage.ImageUrl(p.MediaHash), thumbhash, p.Elo, p.Wins, p.Losses, p.CreatedAt,
-            avatarThumbnailUrl, avatarUrl, avatarThumbhash);
     }
 
     (string? ThumbnailUrl, string? Url, string? Thumbhash) AvatarFields(User user)

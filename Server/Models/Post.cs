@@ -1,3 +1,4 @@
+using Server;
 using System.Text.Json.Serialization;
 
 [JsonConverter(typeof(JsonStringEnumConverter<RankingPeriod>))]
@@ -32,7 +33,28 @@ public class Post
     public Media Media { get; set; } = null!;
 }
 
-public record PublicPostDTO(Guid Id, string ThumbnailUrl, string ImageUrl, string? Thumbhash, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt);
+public record PublicPostDTO(Guid Id, string ThumbnailUrl, string ImageUrl, string? Thumbhash, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt)
+{
+    internal PublicPostDTO(Post p, BlobStorageService storage)
+        : this(p.Id, storage.ThumbnailUrl(p.MediaHash), storage.ImageUrl(p.MediaHash),
+            p.Media.Thumbhash is { } thumbhash ? Convert.ToBase64String(thumbhash) : null,
+            p.Elo, p.Wins, p.Losses, p.CreatedAt)
+    {
+    }
+}
+
+public record PostPageDTO(List<PublicPostDTO> Posts, Guid? NextCursor);
 
 public record RankedPostDTO(Guid Id, string ThumbnailUrl, string ImageUrl, string? Thumbhash, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt,
-    string? AvatarThumbnailUrl, string? AvatarUrl, string? AvatarThumbhash);
+    string? AvatarThumbnailUrl, string? AvatarUrl, string? AvatarThumbhash)
+{
+    internal RankedPostDTO(Post p, BlobStorageService storage)
+        : this(p.Id, storage.ThumbnailUrl(p.MediaHash), storage.ImageUrl(p.MediaHash),
+            p.Media.Thumbhash is { } thumbhash ? Convert.ToBase64String(thumbhash) : null,
+            p.Elo, p.Wins, p.Losses, p.CreatedAt,
+            p.User.AvatarHash is { } avatar ? storage.ThumbnailUrl(avatar) : null,
+            p.User.AvatarHash is { } avatarImage ? storage.ImageUrl(avatarImage) : null,
+            p.User.Avatar?.Thumbhash is { } avatarThumbhash ? Convert.ToBase64String(avatarThumbhash) : null)
+    {
+    }
+}

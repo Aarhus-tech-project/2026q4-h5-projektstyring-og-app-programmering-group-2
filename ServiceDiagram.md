@@ -69,6 +69,7 @@ flowchart LR
   - `media` allows anonymous blob-level read, so blobs can be fetched by exact name but the container can't be listed. Each image is stored twice: `{hash}.webp` (max 2048 px) and `{hash}_thumb.webp` (max 400 px).
 - **The app fetches media directly from Azure.** Media never goes through the stack. The DB stores only the hash, and the API builds the URLs.
 - **Thumbhash placeholders:** each upload also gets a [ThumbHash](https://evanw.github.io/thumbhash/), a ~25-byte encoding of a blurred version of the image, stored in `media.thumbhash`. The API sends it (base64) with every post, and the app shows it as a blur until the thumbnail has loaded.
+- **Sessions:** login returns a 15-minute JWT access token and a refresh token. Only the refresh token's SHA-256 hash is stored, in `sessions`. Each refresh swaps it for a new one in a single conditional update, so two refreshes racing on the same token can't both succeed. Logging in revokes the user's earlier sessions on the same device, matched by a per-install `device_id` the app sends, not by device name.
 - **Credentials:** the backend authenticates to Azure with a connection string (`ConnectionStrings:Blobs`). The app never holds storage credentials.
 - **Postgres** runs as a single container with a volume on the manager node.
 - **Monitoring:** the backend and the worker push logs to Loki, metrics to Prometheus and traces to Tempo, all over OTLP. node-exporter runs on every node and Prometheus scrapes it for host CPU, RAM and disk. Grafana shows all of it, plus app data queried straight from Postgres, and loads the `Fotolo overview` dashboard from `swarm/grafana-dashboard.json` on startup. Its port should be firewalled or reached over an SSH tunnel.
@@ -117,7 +118,7 @@ sequenceDiagram
         API-->>App: matchup (post A, post B)
     end
 
-    App->>API: POST /api/posts/vote (matchupId, winnerPostId, looserPostId)
+    App->>API: POST /api/posts/vote (matchupId, winnerPostId, loserPostId)
     API->>DB: insert vote (counted_at = null) if the matchup is the voter's and the posts match
     API-->>App: 200 (Elo not changed yet)
 
@@ -126,7 +127,7 @@ sequenceDiagram
         W->>DB: select pending votes ORDER BY created_at LIMIT 10000
         W->>DB: load the posts in those votes (once each)
         W->>W: apply each vote in order, in memory
-        W->>DB: update each changed post once, update the owners in users,<br/>set counted_at + elo_before on the votes
+        W->>DB: update each changed post once, recompute the owners' stats in users,<br/>upsert hourly Elo changes, prune post_elo_changes older than 96h,<br/>set counted_at + elo_before on the votes
         W->>DB: COMMIT, repeat while a full batch came back
     end
 ```
@@ -135,5 +136,6 @@ sequenceDiagram
 - **Why the votes are counted in one place:** Elo depends on the order votes are applied. With one worker the result is the same as counting each vote live, and API replicas never race each other updating the same post row.
 - **Smart batching:** a post that appears in 50 pending votes is read once and written once per batch, not 50 times. Votes are still applied one by one in `created_at` order, so the Elo math is exact.
 - **Safe to restart or double-start:** each batch is one transaction, so a crash just leaves those votes pending for the next run. The advisory lock means a second worker would skip the run instead of counting twice.
+- **Trending** comes from the hourly Elo changes the worker writes: the last 48 hours summed per live post, top 10 rising and top 10 falling. It's as fresh as the last counting run, like everything else that reads Elo.
 - **Deleted posts:** a vote on a post that was deleted before counting is counted like any other. The deleted post's Elo changes, but it no longer appears in rankings or matchups.
 - **The interval is fixed at one minute** (`PollInterval` in `VoteWorker.cs`). Shorter means fresher rankings and smaller batches.

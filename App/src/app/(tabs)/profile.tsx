@@ -8,7 +8,7 @@ import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view'
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useTheme } from '@/hooks/use-theme';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
@@ -17,7 +17,7 @@ import { ActivityIndicator, FlatList, Modal, Pressable, RefreshControl, StyleShe
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutLeft } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
-import { getMyProfile, signOut, updateDescription, uploadAvatar } from '../../../lib/api';
+import { getMyPosts, getMyProfile, signOut, updateDescription, uploadAvatar } from '../../../lib/api';
 import { setAppearance } from '../../../lib/appearance';
 import { useAuthStatus } from '../../../lib/auth';
 import { errorMessage } from '../../../lib/errors';
@@ -107,6 +107,13 @@ export default function Profile() {
     enabled: auth === 'signedIn',
   })
   const profile = profileQuery.data
+  const postsQuery = useInfiniteQuery({
+    queryKey: ['profile', 'posts'],
+    queryFn: ({ pageParam }) => getMyPosts(pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    enabled: auth === 'signedIn',
+  })
   const favoritesQuery = useFavorites()
   useFocusEffect(useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['profile'] }, { cancelRefetch: false })
@@ -135,7 +142,7 @@ export default function Profile() {
   async function onRefresh() {
     setRefreshing(true)
     try {
-      await Promise.all([profileQuery.refetch(), favoritesQuery.refetch()])
+      await Promise.all([profileQuery.refetch(), postsQuery.refetch(), favoritesQuery.refetch()])
     } finally {
       setRefreshing(false)
     }
@@ -174,7 +181,10 @@ export default function Profile() {
   }
 
 
-  const posts = tab === 'photos' ? (profile?.posts ?? []) : (favoritesQuery.data ?? [])
+  const posts = tab === 'photos' ? (postsQuery.data?.pages.flatMap((page) => page.posts) ?? []) : (favoritesQuery.data ?? [])
+  const loadMorePosts = () => {
+    if (tab === 'photos' && postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) postsQuery.fetchNextPage()
+  }
   return (
     <ThemedView style={styles.screen}>
     <SafeAreaView style={styles.scrollable}>
@@ -184,8 +194,12 @@ export default function Profile() {
       numColumns={3}
       contentContainerStyle={{ flexGrow: 1, paddingBottom: BottomTabInset + Spacing.four }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.textSecondary} />}
+      onEndReached={loadMorePosts}
+      onEndReachedThreshold={0.5}
       ListEmptyComponent={
-        tab === 'photos' ? (
+        tab === 'photos' ? postsQuery.isError ? (
+          <ErrorState error={postsQuery.error} onRetry={() => postsQuery.refetch()} retrying={postsQuery.isFetching} />
+        ) : postsQuery.isPending ? undefined : (
           <StateView
             icon={{ ios: 'camera', android: 'photo_camera', web: 'photo_camera' }}
             title="No photos yet"

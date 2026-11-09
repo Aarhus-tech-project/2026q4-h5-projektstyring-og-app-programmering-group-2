@@ -389,6 +389,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/Posts/profile/posts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    before?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PostPageDTO"];
+                    };
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/Posts/profile/avatar": {
         parameters: {
             query?: never;
@@ -739,6 +785,8 @@ export interface components {
         LoginRequest: {
             email: string;
             password: string;
+            /** Format: uuid */
+            deviceId: string;
             deviceName: string;
             platform: string;
         };
@@ -749,6 +797,11 @@ export interface components {
             postB: components["schemas"]["PublicPostDTO"];
             /** Format: date-time */
             issuedAt: string;
+        };
+        PostPageDTO: {
+            posts: components["schemas"]["PublicPostDTO"][];
+            /** Format: uuid */
+            nextCursor: null | string;
         };
         ProblemDetails: {
             type?: null | string;
@@ -770,7 +823,6 @@ export interface components {
             wins: number;
             /** Format: int32 */
             losses: number;
-            posts: components["schemas"]["PublicPostDTO"][];
         };
         PublicPostDTO: {
             /** Format: uuid */
@@ -824,7 +876,7 @@ export interface components {
             /** Format: uuid */
             winnerPostId: string;
             /** Format: uuid */
-            looserPostId: string;
+            loserPostId: string;
         };
     };
     responses: never;

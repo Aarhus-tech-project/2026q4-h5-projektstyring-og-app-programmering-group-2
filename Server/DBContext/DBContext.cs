@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Matchup> Matchups => Set<Matchup>();
     public DbSet<Vote> Votes => Set<Vote>();
     public DbSet<UserFavorite> UserFavorites => Set<UserFavorite>();
+    public DbSet<PostEloChange> PostEloChanges => Set<PostEloChange>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -42,6 +43,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(p => new { p.Elo, p.RandKey }).HasFilter("deleted_at IS NULL");
             e.HasIndex(p => new { p.CreatedWeek, p.Elo, p.RandKey }).HasFilter("deleted_at IS NULL");
             e.HasIndex(p => p.RandKey).HasFilter("deleted_at IS NULL");
+            e.HasIndex(p => new { p.UserId, p.CreatedAt, p.Id }).HasFilter("deleted_at IS NULL");
 
             e.HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId);
             e.HasOne(p => p.Media).WithMany().HasForeignKey(p => p.MediaHash);
@@ -85,5 +87,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             // The key covers lookups by user; this covers "who favorited this post"
             e.HasIndex(f => f.PostId);
         });
+
+        b.Entity<PostEloChange>().HasKey(c => new { c.Hour, c.PostId });
     }
 }

@@ -3,7 +3,7 @@ import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import createClient from "openapi-fetch";
 import type { components, paths } from "./api-types";
-import { clearSession, saveSession } from "./auth";
+import { clearSession, getDeviceId, saveSession } from "./auth";
 import { ApiError } from "./errors";
 
 export const api = createClient<paths>({
@@ -50,7 +50,7 @@ async function refresh() {
     await clearSession();
     return null;
   }
-  if (!res.ok) return null;
+  if (!res.ok) throw new ApiError(res.status);
 
   const data = await res.json();
   await saveSession(data.accessToken, data.refreshToken);
@@ -71,8 +71,9 @@ function fileForm(body: { File?: string }) {
 // Login - Register - Logout
 
 export async function login(email: string, password: string, deviceName: string) {
+  const deviceId = await getDeviceId();
   const { data, error, response } = await api.POST("/api/Login/login", {
-    body: { email, password, deviceName, platform: Platform.OS },
+    body: { email, password, deviceId, deviceName, platform: Platform.OS },
   });
   if (!response.ok || !data) fail(response, error);
   await saveSession(data.accessToken, data.refreshToken);
@@ -120,9 +121,9 @@ export async function getMatchup() {
   return data;
 }
 
-export async function submitVote(matchupId: string, winnerPostId: string, looserPostId: string) {
+export async function submitVote(matchupId: string, winnerPostId: string, loserPostId: string) {
   const { error, response } = await api.POST("/api/Posts/vote", {
-    body: { matchupId, winnerPostId, looserPostId },
+    body: { matchupId, winnerPostId, loserPostId },
   });
   if (!response.ok) fail(response, error);
 }
@@ -145,6 +146,16 @@ export type Profile = components["schemas"]["Profile"];
 
 export async function getMyProfile() {
   const { data, error, response } = await api.GET("/api/Posts/profile");
+  if (!response.ok || !data) fail(response, error);
+  return data;
+}
+
+export type PostPage = components["schemas"]["PostPageDTO"];
+
+export async function getMyPosts(before?: string) {
+  const { data, error, response } = await api.GET("/api/Posts/profile/posts", {
+    params: { query: before ? { before } : {} },
+  });
   if (!response.ok || !data) fail(response, error);
   return data;
 }

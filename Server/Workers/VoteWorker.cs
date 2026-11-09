@@ -8,6 +8,7 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
     private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(1);
     private const int BatchSize = 10_000;
     private const long VoteCountingLockKey = 7_000_001;
+    private static readonly TimeSpan EloChangeRetention = PostsRepository.TrendingWindow * 2;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -64,7 +65,7 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
             .Where(v => v.CountedAt == null)
             .OrderBy(v => v.CreatedAt).ThenBy(v => v.MatchupId)
             .Take(BatchSize)
-            .Select(v => new { v.MatchupId, v.WinnerId, v.LoserId })
+            .Select(v => new { v.MatchupId, v.WinnerId, v.LoserId, v.CreatedAt })
             .ToListAsync(ct);
 
         if (votes.Count == 0) return 0;
@@ -78,7 +79,7 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
 
         var winnerBefore = new float[votes.Count];
         var loserBefore = new float[votes.Count];
-        var userDeltas = new Dictionary<Guid, (int Wins, int Losses)>();
+        var hourlyChanges = new Dictionary<(Guid PostId, DateTimeOffset Hour), float>();
 
         for (int i = 0; i < votes.Count; i++)
         {
@@ -92,10 +93,9 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
             winner.Wins++;
             loser.Losses++;
 
-            var w = userDeltas.GetValueOrDefault(winner.UserId);
-            userDeltas[winner.UserId] = (w.Wins + 1, w.Losses);
-            var l = userDeltas.GetValueOrDefault(loser.UserId);
-            userDeltas[loser.UserId] = (l.Wins, l.Losses + 1);
+            var hour = TruncateToHour(votes[i].CreatedAt);
+            hourlyChanges[(winner.Id, hour)] = hourlyChanges.GetValueOrDefault((winner.Id, hour)) + (winner.Elo - winnerBefore[i]);
+            hourlyChanges[(loser.Id, hour)] = hourlyChanges.GetValueOrDefault((loser.Id, hour)) + (loser.Elo - loserBefore[i]);
         }
 
         var changedPosts = posts.Values.ToArray();
@@ -104,9 +104,12 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
         var postWinsArr = changedPosts.Select(p => p.Wins).ToArray();
         var postLossesArr = changedPosts.Select(p => p.Losses).ToArray();
 
-        var userIdArr = userDeltas.Keys.ToArray();
-        var userWinsArr = userDeltas.Values.Select(d => d.Wins).ToArray();
-        var userLossesArr = userDeltas.Values.Select(d => d.Losses).ToArray();
+        var userIdArr = changedPosts.Select(p => p.UserId).Distinct().ToArray();
+
+        var changePostIdArr = hourlyChanges.Keys.Select(k => k.PostId).ToArray();
+        var changeHourArr = hourlyChanges.Keys.Select(k => k.Hour).ToArray();
+        var changeEloArr = hourlyChanges.Values.ToArray();
+        var pruneBefore = DateTimeOffset.UtcNow - EloChangeRetention;
 
         var voteIdArr = votes.Select(v => v.MatchupId).ToArray();
         var countedAt = DateTimeOffset.UtcNow;
@@ -118,14 +121,15 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
             WHERE p.id = x.id
             """, ct);
 
+        await UserStats.Recompute(db, userIdArr, ct);
+
         await db.Database.ExecuteSqlAsync($"""
-            UPDATE users u
-            SET wins = u.wins + x.wins,
-                losses = u.losses + x.losses,
-                elo = COALESCE((SELECT MAX(p.elo) FROM posts p WHERE p.user_id = u.id AND p.deleted_at IS NULL), u.elo)
-            FROM unnest({userIdArr}, {userWinsArr}, {userLossesArr}) AS x(id, wins, losses)
-            WHERE u.id = x.id
+            INSERT INTO post_elo_changes (post_id, hour, elo_change)
+            SELECT * FROM unnest({changePostIdArr}, {changeHourArr}, {changeEloArr})
+            ON CONFLICT (hour, post_id) DO UPDATE SET elo_change = post_elo_changes.elo_change + excluded.elo_change
             """, ct);
+
+        await db.Database.ExecuteSqlAsync($"DELETE FROM post_elo_changes WHERE hour < {pruneBefore}", ct);
 
         await db.Database.ExecuteSqlAsync($"""
             UPDATE votes v
@@ -145,6 +149,12 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
         public float Elo;
         public int Wins;
         public int Losses;
+    }
+
+    static DateTimeOffset TruncateToHour(DateTimeOffset at)
+    {
+        var utc = at.UtcDateTime;
+        return new DateTimeOffset(utc.Year, utc.Month, utc.Day, utc.Hour, 0, 0, TimeSpan.Zero);
     }
 
     static void CalculateNewElo(ref float winner, ref float looser, float k = 32f)

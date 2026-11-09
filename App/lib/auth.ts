@@ -38,6 +38,27 @@ export async function clearSession() {
   emit("signedOut");
 }
 
+function randomUuid() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
+let deviceId: Promise<string> | null = null;
+
+export function getDeviceId() {
+  return (deviceId ??= SecureStore.getItemAsync("deviceid").then(async (existing) => {
+    if (existing) return existing;
+    const created = randomUuid();
+    await SecureStore.setItemAsync("deviceid", created);
+    return created;
+  }).catch((error) => {
+    deviceId = null;
+    throw error;
+  }));
+}
+
 export function setPendingRoute(route: string | null) {
   pendingRoute = route;
 }

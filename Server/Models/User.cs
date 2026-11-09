@@ -19,6 +19,6 @@ public class User
 
 public record RegisterRequest(string Username, string Email, string Password);
 
-public record LoginRequest(string Email, string Password, string DeviceName, string Platform);
+public record LoginRequest(string Email, string Password, Guid DeviceId, string DeviceName, string Platform);
 
-public record Profile(string Username, string? Description, string? AvatarThumbnailUrl, string? AvatarUrl, string? AvatarThumbhash, float Elo, int Wins, int Losses, List<PublicPostDTO> Posts);
+public record Profile(string Username, string? Description, string? AvatarThumbnailUrl, string? AvatarUrl, string? AvatarThumbhash, float Elo, int Wins, int Losses);

@@ -183,9 +183,6 @@ namespace Server.Migrations
                         .HasDatabaseName("ix_posts_rand_key")
                         .HasFilter("deleted_at IS NULL");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_posts_user_id");
-
                     b.HasIndex("Elo", "RandKey")
                         .HasDatabaseName("ix_posts_elo_rand_key")
                         .HasFilter("deleted_at IS NULL");
@@ -194,7 +191,31 @@ namespace Server.Migrations
                         .HasDatabaseName("ix_posts_created_week_elo_rand_key")
                         .HasFilter("deleted_at IS NULL");
 
+                    b.HasIndex("UserId", "CreatedAt", "Id")
+                        .HasDatabaseName("ix_posts_user_id_created_at_id")
+                        .HasFilter("deleted_at IS NULL");
+
                     b.ToTable("posts", (string)null);
+                });
+
+            modelBuilder.Entity("PostEloChange", b =>
+                {
+                    b.Property<DateTimeOffset>("Hour")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("hour");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("post_id");
+
+                    b.Property<float>("EloChange")
+                        .HasColumnType("real")
+                        .HasColumnName("elo_change");
+
+                    b.HasKey("Hour", "PostId")
+                        .HasName("pk_post_elo_changes");
+
+                    b.ToTable("post_elo_changes", (string)null);
                 });
 
             modelBuilder.Entity("Server.Models.Session", b =>
@@ -211,6 +232,10 @@ namespace Server.Migrations
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<Guid?>("DeviceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("device_id");
 
                     b.Property<string>("DeviceName")
                         .HasColumnType("text")

@@ -6,6 +6,7 @@
         public Guid UserId { get; set; }
         public User User { get; set; } = null!;
         public string? RefreshTokenHash { get; set; } = null!;
+        public Guid? DeviceId { get; set; }
         public string? DeviceName { get; set; } = null!;
         public string? Platform { get; set; } = null!;
         public string? AppVersion { get; set; } = null!;

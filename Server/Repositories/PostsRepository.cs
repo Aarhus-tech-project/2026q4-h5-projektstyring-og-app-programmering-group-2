@@ -76,11 +76,16 @@ public class PostsRepository(AppDbContext db)
 
     public async Task DeletePost(Guid userId, Guid postId)
     {
+        await using var tx = await db.Database.BeginTransactionAsync();
+
         int updated = await db.Posts
             .Where(p => p.Id == postId && p.UserId == userId)
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.DeletedAt, p => p.DeletedAt ?? DateTimeOffset.UtcNow));
 
         if (updated == 0) throw new PostDoesntExistException();
+
+        await UserStats.Recompute(db, [userId]);
+        await tx.CommitAsync();
     }
 
     public async Task DeleteFavorite(Guid userId, Guid postId)
@@ -173,7 +178,7 @@ public class PostsRepository(AppDbContext db)
 
     public async Task SubmitVote(Guid voterId, VoteRequest voteRequest)
     {
-        var (matchupId, winnerId, loserId) = (voteRequest.MatchupId, voteRequest.WinnerPostId, voteRequest.LooserPostId);
+        var (matchupId, winnerId, loserId) = (voteRequest.MatchupId, voteRequest.WinnerPostId, voteRequest.LoserPostId);
 
         int inserted;
         try
@@ -214,9 +219,13 @@ public class PostsRepository(AppDbContext db)
         throw new InvalidVoteException();
     }
 
+    public static readonly TimeSpan TrendingWindow = TimeSpan.FromHours(48);
+
+    const int RankingSize = 10;
+
     public async Task<List<Post>> GetRanking(RankingPeriod period, RankingOrder order)
     {
-        if (period == RankingPeriod.Trending) return [];
+        if (period == RankingPeriod.Trending) return await GetTrending(order);
 
         var posts = db.Posts.AsNoTracking()
             .Include(p => p.Media)
@@ -232,8 +241,43 @@ public class PostsRepository(AppDbContext db)
         return await (order == RankingOrder.Worst
             ? posts.OrderBy(p => p.Elo).ThenBy(p => p.RandKey)
             : posts.OrderByDescending(p => p.Elo).ThenByDescending(p => p.RandKey))
-            .Take(10)
+            .Take(RankingSize)
             .ToListAsync();
+    }
+
+    async Task<List<Post>> GetTrending(RankingOrder order)
+    {
+        var since = DateTimeOffset.UtcNow - TrendingWindow;
+
+        var ids = await (order == RankingOrder.Worst
+            ? db.Database.SqlQuery<Guid>($"""
+                SELECT c.post_id AS "Value"
+                FROM post_elo_changes c
+                JOIN posts p ON p.id = c.post_id AND p.deleted_at IS NULL
+                WHERE c.hour >= {since}
+                GROUP BY c.post_id
+                HAVING SUM(c.elo_change) < 0
+                ORDER BY SUM(c.elo_change), c.post_id
+                LIMIT {RankingSize}
+                """)
+            : db.Database.SqlQuery<Guid>($"""
+                SELECT c.post_id AS "Value"
+                FROM post_elo_changes c
+                JOIN posts p ON p.id = c.post_id AND p.deleted_at IS NULL
+                WHERE c.hour >= {since}
+                GROUP BY c.post_id
+                HAVING SUM(c.elo_change) > 0
+                ORDER BY SUM(c.elo_change) DESC, c.post_id
+                LIMIT {RankingSize}
+                """)).ToListAsync();
+
+        var posts = await db.Posts.AsNoTracking()
+            .Include(p => p.Media)
+            .Include(p => p.User).ThenInclude(u => u.Avatar)
+            .Where(p => ids.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id);
+
+        return ids.Where(posts.ContainsKey).Select(id => posts[id]).ToList();
     }
 
     static DateOnly CurrentWeek()
@@ -244,12 +288,32 @@ public class PostsRepository(AppDbContext db)
 
     public async Task<User?> GetUser(Guid userId)
     {
-        return await db.Users.Include(u => u.Avatar).FirstOrDefaultAsync(u => u.Id == userId);
+        return await db.Users.AsNoTracking().Include(u => u.Avatar).FirstOrDefaultAsync(u => u.Id == userId);
     }
 
-    public async Task<List<Post>> GetUserPosts(Guid userId)
+    public const int UserPostsPageSize = 30;
+
+    public async Task<(List<Post> Posts, Guid? NextCursor)> GetUserPosts(Guid userId, Guid? before)
     {
-        return await db.Posts.Include(p => p.Media).Where(p => p.UserId == userId && p.DeletedAt == null).OrderByDescending(p => p.CreatedAt).ToListAsync();
+        IQueryable<Post> posts = before is Guid cursor
+            ? db.Posts.FromSql($"""
+                SELECT * FROM posts
+                WHERE user_id = {userId} AND deleted_at IS NULL
+                  AND (created_at, id) < (SELECT c.created_at, c.id FROM posts c WHERE c.id = {cursor} AND c.user_id = {userId})
+                """)
+            : db.Posts.Where(p => p.UserId == userId && p.DeletedAt == null);
+
+        var page = await posts
+            .AsNoTracking()
+            .Include(p => p.Media)
+            .OrderByDescending(p => p.CreatedAt).ThenByDescending(p => p.Id)
+            .Take(UserPostsPageSize + 1)
+            .ToListAsync();
+
+        if (page.Count <= UserPostsPageSize) return (page, null);
+
+        page.RemoveAt(UserPostsPageSize);
+        return (page, page[^1].Id);
     }
 
     public async Task SetAvatar(Guid userId, Media media)
@@ -263,8 +327,8 @@ public class PostsRepository(AppDbContext db)
 
     public async Task SetDescription(Guid userId, string? description)
     {
-        var user = await db.Users.FirstAsync(u => u.Id == userId);
-        user.Description = description;
-        await db.SaveChangesAsync();
+        await db.Users
+            .Where(u => u.Id == userId)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.Description, description));
     }
 }

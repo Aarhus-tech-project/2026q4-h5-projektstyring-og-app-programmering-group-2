@@ -21,9 +21,9 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository lo
     {
         User user = await loginRepository.Login(request) ?? throw new InvalidLoginException();
 
-        await authService.RevokeDeviceSessions(user.Id, request.DeviceName, request.Platform);
+        await authService.RevokeDeviceSessions(user.Id, request.DeviceId);
         string refreshToken = tokenService.GenerateRefreshToken();
-        Session session = await authService.InsertSession(user, refreshToken, request.DeviceName, request.Platform);
+        Session session = await authService.InsertSession(user, refreshToken, request.DeviceId, request.DeviceName, request.Platform);
 
         logger.LogInformation("User {UserId} logged in on {Platform}, session {SessionId}", user.Id, request.Platform, session.Id);
         return new TokenResponse(tokenService.GenerateAccessToken(user, session), refreshToken);
@@ -68,7 +68,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository lo
         Session session = await authService.GetActiveSession(refreshToken) ?? throw new InvalidRefreshTokenException();
 
         string newRefreshToken = tokenService.GenerateRefreshToken();
-        await authService.RotateSession(session, newRefreshToken);
+        if (!await authService.RotateSession(session, newRefreshToken)) throw new InvalidRefreshTokenException();
         return new TokenResponse(tokenService.GenerateAccessToken(session.User, session), newRefreshToken);
     }
 }
