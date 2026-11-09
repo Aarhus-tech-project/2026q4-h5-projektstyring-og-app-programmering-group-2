@@ -8,13 +8,15 @@ import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'ex
 import { router, type Href } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { login, register } from '../../lib/api';
 import { setPendingRoute, takePendingRoute } from '../../lib/auth';
 import { ApiError, errorMessage } from '../../lib/errors';
 
+
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
+
 
 function loginErrorMessage(error: unknown, tab: 'login' | 'register') {
   if (error instanceof ApiError) {
@@ -27,6 +29,7 @@ function loginErrorMessage(error: unknown, tab: 'login' | 'register') {
 export default function LoginScreen() {
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const theme = useTheme();
+  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -156,7 +159,7 @@ export default function LoginScreen() {
               setTab(event.nativeEvent.selectedSegmentIndex === 1 ? 'register' : 'login');
               setError(null);
             }}
-            appearance="dark"
+            appearance={scheme}
             style={styles.segmented}
           />
         </KeyboardAvoidingView>

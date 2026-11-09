@@ -9,12 +9,12 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-  text: '#EDEDED',               // titles (off-white, softer than pure white)
-  background: '#111111',         // page background
-  backgroundElement: '#1B1B1B',  // cards, search field
-  backgroundSelected: '#262626', // pressed / selected
-  textSecondary: '#9A9A9A',      // descriptions
-  border: '#2A2A2A',             // NEW: thin card border
+  text: '#111111',               // titles (near-black)
+  background: '#F5F5F4',         // page background (soft off-white)
+  backgroundElement: '#FFFFFF',  // cards, search field
+  backgroundSelected: '#EAEAEA', // pressed / selected
+  textSecondary: '#6B6B6B',      // descriptions
+  border: '#E2E2E2',             // thin card border
 },
   dark: {
   text: '#EDEDED',               // titles (off-white, softer than pure white)

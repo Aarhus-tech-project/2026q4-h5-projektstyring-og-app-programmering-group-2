@@ -1,6 +1,7 @@
 import { Host, Picker, Text } from '@expo/ui/swift-ui';
 import { controlSize, environment, glassEffect, pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
-import { StyleProp, ViewStyle } from 'react-native';
+import { StyleProp, useColorScheme, ViewStyle } from 'react-native';
+
 
 type PeriodPickerProps = {
   values: string[];
@@ -10,6 +11,8 @@ type PeriodPickerProps = {
 };
 
 export function PeriodPicker({ values, selectedIndex, onChange, style }: PeriodPickerProps) {
+  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+
   return (
     <Host matchContents={{ vertical: true }} style={style} ignoreSafeArea="all">
       <Picker
@@ -18,7 +21,7 @@ export function PeriodPicker({ values, selectedIndex, onChange, style }: PeriodP
         modifiers={[
           pickerStyle('segmented'),
           controlSize('large'),
-          environment('colorScheme', 'dark'),
+          environment('colorScheme', scheme),
           glassEffect({ glass: { variant: 'regular' }, shape: 'capsule' }),
         ]}
         label="">

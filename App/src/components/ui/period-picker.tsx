@@ -1,5 +1,5 @@
 import { SegmentedControl } from '@expo/ui/community/segmented-control';
-import { StyleProp, ViewStyle } from 'react-native';
+import { StyleProp, useColorScheme, ViewStyle } from 'react-native';
 
 type PeriodPickerProps = {
   values: string[];
@@ -9,12 +9,14 @@ type PeriodPickerProps = {
 };
 
 export function PeriodPicker({ values, selectedIndex, onChange, style }: PeriodPickerProps) {
+  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+
   return (
     <SegmentedControl
       values={values}
       selectedIndex={selectedIndex}
       onChange={(event) => onChange(event.nativeEvent.selectedSegmentIndex)}
-      appearance="dark"
+      appearance={scheme}
       style={style}
     />
   );
