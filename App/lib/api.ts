@@ -80,11 +80,8 @@ export async function register(email: string, username: string, password: string
 }
 
 export async function signOut() {
-  const refreshToken = await SecureStore.getItemAsync("refreshtoken");
   try {
-    await api.POST("/api/Login/logout", {
-      params: { header: { refreshToken: refreshToken ?? "" } },
-    });
+    await api.POST("/api/Login/logout");
   } finally {
     await clearSession();
   }

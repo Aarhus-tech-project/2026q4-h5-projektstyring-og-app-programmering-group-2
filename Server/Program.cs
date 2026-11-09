@@ -29,11 +29,11 @@ public class Program
         if (isApi)
         {
             builder.Services.AddJwtAuth(builder.Configuration);
-            builder.Services.AddControllers();
             if (builder.Environment.IsDevelopment())
                 builder.Services.AddSwaggerDocs();
             builder.Services.AddProblemDetails();
             builder.Services.AddScoped<MediaService>();
+            builder.Services.AddSingleton<BlobStorageService>();
             builder.Services.AddScoped<LoginRepository>();
             builder.Services.AddScoped<PostsRepository>();
             builder.Services.AddScoped<TokenService>();

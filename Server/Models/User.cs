@@ -17,27 +17,8 @@ public class User
     public Media? Avatar { get; set; }
 }
 
-public class UserRegisterDTO
-{
-    public string Username { get; set; } = null!;
-    public string Email { get; set; } = null!;
-    public string Password { get; set; } = null!;
-}
+public record RegisterRequest(string Username, string Email, string Password);
 
-public class UserLoginDTO
-{
-    public string email { get; set; } = null!;
-    public string Password { get; set; } = null!;
-    public string deviceName { get; set; } = null!;
-    public string platform { get; set; } = null!;
-
-}
-
-public class UserAccessTokenDTO
-{
-    public Guid Id { get; set; }
-    public string Username { get; set; } = null!;
-    public string Email { get; set; } = null!;
-}
+public record LoginRequest(string Email, string Password, string DeviceName, string Platform);
 
 public record Profile(string Username, string? Description, string? AvatarThumbnailUrl, string? AvatarUrl, string? AvatarThumbhash, float Elo, int Wins, int Losses, List<PublicPostDTO> Posts);

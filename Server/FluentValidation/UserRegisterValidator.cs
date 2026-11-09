@@ -3,7 +3,7 @@ using System.Net.Mail;
 
 namespace Validator;
 
-public class UserRegisterValidator : AbstractValidator<UserRegisterDTO>
+public class UserRegisterValidator : AbstractValidator<RegisterRequest>
 {
     public UserRegisterValidator()
     {

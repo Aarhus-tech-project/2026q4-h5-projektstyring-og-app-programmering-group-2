@@ -6,6 +6,7 @@
     }
 
     public class InvalidLoginException() : ApiException("Invalid email or password", 401);
+    public class InvalidRefreshTokenException() : ApiException("Invalid or expired refresh token", 401);
     public class EmailAlreadyInUseException() : ApiException("That email is already in use", 409);
     public class BlobUploadInternalServerException(Exception? inner = null) : ApiException("Internal server error", 502, inner);
     public class FailedToCreateInDatabaseException(Exception? inner = null) : ApiException("Failed to create", 500, inner);

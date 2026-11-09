@@ -29,36 +29,4 @@ public class TokenService(IConfiguration config)
     }
 
     public string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-
-    public async Task<Guid?> GetSessionId(string authorization)
-    {
-        var result = await new JsonWebTokenHandler().ValidateTokenAsync(authorization.Replace("Bearer ", ""), new TokenValidationParameters
-        {
-            ValidIssuer = config["Jwt:Issuer"],
-            ValidAudience = config["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!))
-        });
-
-        if (!result.IsValid) return null;
-        return Guid.Parse((string)result.Claims[JwtRegisteredClaimNames.Sid]);
-    }
-
-    public async Task<UserAccessTokenDTO?> DecodeAccessToken(string authorization)
-    {
-        var result = await new JsonWebTokenHandler().ValidateTokenAsync(authorization.Replace("Bearer ", ""), new TokenValidationParameters
-        {
-            ValidIssuer = config["Jwt:Issuer"],
-            ValidAudience = config["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!))
-        });
-
-        if (!result.IsValid) return null;
-
-        return new UserAccessTokenDTO
-        {
-            Id = Guid.Parse((string)result.Claims[JwtRegisteredClaimNames.Sub]),
-            Username = (string)result.Claims[ClaimTypes.Name],
-            Email = (string)result.Claims[JwtRegisteredClaimNames.Email]
-        };
-    }
 }

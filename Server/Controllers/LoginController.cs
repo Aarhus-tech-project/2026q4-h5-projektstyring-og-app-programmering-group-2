@@ -1,77 +1,62 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.IdentityModel.Tokens;
 using Server.Exceptions;
 using Server.Models;
 using Server.Repositories;
 using Server.Services;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using Validator;
-
 
 namespace Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class LoginController(LoginRepository loginRepository, TokenService tokenGenerator, AuthService authService) : ControllerBase
+public class LoginController(ILogger<LoginController> logger, LoginRepository loginRepository, AuthService authService, TokenService tokenService) : ControllerBase
 {
     public record TokenResponse(string AccessToken, string RefreshToken);
 
     [EnableRateLimiting("strict")]
     [HttpPost("login")]
-    public async Task<ActionResult<TokenResponse>> Login([FromBody] UserLoginDTO login)
+    public async Task<ActionResult<TokenResponse>> Login([FromBody] LoginRequest request)
     {
-        User? user = await loginRepository.Login(login);
+        User user = await loginRepository.Login(request) ?? throw new InvalidLoginException();
 
-        if (user == null)
-        {
-            throw new InvalidLoginException();
-        }
-        else
-        {
-            await authService.RevokeExistingSessions(user.Id, login.deviceName, login.platform);
-            var refreshToken = tokenGenerator.GenerateRefreshToken();
-            var session = await authService.InsertSession(user, refreshToken, login.deviceName, login.platform);
-            if (session == null)
-                return Unauthorized();
-            var accessToken = tokenGenerator.GenerateAccessToken(user, session);
+        await authService.RevokeDeviceSessions(user.Id, request.DeviceName, request.Platform);
+        string refreshToken = tokenService.GenerateRefreshToken();
+        Session session = await authService.InsertSession(user, refreshToken, request.DeviceName, request.Platform);
 
-            return Ok(new TokenResponse(accessToken, refreshToken));
-        }
+        logger.LogInformation("User {UserId} logged in on {Platform}, session {SessionId}", user.Id, request.Platform, session.Id);
+        return new TokenResponse(tokenService.GenerateAccessToken(user, session), refreshToken);
     }
 
-    [HttpPost("logout")]
     [Authorize]
-    public async Task<IActionResult> logOut([FromHeader] string refreshToken)
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
     {
-        var sessionId = await tokenGenerator.GetSessionId(refreshToken);
-        if (sessionId is null) return Unauthorized();
+        Guid userId = User.GetUserId();
+        Guid sessionId = User.GetSessionId();
 
-        await loginRepository.logOut(sessionId.Value);
+        await authService.RevokeSession(userId, sessionId);
+        logger.LogInformation("User {UserId} logged out session {SessionId}", userId, sessionId);
         return Ok();
     }
 
-    [HttpPost("logoutall")]
     [Authorize]
-    public async Task<IActionResult> logoutall([FromHeader] string refreshToken)
+    [HttpPost("logoutall")]
+    public async Task<IActionResult> LogoutAll()
     {
-        User user = await loginRepository.GetUserViaUserID(refreshToken);
+        Guid userId = User.GetUserId();
 
-        await loginRepository.RevokeAllUserSessions(user);
-
+        int revoked = await authService.RevokeAllSessions(userId);
+        logger.LogInformation("User {UserId} logged out everywhere, revoked {Sessions} sessions", userId, revoked);
         return Ok();
     }
 
     [EnableRateLimiting("strict")]
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] UserRegisterDTO login)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        await loginRepository.Register(login);
+        Guid userId = await loginRepository.Register(request);
+        logger.LogInformation("User {UserId} registered", userId);
         return Ok();
     }
 
@@ -79,11 +64,10 @@ public class LoginController(LoginRepository loginRepository, TokenService token
     [HttpPost("refresh")]
     public async Task<ActionResult<TokenResponse>> Refresh([FromBody] string refreshToken)
     {
-        var session = await authService.GetActiveSession(refreshToken);
-            if (session == null) return Unauthorized();
+        Session session = await authService.GetActiveSession(refreshToken) ?? throw new InvalidRefreshTokenException();
 
-        var newRefreshToken = tokenGenerator.GenerateRefreshToken();
-        await authService.RotateSession((Session)session, newRefreshToken);
-        return Ok(new TokenResponse(tokenGenerator.GenerateAccessToken(session.User, session), newRefreshToken));
+        string newRefreshToken = tokenService.GenerateRefreshToken();
+        await authService.RotateSession(session, newRefreshToken);
+        return new TokenResponse(tokenService.GenerateAccessToken(session.User, session), newRefreshToken);
     }
 }

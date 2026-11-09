@@ -28,12 +28,25 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description OK */
-                200: {
+                /** @description Accepted */
+                202: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "text/plain": string;
+                        "application/json": string;
+                        "text/json": string;
+                    };
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
                 };
             };
         };
@@ -54,6 +67,15 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
                 };
             };
         };
@@ -87,6 +109,15 @@ export interface paths {
                         "text/plain": components["schemas"]["PublicPostDTO"][];
                         "application/json": components["schemas"]["PublicPostDTO"][];
                         "text/json": components["schemas"]["PublicPostDTO"][];
+                    };
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -126,6 +157,15 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         delete: {
@@ -145,6 +185,15 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
                 };
             };
         };
@@ -184,6 +233,15 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -217,6 +275,15 @@ export interface paths {
                         "text/plain": components["schemas"]["MatchupDTO"];
                         "application/json": components["schemas"]["MatchupDTO"];
                         "text/json": components["schemas"]["MatchupDTO"];
+                    };
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -259,6 +326,15 @@ export interface paths {
                         "text/json": components["schemas"]["RankedPostDTO"][];
                     };
                 };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -294,6 +370,15 @@ export interface paths {
                         "text/plain": components["schemas"]["Profile"];
                         "application/json": components["schemas"]["Profile"];
                         "text/json": components["schemas"]["Profile"];
+                    };
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -336,6 +421,15 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         post?: never;
@@ -375,6 +469,15 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         post?: never;
@@ -402,9 +505,9 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["UserLoginDTO"];
-                    "text/json": components["schemas"]["UserLoginDTO"];
-                    "application/*+json": components["schemas"]["UserLoginDTO"];
+                    "application/json": components["schemas"]["LoginRequest"];
+                    "text/json": components["schemas"]["LoginRequest"];
+                    "application/*+json": components["schemas"]["LoginRequest"];
                 };
             };
             responses: {
@@ -417,6 +520,15 @@ export interface paths {
                         "text/plain": components["schemas"]["TokenResponse"];
                         "application/json": components["schemas"]["TokenResponse"];
                         "text/json": components["schemas"]["TokenResponse"];
+                    };
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -439,9 +551,7 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: {
-                    refreshToken?: string;
-                };
+                header?: never;
                 path?: never;
                 cookie?: never;
             };
@@ -453,6 +563,15 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
                 };
             };
         };
@@ -474,9 +593,7 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: {
-                    refreshToken?: string;
-                };
+                header?: never;
                 path?: never;
                 cookie?: never;
             };
@@ -488,6 +605,15 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
                 };
             };
         };
@@ -515,9 +641,9 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["UserRegisterDTO"];
-                    "text/json": components["schemas"]["UserRegisterDTO"];
-                    "application/*+json": components["schemas"]["UserRegisterDTO"];
+                    "application/json": components["schemas"]["RegisterRequest"];
+                    "text/json": components["schemas"]["RegisterRequest"];
+                    "application/*+json": components["schemas"]["RegisterRequest"];
                 };
             };
             responses: {
@@ -527,6 +653,15 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
                 };
             };
         };
@@ -571,6 +706,15 @@ export interface paths {
                         "text/json": components["schemas"]["TokenResponse"];
                     };
                 };
+                /** @description Error */
+                default: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -588,6 +732,12 @@ export interface components {
         };
         /** Format: binary */
         IFormFile: string;
+        LoginRequest: {
+            email: string;
+            password: string;
+            deviceName: string;
+            platform: string;
+        };
         MatchupDTO: {
             /** Format: uuid */
             id: string;
@@ -595,6 +745,14 @@ export interface components {
             postB: components["schemas"]["PublicPostDTO"];
             /** Format: date-time */
             issuedAt: string;
+        };
+        ProblemDetails: {
+            type?: null | string;
+            title?: null | string;
+            /** Format: int32 */
+            status?: null | number | string;
+            detail?: null | string;
+            instance?: null | string;
         };
         Profile: {
             username: string;
@@ -647,20 +805,14 @@ export interface components {
         RankingOrder: "top" | "worst";
         /** @enum {unknown} */
         RankingPeriod: "trending" | "week" | "all";
+        RegisterRequest: {
+            username: string;
+            email: string;
+            password: string;
+        };
         TokenResponse: {
             accessToken: string;
             refreshToken: string;
-        };
-        UserLoginDTO: {
-            email?: string;
-            password?: string;
-            deviceName?: string;
-            platform?: string;
-        };
-        UserRegisterDTO: {
-            username?: string;
-            email?: string;
-            password?: string;
         };
         VoteRequest: {
             /** Format: uuid */

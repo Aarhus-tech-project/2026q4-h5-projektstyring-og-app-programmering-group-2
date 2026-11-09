@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
 namespace Server.Workers;
@@ -15,13 +16,39 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
         using var timer = new PeriodicTimer(PollInterval);
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            await using var scope = scopeFactory.CreateAsyncScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            int counted;
-            do counted = await CountBatch(db, stoppingToken);
-            while (counted == BatchSize);
+            try
+            {
+                await CountPendingVotes(stoppingToken);
+            }
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
+            {
+                logger.LogError(ex, "Vote counting failed, retrying in {PollInterval}", PollInterval);
+            }
         }
+    }
+
+    async Task CountPendingVotes(CancellationToken ct)
+    {
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var stopwatch = Stopwatch.StartNew();
+        int total = 0, batches = 0, counted;
+        do
+        {
+            counted = await CountBatch(db, ct);
+            if (counted < 0)
+            {
+                logger.LogDebug("Skipped vote counting, another worker holds the lock");
+                return;
+            }
+            total += counted;
+            if (counted > 0) batches++;
+        }
+        while (counted == BatchSize);
+
+        if (total > 0)
+            logger.LogInformation("Counted {Votes} votes in {Batches} batches in {ElapsedMs} ms", total, batches, stopwatch.ElapsedMilliseconds);
     }
 
     static async Task<int> CountBatch(AppDbContext db, CancellationToken ct)
@@ -30,7 +57,7 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
         bool gotLock = await db.Database
             .SqlQuery<bool>($"SELECT pg_try_advisory_xact_lock({VoteCountingLockKey}) AS \"Value\"")
             .SingleAsync(ct);
-        if (!gotLock) return 0;
+        if (!gotLock) return -1;
 
         var votes = await db.Votes
             .AsNoTracking()

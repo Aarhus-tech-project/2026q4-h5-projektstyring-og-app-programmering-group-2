@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Server.Exceptions;
 
-public class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : IExceptionHandler
+public class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger, IProblemDetailsService problemDetails) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
@@ -9,7 +11,7 @@ public class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : IExcepti
 
         var status = apiException.StatusCode;
         var method = context.Request.Method;
-        var path = context.Request.Path.Value; // no query string, so nothing sensitive ends up in logs
+        var path = context.Request.Path.Value;
         var error = apiException.GetType().Name;
 
         if (status >= 500)
@@ -20,7 +22,19 @@ public class ApiExceptionHandler(ILogger<ApiExceptionHandler> logger) : IExcepti
             logger.LogInformation("{Method} {Path} rejected with {StatusCode} {Error}", method, path, status, error);
 
         context.Response.StatusCode = status;
-        await context.Response.WriteAsync(apiException.Message, cancellationToken);
+        bool written = await problemDetails.TryWriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = context,
+            Exception = apiException,
+            ProblemDetails =
+            {
+                Status = status,
+                Title = ReasonPhrases.GetReasonPhrase(status),
+                Detail = apiException.Message,
+            },
+        });
+        if (!written)
+            await context.Response.WriteAsync(apiException.Message, cancellationToken);
         return true;
     }
 }

@@ -1,22 +1,15 @@
-using Azure;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Server.Exceptions;
 
 namespace Server;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PostsController(BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService) : Controller
+public class PostsController(BlobStorageService storage, PostsRepository postsRepository, MediaService mediaService) : Controller
 {
     public record DescriptionRequest(string? Description);
     public record PostRequest(IFormFile File);
     public record VoteRequest(Guid MatchupId, Guid WinnerPostId, Guid LooserPostId);
-
-    private BlobContainerClient Media => blobs.GetBlobContainerClient("media");
-    private BlobContainerClient Uploads => blobs.GetBlobContainerClient("uploads");
 
     private const long MaxUploadBytes = 25 * 1024 * 1024;
 
@@ -24,13 +17,11 @@ public class PostsController(BlobServiceClient blobs, PostsRepository postsRepos
     [Authorize]
     [RequestSizeLimit(MaxUploadBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
-    public async Task<IActionResult> AddPost([FromForm]PostRequest postRequest)
+    [ProducesResponseType<Guid>(StatusCodes.Status202Accepted)]
+    public async Task<ActionResult<Guid>> AddPost([FromForm]PostRequest postRequest)
     {
         await using var processed = await mediaService.Process(postRequest.File);
-
-        var originalBlob = await Upload(Uploads, processed.Original, processed.Media.Hash);
-        var processedBlob = await Upload(Media, processed.Proccesed, processed.Media.Hash);
-        var thumbnailBlob = await Upload(Media, processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
+        await storage.Store(processed, HttpContext.RequestAborted);
 
         Post post = await postsRepository.CreatePost(User.GetUserId(), processed.Media);
 
@@ -117,10 +108,7 @@ public class PostsController(BlobServiceClient blobs, PostsRepository postsRepos
     public async Task<IActionResult> SetAvatar([FromForm] PostRequest request)
     {
         await using var processed = await mediaService.Process(request.File);
-
-        await Upload(Uploads, processed.Original, processed.Media.Hash);
-        await Upload(Media, processed.Proccesed, processed.Media.Hash);
-        await Upload(Media, processed.Thumbnail, processed.Media.Hash, suffix: "_thumb");
+        await storage.Store(processed, HttpContext.RequestAborted);
 
         await postsRepository.SetAvatar(User.GetUserId(), processed.Media);
         return NoContent();
@@ -139,14 +127,14 @@ public class PostsController(BlobServiceClient blobs, PostsRepository postsRepos
     PublicPostDTO ToDto(Post p)
     {
         string? thumbhash = p.Media.Thumbhash == null ? null : Convert.ToBase64String(p.Media.Thumbhash);
-        return new(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash), thumbhash, p.Elo, p.Wins, p.Losses, p.CreatedAt);
+        return new(p.Id, storage.ThumbnailUrl(p.MediaHash), storage.ImageUrl(p.MediaHash), thumbhash, p.Elo, p.Wins, p.Losses, p.CreatedAt);
     }
 
     RankedPostDTO ToRankedDto(Post p)
     {
         string? thumbhash = p.Media.Thumbhash == null ? null : Convert.ToBase64String(p.Media.Thumbhash);
         var (avatarThumbnailUrl, avatarUrl, avatarThumbhash) = AvatarFields(p.User);
-        return new(p.Id, MediaUrl(p.MediaHash, suffix: "_thumb"), MediaUrl(p.MediaHash), thumbhash, p.Elo, p.Wins, p.Losses, p.CreatedAt,
+        return new(p.Id, storage.ThumbnailUrl(p.MediaHash), storage.ImageUrl(p.MediaHash), thumbhash, p.Elo, p.Wins, p.Losses, p.CreatedAt,
             avatarThumbnailUrl, avatarUrl, avatarThumbhash);
     }
 
@@ -154,35 +142,6 @@ public class PostsController(BlobServiceClient blobs, PostsRepository postsRepos
     {
         if (user.AvatarHash == null) return (null, null, null);
         string? thumbhash = user.Avatar?.Thumbhash == null ? null : Convert.ToBase64String(user.Avatar.Thumbhash);
-        return (MediaUrl(user.AvatarHash, suffix: "_thumb"), MediaUrl(user.AvatarHash), thumbhash);
-    }
-
-    string MediaUrl(byte[] hash, string suffix = "", string extension = ".webp")
-    {
-        return Media.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}").Uri.ToString();
-    }
-
-    async Task<BlobClient> Upload(BlobContainerClient client, Stream stream, byte[] hash, string suffix = "", string contentType = "image/webp", string extension = ".webp")
-    {
-        var blob = client.GetBlobClient($"{Convert.ToHexStringLower(hash)}{suffix}{extension}");
-
-        try
-        {
-            await blob.UploadAsync(stream, new BlobUploadOptions
-            {
-                HttpHeaders = new BlobHttpHeaders { ContentType = contentType },
-                Conditions = new BlobRequestConditions { IfNoneMatch = ETag.All },
-            });
-        }
-        catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobAlreadyExists)
-        {
-            
-        }
-        catch (Exception ex)
-        {
-            throw new BlobUploadInternalServerException(ex);
-        }
-
-        return blob;
+        return (storage.ThumbnailUrl(user.AvatarHash), storage.ImageUrl(user.AvatarHash), thumbhash);
     }
 }
