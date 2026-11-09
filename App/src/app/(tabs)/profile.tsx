@@ -378,7 +378,6 @@ const styles = StyleSheet.create({
   },
   TextBoxText: {
     textAlign: 'center',
-    color: 'white'
   },
   eloBorder: {
     borderWidth: 1,
