@@ -3,7 +3,7 @@
 ```mermaid
 flowchart LR
     app["Expo app<br/>(iOS / Android)"]
-    cf["Cloudflare<br/>HTTPS"]
+    cf["Cloudflare<br/>fotolo.mesasoftware.com<br/>HTTPS"]
     ci["GitHub Actions"]
     ghcr[("GHCR<br/>server + migrations images")]
 
@@ -33,7 +33,7 @@ flowchart LR
     ci -- "push on main" --> ghcr
     ghcr -. "docker stack deploy pulls" .-> swarm
 
-    app -- "domain/api/*" --> cf
+    app -- "https://fotolo.mesasoftware.com/api/*" --> cf
     cf == "tunnel" ==> tunnel
     tunnel -- "http://server:8080" --> backend
 
@@ -55,7 +55,7 @@ flowchart LR
 ```
 
 - **Deployment:** everything runs as one Docker Swarm stack, defined in `swarm/docker-compose.yml`. On every push to `main`, CI builds the `server` and `migrations` images for amd64 and arm64 and pushes them to GHCR. `docker stack deploy` pulls them. Stateful services (Postgres, Loki, Prometheus, Tempo, Grafana) are pinned to the manager node, because their volumes are local to it.
-- **No gateway.** cloudflared forwards to `http://server:8080`, and Swarm's routing mesh load-balances across the replicas. The backend sets its own upload limit (25 MB). Cloudflare's free plan caps request bodies at 100 MB.
+- **No gateway.** The public hostname `fotolo.mesasoftware.com` is a Cloudflare Tunnel route (type HTTP, URL `server:8080`): cloudflared forwards to `http://server:8080`, and Swarm's routing mesh load-balances across the replicas. The backend sets its own upload limit (25 MB). Cloudflare's free plan caps request bodies at 100 MB.
 - **The backend is stateless**, so it scales by adding replicas (`SERVER_REPLICAS`). All state lives in Postgres and Azure Blob Storage. The one exception is rate limiting, which is counted in memory on each replica.
 - **The vote worker** is the same Docker image as the backend, started with `--Role=voteworker`. In that mode it runs one `BackgroundService` and maps no API endpoints. It's its own service with exactly 1 replica, no published port, and `stop-first` updates, so two workers never overlap during a deploy. The API replicas never write Elo. See [Vote counting flow](#vote-counting-flow).
 - **Migrations** run as a Swarm `replicated-job` on every deploy. Swarm ignores `depends_on`, so the job retries until Postgres is up, and the server and worker restart until the schema exists. Locally there is no migrate job: run `dotnet ef database update` in `Server/`.

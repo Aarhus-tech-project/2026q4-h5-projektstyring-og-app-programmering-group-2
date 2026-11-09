@@ -1,8 +1,7 @@
 {
   "expo.jsEngine": "hermes",
   "EX_DEV_CLIENT_NETWORK_INSPECTOR": "true",
-  "EXPO_USE_PRECOMPILED_MODULES": "false",
   "expo.inlineModules.watchedDirectories": "[]",
-  "expo.inlineModules.xcodeProjectTargets": "{\"mainTarget\":\"App\",\"targets\":[]}",
+  "expo.inlineModules.xcodeProjectTargets": "{\"mainTarget\":\"Fotolo\",\"targets\":[]}",
   "expo-image.disable-libdav1d": "false"
 }
