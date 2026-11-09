@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Server.Repositories;
 using Server.Services;
 using Server.Workers;
-using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -33,6 +32,7 @@ public class Program
             builder.Services.AddJwtAuth(builder.Configuration);
             builder.Services.AddSwaggerDocs();
             builder.Services.AddProblemDetails();
+            builder.Services.AddHealthChecks().AddDbContextCheck<AppDbContext>();
             builder.Services.AddScoped<MediaService>();
             builder.Services.AddSingleton<BlobStorageService>();
             builder.Services.AddScoped<LoginRepository>();
@@ -62,20 +62,14 @@ public class Program
         var app = builder.Build();
 
         if (isApi)
-        {   
-            if (Assembly.GetEntryAssembly()?.GetName().Name != "GetDocument.Insider")
-            {
-                using var scope = app.Services.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                db.Users.FirstOrDefault(u => u.Email == "");
-            }
-
+        {
             app.UseForwardedHeaders();
             app.UseExceptionHandler();
             app.UseAuthentication();
             app.UseRateLimiter();
             app.UseAuthorization();
             app.MapControllers();
+            app.MapHealthChecks("/healthz").DisableHttpMetrics();
 
             if (app.Environment.IsDevelopment())
                 app.MapSwaggerDocs();

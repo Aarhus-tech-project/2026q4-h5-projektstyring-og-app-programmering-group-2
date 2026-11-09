@@ -20,6 +20,18 @@
   "annotations": {
     "list": []
   },
+  "links": [
+    {
+      "type": "dashboards",
+      "tags": [
+        "fotolo"
+      ],
+      "asDropdown": false,
+      "title": "Fotolo",
+      "includeVars": false,
+      "keepTime": true
+    }
+  ],
   "panels": [
     {
       "type": "row",

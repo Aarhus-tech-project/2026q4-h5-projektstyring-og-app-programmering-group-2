@@ -8,10 +8,21 @@ datasources:
     isDefault: true
     jsonData:
       timeInterval: 60s
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: tempo
   - name: Loki
     type: loki
     uid: loki
     url: http://loki:3100
+    jsonData:
+      derivedFields:
+        - name: Trace
+          matcherType: label
+          matcherRegex: trace_id
+          url: "$${__value.raw}"
+          datasourceUid: tempo
+          urlDisplayLabel: View trace
   - name: Tempo
     type: tempo
     uid: tempo
@@ -19,9 +30,14 @@ datasources:
     jsonData:
       tracesToLogsV2:
         datasourceUid: loki
-        filterByTraceID: true
+        spanStartTimeShift: -5m
+        spanEndTimeShift: 5m
+        customQuery: true
+        query: '{service_name="$${__span.tags["service.name"]}"} | trace_id="$${__trace.traceId}"'
       serviceMap:
         datasourceUid: prometheus
+      nodeGraph:
+        enabled: true
   - name: Postgres
     type: grafana-postgresql-datasource
     uid: postgres

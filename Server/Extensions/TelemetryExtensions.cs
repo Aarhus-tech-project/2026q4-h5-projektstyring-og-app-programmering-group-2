@@ -35,7 +35,11 @@ public static class TelemetryExtensions
                     e.Protocol = OtlpExportProtocol.HttpProtobuf;
                 }))
             .WithTracing(t => t
-                .AddAspNetCoreInstrumentation(o => o.RecordException = true)
+                .AddAspNetCoreInstrumentation(o =>
+                {
+                    o.RecordException = true;
+                    o.Filter = ctx => ctx.Request.Path != "/healthz";
+                })
                 .AddHttpClientInstrumentation(o => o.RecordException = true)
                 .AddNpgsql()
                 .AddSource("Azure.*")

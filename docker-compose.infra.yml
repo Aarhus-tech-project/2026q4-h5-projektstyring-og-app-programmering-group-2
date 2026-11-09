@@ -24,12 +24,14 @@ services:
   loki:
     image: grafana/loki:3.7.9
     command:
-      - -config.file=/etc/loki/local-config.yaml
-      - -reporting.enabled=false
+      - -config.file=/etc/loki/loki.yaml
     ports:
       - "3100:3100"
     volumes:
       - loki-data:/loki
+    configs:
+      - source: loki-config
+        target: /etc/loki/loki.yaml
     restart: unless-stopped
 
   prometheus:
@@ -38,6 +40,8 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
       - --web.enable-otlp-receiver
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
     ports:
       - "9090:9090"
     volumes:
@@ -65,6 +69,9 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?see .env.example}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?see .env.example}
+      POSTGRES_USER: ${POSTGRES_USER:?see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
     ports:
       - "3000:3000"
     volumes:
@@ -76,6 +83,10 @@ services:
         target: /etc/grafana/provisioning/dashboards/dashboards.yaml
       - source: grafana-dashboard
         target: /etc/grafana/dashboards/fotolo-overview.json
+      - source: grafana-dashboard-logs-traces
+        target: /etc/grafana/dashboards/fotolo-logs-traces.json
+      - source: grafana-dashboard-product
+        target: /etc/grafana/dashboards/fotolo-product.json
     depends_on:
       - loki
       - prometheus
@@ -83,68 +94,26 @@ services:
     restart: unless-stopped
 
 configs:
+  loki-config:
+    file: ./swarm/loki.yaml
+
   tempo-config:
-    content: |
-      stream_over_http_enabled: true
-      server:
-        http_listen_port: 3200
-      distributor:
-        receivers:
-          otlp:
-            protocols:
-              grpc:
-                endpoint: 0.0.0.0:4317
-              http:
-                endpoint: 0.0.0.0:4318
-      storage:
-        trace:
-          backend: local
-          wal:
-            path: /var/tempo/wal
-          local:
-            path: /var/tempo/blocks
+    file: ./swarm/tempo.yaml
 
   grafana-datasources:
-    content: |
-      apiVersion: 1
-      datasources:
-        - name: Prometheus
-          type: prometheus
-          uid: prometheus
-          url: http://prometheus:9090
-          isDefault: true
-          jsonData:
-            timeInterval: 60s
-        - name: Loki
-          type: loki
-          uid: loki
-          url: http://loki:3100
-        - name: Tempo
-          type: tempo
-          uid: tempo
-          url: http://tempo:3200
-          jsonData:
-            tracesToLogsV2:
-              datasourceUid: loki
-              filterByTraceID: true
-            serviceMap:
-              datasourceUid: prometheus
-        - name: Postgres
-          type: grafana-postgresql-datasource
-          uid: postgres
-          url: postgres:5432
-          user: ${POSTGRES_USER:?see .env.example}
-          jsonData:
-            database: ${POSTGRES_DB:-app}
-            sslmode: disable
-          secureJsonData:
-            password: ${POSTGRES_PASSWORD:?see .env.example}
+    file: ./swarm/grafana-datasources.yaml
 
   grafana-dashboards:
     file: ./swarm/grafana-dashboards.yaml
 
   grafana-dashboard:
     file: ./swarm/grafana-dashboard.json
+
+  grafana-dashboard-logs-traces:
+    file: ./swarm/grafana-dashboard-logs-traces.json
+
+  grafana-dashboard-product:
+    file: ./swarm/grafana-dashboard-product.json
 
 volumes:
   postgres18-data:

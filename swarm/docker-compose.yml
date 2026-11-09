@@ -84,11 +84,9 @@ services:
       ConnectionStrings__Blobs: ${BLOBS_CONNECTION_STRING:?see .env.example}
       Jwt__Key: ${JWT_KEY:?see .env.example}
       TrustedProxyNetwork: 10.250.0.0/24
-    # Swarm starts the server before Postgres is up (no depends_on). The warm-up query in
-    # Program.cs then throws and the process hangs instead of exiting, so without this check a
-    # task can sit at "Running" forever without listening. Plain TCP probe, the image has no curl
+    # /healthz returns 200 only when Postgres answers. Raw HTTP over bash, the image has no curl
     healthcheck:
-      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /healthz HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && head -n1 <&3 | grep -q ' 200 '"]
       interval: 10s
       timeout: 3s
       retries: 3
@@ -153,10 +151,12 @@ services:
   loki:
     image: grafana/loki:3.7.9
     command:
-      - -config.file=/etc/loki/local-config.yaml
-      - -reporting.enabled=false
+      - -config.file=/etc/loki/loki.yaml
     volumes:
       - loki-data:/loki
+    configs:
+      - source: loki-config
+        target: /etc/loki/loki.yaml
     networks: [backend]
     deploy:
       <<: *on-manager
@@ -168,6 +168,8 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
       - --web.enable-otlp-receiver
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
     volumes:
       - prometheus-data:/prometheus
     configs:
@@ -233,6 +235,10 @@ services:
         target: /etc/grafana/provisioning/dashboards/dashboards.yaml
       - source: grafana-dashboard
         target: /etc/grafana/dashboards/fotolo-overview.json
+      - source: grafana-dashboard-logs-traces
+        target: /etc/grafana/dashboards/fotolo-logs-traces.json
+      - source: grafana-dashboard-product
+        target: /etc/grafana/dashboards/fotolo-product.json
     networks: [backend]
     deploy:
       <<: *on-manager
@@ -251,18 +257,27 @@ networks:
 # Swarm configs can't be changed in place. After editing one of these files, bump the -vN in its
 # name or the deploy fails with "only updates to Labels are allowed"
 configs:
+  loki-config:
+    name: fotolo-loki-config-v1
+    file: ./loki.yaml
   tempo-config:
-    name: fotolo-tempo-config-v1
+    name: fotolo-tempo-config-v2
     file: ./tempo.yaml
   grafana-datasources:
-    name: fotolo-grafana-datasources-v3
+    name: fotolo-grafana-datasources-v4
     file: ./grafana-datasources.yaml
   grafana-dashboards:
     name: fotolo-grafana-dashboards-v1
     file: ./grafana-dashboards.yaml
   grafana-dashboard:
-    name: fotolo-grafana-dashboard-v2
+    name: fotolo-grafana-dashboard-v3
     file: ./grafana-dashboard.json
+  grafana-dashboard-logs-traces:
+    name: fotolo-grafana-dashboard-logs-traces-v1
+    file: ./grafana-dashboard-logs-traces.json
+  grafana-dashboard-product:
+    name: fotolo-grafana-dashboard-product-v1
+    file: ./grafana-dashboard-product.json
   prometheus-config:
     name: fotolo-prometheus-config-v1
     file: ./prometheus.yml

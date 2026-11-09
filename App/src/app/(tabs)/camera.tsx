@@ -58,7 +58,7 @@ export default function TabTwoScreen() {
 
   const takePhoto = async () => {
     try {
-      const photo = await camera.current?.takePictureAsync();
+      const photo = await camera.current?.takePictureAsync({ exif: true });
       if (photo) setUri(photo.uri);
     } catch {
       toast.error('Could not take the photo. Try again.');
