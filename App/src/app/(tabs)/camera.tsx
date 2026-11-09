@@ -7,6 +7,7 @@ import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'ex
 import { Image } from 'expo-image';
 import { useRef, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-screens/experimental';
 import { toast } from 'sonner-native';
 import { uploadPost } from '../../../lib/api';
 import { errorMessage } from '../../../lib/errors';
@@ -79,7 +80,8 @@ export default function TabTwoScreen() {
     return (
       <View style={{ flex: 1 }}>
         <Image source={{ uri }} style={{ flex: 1 }} contentFit="contain" />
-        <View style={{ position: "absolute", bottom: 40, left: 0, right: 0, flexDirection: "row", justifyContent: "space-evenly" }}>
+        <SafeAreaView edges={{ bottom: true }} pointerEvents="box-none" style={styles.overlay}>
+        <View style={styles.controls}>
           <Pressable onPress={retake} disabled={upload.isPending} style={{ paddingVertical: 16, paddingHorizontal: 32, backgroundColor: "#fff", borderRadius: 8, opacity: upload.isPending ? 0.5 : 1 }}>
             <Text style={{ fontSize: 18 }}>Retake</Text>
           </Pressable>
@@ -87,13 +89,15 @@ export default function TabTwoScreen() {
             {upload.isPending ? <ActivityIndicator color="#111111" /> : <Text style={{ fontSize: 18 }}>Submit</Text>}
           </Pressable>
         </View>
+        </SafeAreaView>
       </View>
     );
 
   return (
     <View style={{ flex: 1 }}>
       <CameraView ref={camera} style={{ flex: 1 }} facing="back" />
-      <View style={{ position: "absolute", bottom: 40, left: 0, right: 0, flexDirection: "row", justifyContent: "space-evenly" }}>
+      <SafeAreaView edges={{ bottom: true }} pointerEvents="box-none" style={styles.overlay}>
+      <View style={styles.controls}>
         <Pressable onPress={takePhoto}>
           {useGlass ? (
             <GlassView style={styles.shutter} glassEffectStyle="regular" isInteractive tintColor="rgba(255,255,255,0.25)">
@@ -106,11 +110,25 @@ export default function TabTwoScreen() {
           )}
         </Pressable>
       </View>
+      </SafeAreaView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    justifyContent: 'flex-end',
+  },
+  controls: {
+    marginBottom: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
   shutter: {
     width: 72,
     height: 72,
