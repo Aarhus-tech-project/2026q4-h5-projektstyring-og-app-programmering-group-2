@@ -27,6 +27,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Generate Expo types
+        run: npx expo customize tsconfig.json
+
       - name: Typecheck
         run: npx tsc --noEmit
 
