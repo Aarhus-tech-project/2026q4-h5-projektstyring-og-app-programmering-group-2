@@ -9,7 +9,7 @@ namespace Server;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PostsController(ILogger<PostsController> logger, BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService) : Controller
+public class PostsController(BlobServiceClient blobs, PostsRepository postsRepository, MediaService mediaService) : Controller
 {
     public record DescriptionRequest(string? Description);
     public record PostRequest(IFormFile File);
@@ -131,7 +131,6 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
     public async Task<IActionResult> SetDescription(DescriptionRequest request)
     {
         string? description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
-        if (description?.Length > 250) return BadRequest("Description can be at most 250 characters");
 
         await postsRepository.SetDescription(User.GetUserId(), description);
         return NoContent();
@@ -181,8 +180,7 @@ public class PostsController(ILogger<PostsController> logger, BlobServiceClient 
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Blob upload failed");
-            throw new BlobUploadInternalServerException();
+            throw new BlobUploadInternalServerException(ex);
         }
 
         return blob;

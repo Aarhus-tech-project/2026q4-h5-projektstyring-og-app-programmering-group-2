@@ -18,7 +18,7 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class LoginController(ILogger<LoginController> logger, LoginRepository _loginRepository, TokenService tokenGenerator, AuthService authService, UserRegisterValidator userRegisterValidator) : ControllerBase
+public class LoginController(LoginRepository loginRepository, TokenService tokenGenerator, AuthService authService) : ControllerBase
 {
     public record TokenResponse(string AccessToken, string RefreshToken);
 
@@ -26,9 +26,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     [HttpPost("login")]
     public async Task<ActionResult<TokenResponse>> Login([FromBody] UserLoginDTO login)
     {
-        logger.LogInformation("Hello World");
-
-        User? user = await _loginRepository.Login(login);
+        User? user = await loginRepository.Login(login);
 
         if (user == null)
         {
@@ -54,7 +52,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
         var sessionId = await tokenGenerator.GetSessionId(refreshToken);
         if (sessionId is null) return Unauthorized();
 
-        await _loginRepository.logOut(sessionId.Value);
+        await loginRepository.logOut(sessionId.Value);
         return Ok();
     }
 
@@ -62,9 +60,9 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     [Authorize]
     public async Task<IActionResult> logoutall([FromHeader] string refreshToken)
     {
-        User user = await _loginRepository.GetUserViaUserID(refreshToken);
+        User user = await loginRepository.GetUserViaUserID(refreshToken);
 
-        await _loginRepository.RevokeAllUserSessions(user);
+        await loginRepository.RevokeAllUserSessions(user);
 
         return Ok();
     }
@@ -73,9 +71,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository _l
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDTO login)
     {
-        var result = await userRegisterValidator.ValidateAsync(login);
-
-        await _loginRepository.Register(login);
+        await loginRepository.Register(login);
         return Ok();
     }
 

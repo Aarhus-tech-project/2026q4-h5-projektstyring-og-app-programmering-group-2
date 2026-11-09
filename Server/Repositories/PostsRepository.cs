@@ -4,7 +4,7 @@ using static Server.PostsController;
 
 namespace Server;
 
-public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
+public class PostsRepository(AppDbContext db)
 {
     public async Task<Post> CreatePost(Guid userId, Media media)
     {
@@ -24,8 +24,7 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
         }
         catch (System.Exception ex)
         {
-            logger.LogError(ex, "Failed to create post");
-            throw new FailedToCreateInDatabaseException();
+            throw new FailedToCreateInDatabaseException(ex);
         }
     }
 
@@ -65,8 +64,7 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to create favorite in database");
-            throw new FailedToCreateInDatabaseException();
+            throw new FailedToCreateInDatabaseException(ex);
         }
 
         if (inserted == 1) return;
@@ -130,8 +128,7 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to create matchup");
-            throw new FailedToCreateInDatabaseException();
+            throw new FailedToCreateInDatabaseException(ex);
         }
 
         return (matchup, a, b);
@@ -194,8 +191,7 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to create vote in database");
-            throw new FailedToCreateInDatabaseException();
+            throw new FailedToCreateInDatabaseException(ex);
         }
 
         if (inserted == 1) return;
@@ -207,17 +203,14 @@ public class PostsRepository(ILogger<PostsRepository> logger, AppDbContext db)
 
         if (matchup is null || matchup.VoterId != voterId)
         {
-            logger.LogInformation("User tried to vote on a matchup that doesnt exist or isnt theirs");
             throw new MatchupDoesntExistException();
         }
 
         if (matchup.HasVote)
         {
-            logger.LogInformation("User tried to vote on a matchup already containing a vote");
             throw new VoteAlreadySubmittedException();
         }
 
-        logger.LogInformation("User voted with posts that dont belong to the matchup");
         throw new InvalidVoteException();
     }
 
