@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
-import { MediaViewer } from 'expo-media-viewer';
-import { useState } from 'react';
+import { MediaViewer } from './media-viewer';
+import { useState } from "react";
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
+
 
 type ExpandableImageProps = {
   thumbnailUrl: string;
