@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.mesasoftware.fotolo"
+      "bundleIdentifier": "com.mesasoftware.fotolo",
+      "appleTeamId": "B9D9UYSWH5"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +22,11 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.mesasoftware.fotolo",
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.READ_MEDIA_IMAGES"
       ]
     },
     "web": {
