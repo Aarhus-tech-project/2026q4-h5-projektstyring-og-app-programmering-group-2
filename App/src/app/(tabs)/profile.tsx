@@ -13,13 +13,14 @@ import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, useColorScheme, StyleSheet, View, Switch } from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutLeft } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { getMyProfile, signOut, updateDescription, uploadAvatar } from '../../../lib/api';
 import { useAuthStatus } from '../../../lib/auth';
 import { errorMessage } from '../../../lib/errors';
+import { setAppearance } from '../../../lib/appearance'
 
 function ProfileSkeleton() {
   return (
@@ -51,6 +52,8 @@ export default function Profile() {
   const [tab, setTab] = useState<'photos' | 'favorites'>('photos')
   const [editing, setEditing] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const isDark = useColorScheme() === 'dark'
+  const insets = useSafeAreaInsets()
   const [refreshing, setRefreshing] = useState(false)
   const queryClient = useQueryClient()
   const auth = useAuthStatus()
@@ -237,15 +240,52 @@ export default function Profile() {
       <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.backdrop}>
         <Pressable style={{ flex: 1 }} onPress={() => setSettingsOpen(false)} />
       </Animated.View>
-      <Animated.View
+     <Animated.View
         entering={SlideInLeft}
         exiting={SlideOutLeft}
-        style={[styles.panel, { backgroundColor: theme.background, borderColor: theme.border }]}>
-        <ThemedText type="subtitle">Settings</ThemedText>
-        <Pressable onPress={() => signOutMutation.mutate()} disabled={signOutMutation.isPending}>
-          {signOutMutation.isPending
-            ? <ActivityIndicator color="#F87171" style={{ alignSelf: 'flex-start' }} />
-            : <ThemedText style={{ color: '#F87171' }}>Log out</ThemedText>}
+        style={[
+          styles.panel,
+          {
+            backgroundColor: theme.backgroundElement,
+            borderColor: theme.border,
+            paddingTop: insets.top + Spacing.three,
+            paddingBottom: BottomTabInset + Spacing.four,
+          },
+        ]}>
+        <View style={styles.panelHeader}>
+          <ThemedText type="subtitle">Settings</ThemedText>
+          <Pressable onPress={() => setSettingsOpen(false)} hitSlop={12}>
+            <SymbolView name={{ ios: 'xmark', android: 'close', web: 'close' }} tintColor={theme.textSecondary} size={20} />
+          </Pressable>
+            </View>
+            <View style={[styles.settingRow, { borderColor: theme.border }]}>
+            <ThemedText style={{ flex: 1 }}>Dark mode</ThemedText>
+            <Switch
+            value={isDark}
+            onValueChange={(on) => setAppearance(on ? 'dark' : 'light')}
+            trackColor={{ true: '#2F9E44', false: theme.border }}
+            />
+        </View>
+
+
+        <View style={{ flex: 1 }} />
+
+        <Pressable
+          onPress={() => signOutMutation.mutate()}
+          disabled={signOutMutation.isPending}
+          style={({ pressed }) => [styles.logoutButton, { borderColor: theme.border }, pressed && styles.pressed]}>
+          {signOutMutation.isPending ? (
+            <ActivityIndicator color="#EF4444" />
+          ) : (
+            <>
+              <SymbolView
+                name={{ ios: 'rectangle.portrait.and.arrow.right', android: 'logout', web: 'logout' }}
+                tintColor="#EF4444"
+                size={18}
+              />
+              <ThemedText type="smallBold" style={{ color: '#EF4444' }}>Log out</ThemedText>
+            </>
+          )}
         </Pressable>
       </Animated.View>
     </>
@@ -412,14 +452,40 @@ const styles = StyleSheet.create({
   },
   panel: {
     position: 'absolute',
-    top: 25,
+    top: 0,
     bottom: 0,
     left: 0,
-    width: '37%',
-    padding: Spacing.four,
-    gap: Spacing.three,
+    width: '80%',
+    maxWidth: 360,
+    paddingHorizontal: Spacing.four,
+    gap: Spacing.four,
     borderRightWidth: 1,
   },
+  panelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  
+  settingRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: Spacing.three,
+  paddingVertical: Spacing.three,
+  borderTopWidth: 1,
+  borderBottomWidth: 1,
+},
+
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    paddingVertical: Spacing.three,
+    borderWidth: 1,
+    borderRadius: 14,
+  },
+
   menuButton: {
   alignSelf: 'flex-start',
   },
