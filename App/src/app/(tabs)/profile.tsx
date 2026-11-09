@@ -12,15 +12,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, useColorScheme, StyleSheet, View, Switch } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, Modal, Pressable, RefreshControl, StyleSheet, Switch, useColorScheme, useWindowDimensions, View, type HostInstance } from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutLeft } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { getMyProfile, signOut, updateDescription, uploadAvatar } from '../../../lib/api';
+import { setAppearance } from '../../../lib/appearance';
 import { useAuthStatus } from '../../../lib/auth';
 import { errorMessage } from '../../../lib/errors';
-import { setAppearance } from '../../../lib/appearance'
+
 
 function ProfileSkeleton() {
   return (
@@ -45,6 +46,48 @@ function ProfileSkeleton() {
       </View>
     </View>
   );
+}
+
+const MENU_WIDTH = 160
+
+type MenuOption = { label: string; onPress: () => void; destructive?: boolean }
+
+function PhotoMenu({ options }: { options: MenuOption[] }) {
+  const theme = useTheme()
+  const { height } = useWindowDimensions()
+  const ref = useRef<HostInstance>(null)
+  const [pos, setPos] = useState<{ left: number; top?: number; bottom?: number } | null>(null)
+
+  const open = () =>
+    ref.current?.measureInWindow((x, y, w, h) =>
+      setPos({
+        left: Math.max(Spacing.two, x + w - MENU_WIDTH),
+        ...(y + h + 160 < height ? { top: y + h + Spacing.one } : { bottom: height - y + Spacing.one }),
+      })
+    )
+
+  return (
+    <>
+      <Pressable ref={ref} onPress={open} hitSlop={8} style={styles.itemButton}>
+        <SymbolView name={{ ios: 'ellipsis', android: 'more_horiz', web: 'more_horiz' }} tintColor="#fff" size={16} />
+      </Pressable>
+      <Modal visible={!!pos} transparent animationType="fade" onRequestClose={() => setPos(null)}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => setPos(null)} />
+        {pos && (
+          <ThemedView type="backgroundElement" style={[styles.menu, pos, { borderColor: theme.border }]}>
+            {options.map((o) => (
+              <Pressable
+                key={o.label}
+                onPress={() => { setPos(null); o.onPress() }}
+                style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}>
+                <ThemedText style={o.destructive && { color: '#EF4444' }}>{o.label}</ThemedText>
+              </Pressable>
+            ))}
+          </ThemedView>
+        )}
+      </Modal>
+    </>
+  )
 }
 
 export default function Profile() {
@@ -161,6 +204,15 @@ export default function Profile() {
       renderItem={({ item }) => (
         <View style={styles.gridItems}>
           <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} />
+          {tab === 'photos' && (
+            <PhotoMenu
+              options={[
+                { label: 'Share', onPress: () => {} },
+                { label: 'Edit', onPress: () => {} },
+                { label: 'Delete', onPress: () => {} },
+              ]}
+            />
+          )}
         </View>
       )}
       ListHeaderComponent={
@@ -493,6 +545,24 @@ const styles = StyleSheet.create({
   position: 'absolute',
   top: Spacing.two,
   right: Spacing.two,
+},
+  menu: {
+  position: 'absolute',
+  width: MENU_WIDTH,
+  borderWidth: 1,
+  borderRadius: 14,
+  overflow: 'hidden',
+},
+  menuItem: {
+  padding: Spacing.three,
+},
+  itemButton: {
+  position: 'absolute',
+  right: Spacing.one,
+  bottom: Spacing.one,
+  padding: Spacing.one,
+  borderRadius: 999,
+  backgroundColor: 'rgba(0, 0, 0, 0.45)',
 },
 
 });
