@@ -29,6 +29,6 @@ public static class RateLimitingExtensions
             o.AddPolicy("strict", ctx =>
             RateLimitPartition.GetFixedWindowLimiter(
                 ctx.Connection.RemoteIpAddress?.ToString() ?? "anon",
-                _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromMinutes(1) }));
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = 15, Window = TimeSpan.FromMinutes(1) }));
         });
 }
