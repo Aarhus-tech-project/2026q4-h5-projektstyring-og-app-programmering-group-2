@@ -22,7 +22,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/x-www-form-urlencoded": {
+                    "multipart/form-data": {
                         File?: components["schemas"]["IFormFile"];
                     };
                 };
@@ -34,9 +34,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": string;
                         "application/json": string;
-                        "text/json": string;
                     };
                 };
                 /** @description Error */
@@ -52,8 +50,8 @@ export interface paths {
         };
         delete: {
             parameters: {
-                query?: {
-                    postId?: string;
+                query: {
+                    postId: string;
                 };
                 header?: never;
                 path?: never;
@@ -61,12 +59,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": unknown;
+                    };
                 };
                 /** @description Error */
                 default: {
@@ -106,9 +106,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["PublicPostDTO"][];
                         "application/json": components["schemas"]["PublicPostDTO"][];
-                        "text/json": components["schemas"]["PublicPostDTO"][];
                     };
                 };
                 /** @description Error */
@@ -141,8 +139,8 @@ export interface paths {
         put?: never;
         post: {
             parameters: {
-                query?: {
-                    postId?: string;
+                query: {
+                    postId: string;
                 };
                 header?: never;
                 path?: never;
@@ -150,12 +148,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": unknown;
+                    };
                 };
                 /** @description Error */
                 default: {
@@ -170,8 +170,8 @@ export interface paths {
         };
         delete: {
             parameters: {
-                query?: {
-                    postId?: string;
+                query: {
+                    postId: string;
                 };
                 header?: never;
                 path?: never;
@@ -179,12 +179,14 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": unknown;
+                    };
                 };
                 /** @description Error */
                 default: {
@@ -231,7 +233,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": unknown;
+                    };
                 };
                 /** @description Error */
                 default: {
@@ -272,9 +276,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["MatchupDTO"];
                         "application/json": components["schemas"]["MatchupDTO"];
-                        "text/json": components["schemas"]["MatchupDTO"];
                     };
                 };
                 /** @description Error */
@@ -321,9 +323,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["RankedPostDTO"][];
                         "application/json": components["schemas"]["RankedPostDTO"][];
-                        "text/json": components["schemas"]["RankedPostDTO"][];
                     };
                 };
                 /** @description Error */
@@ -367,9 +367,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["Profile"];
                         "application/json": components["schemas"]["Profile"];
-                        "text/json": components["schemas"]["Profile"];
                     };
                 };
                 /** @description Error */
@@ -408,18 +406,20 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/x-www-form-urlencoded": {
+                    "multipart/form-data": {
                         File?: components["schemas"]["IFormFile"];
                     };
                 };
             };
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": unknown;
+                    };
                 };
                 /** @description Error */
                 default: {
@@ -462,12 +462,14 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description OK */
-                200: {
+                /** @description No Content */
+                204: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": unknown;
+                    };
                 };
                 /** @description Error */
                 default: {
@@ -517,9 +519,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["TokenResponse"];
                         "application/json": components["schemas"]["TokenResponse"];
-                        "text/json": components["schemas"]["TokenResponse"];
                     };
                 };
                 /** @description Error */
@@ -562,7 +562,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": unknown;
+                    };
                 };
                 /** @description Error */
                 default: {
@@ -604,7 +606,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": unknown;
+                    };
                 };
                 /** @description Error */
                 default: {
@@ -652,7 +656,9 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": unknown;
+                    };
                 };
                 /** @description Error */
                 default: {
@@ -701,9 +707,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["TokenResponse"];
                         "application/json": components["schemas"]["TokenResponse"];
-                        "text/json": components["schemas"]["TokenResponse"];
                     };
                 };
                 /** @description Error */
@@ -750,7 +754,7 @@ export interface components {
             type?: null | string;
             title?: null | string;
             /** Format: int32 */
-            status?: null | number | string;
+            status?: null | number;
             detail?: null | string;
             instance?: null | string;
         };
@@ -761,11 +765,11 @@ export interface components {
             avatarUrl: null | string;
             avatarThumbhash: null | string;
             /** Format: float */
-            elo: number | string;
+            elo: number;
             /** Format: int32 */
-            wins: number | string;
+            wins: number;
             /** Format: int32 */
-            losses: number | string;
+            losses: number;
             posts: components["schemas"]["PublicPostDTO"][];
         };
         PublicPostDTO: {
@@ -775,11 +779,11 @@ export interface components {
             imageUrl: string;
             thumbhash: null | string;
             /** Format: float */
-            elo: number | string;
+            elo: number;
             /** Format: int32 */
-            wins: number | string;
+            wins: number;
             /** Format: int32 */
-            losses: number | string;
+            losses: number;
             /** Format: date-time */
             createdAt: string;
         };
@@ -790,11 +794,11 @@ export interface components {
             imageUrl: string;
             thumbhash: null | string;
             /** Format: float */
-            elo: number | string;
+            elo: number;
             /** Format: int32 */
-            wins: number | string;
+            wins: number;
             /** Format: int32 */
-            losses: number | string;
+            losses: number;
             /** Format: date-time */
             createdAt: string;
             avatarThumbnailUrl: null | string;

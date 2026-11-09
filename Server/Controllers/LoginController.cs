@@ -10,6 +10,7 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class LoginController(ILogger<LoginController> logger, LoginRepository loginRepository, AuthService authService, TokenService tokenService) : ControllerBase
 {
     public record TokenResponse(string AccessToken, string RefreshToken);

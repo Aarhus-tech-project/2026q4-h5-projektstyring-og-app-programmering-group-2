@@ -1,0 +1,37 @@
+name: App smoke test
+
+on:
+  push:
+    branches: [main]
+    paths: ['App/**', '.github/workflows/app.yml']
+  pull_request:
+    paths: ['App/**', '.github/workflows/app.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: App
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: App/package-lock.json
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npx expo lint
+
+      - name: Bundle for iOS
+        run: npx expo export --platform ios --output-dir ${{ runner.temp }}/ios-bundle

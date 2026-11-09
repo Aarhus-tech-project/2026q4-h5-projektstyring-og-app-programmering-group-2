@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Server;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class PostsController(BlobStorageService storage, PostsRepository postsRepository, MediaService mediaService) : Controller
 {
     public record DescriptionRequest(string? Description);
@@ -17,6 +19,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     [Authorize]
     [RequestSizeLimit(MaxUploadBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType<Guid>(StatusCodes.Status202Accepted)]
     public async Task<ActionResult<Guid>> AddPost([FromForm]PostRequest postRequest)
     {
@@ -30,7 +33,8 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
 
     [HttpDelete]
     [Authorize]
-    public async Task<IActionResult> DeletePost(Guid postId)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeletePost([FromQuery, BindRequired] Guid postId)
     {
         await postsRepository.DeletePost(User.GetUserId(), postId);
         return NoContent();
@@ -46,7 +50,8 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
 
     [HttpPost("favorite")]
     [Authorize]
-    public async Task<IActionResult> AddFavorite(Guid postId)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> AddFavorite([FromQuery, BindRequired] Guid postId)
     {
         await postsRepository.CreateFavorite(User.GetUserId(), postId);
         return NoContent();
@@ -54,7 +59,8 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
 
     [HttpDelete("favorite")]
     [Authorize]
-    public async Task<IActionResult> DeleteFavorite(Guid postId)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteFavorite([FromQuery, BindRequired] Guid postId)
     {
         await postsRepository.DeleteFavorite(User.GetUserId(), postId);
         return NoContent();
@@ -105,6 +111,8 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     [Authorize]
     [RequestSizeLimit(MaxUploadBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> SetAvatar([FromForm] PostRequest request)
     {
         await using var processed = await mediaService.Process(request.File);
@@ -116,6 +124,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
 
     [HttpPut("profile/description")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> SetDescription(DescriptionRequest request)
     {
         string? description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();

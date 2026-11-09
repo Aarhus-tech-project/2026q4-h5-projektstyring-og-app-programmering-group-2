@@ -61,6 +61,12 @@ function fail(response: Response, error: unknown): never {
   throw new ApiError(response.status, error);
 }
 
+function fileForm(body: { File?: string }) {
+  const form = new FormData();
+  if (body.File) form.append("File", new File(body.File));
+  return form;
+}
+
 // ------------------------------------------------------------
 // Login - Register - Logout
 
@@ -125,12 +131,9 @@ export async function submitVote(matchupId: string, winnerPostId: string, looser
 // Upload Post
 
 export async function uploadPost(uri: string) {
-  const form = new FormData();
-  form.append("File", new File(uri) as any);
-
   const { error, response } = await api.POST("/api/Posts", {
-    body: form as unknown as { File?: string },
-    bodySerializer: (body) => body,
+    body: { File: uri },
+    bodySerializer: fileForm,
   });
   if (!response.ok) fail(response, error);
 }
@@ -150,12 +153,9 @@ export async function getMyProfile() {
 // Upload Avatar
 
 export async function uploadAvatar(uri: string) {
-  const form = new FormData();
-  form.append("File", new File(uri) as any);
-
   const { error, response } = await api.PUT("/api/Posts/profile/avatar", {
-    body: form as any,
-    bodySerializer: (body) => body,
+    body: { File: uri },
+    bodySerializer: fileForm,
   });
   if (!response.ok) fail(response, error);
 }

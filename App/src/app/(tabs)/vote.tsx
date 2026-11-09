@@ -24,8 +24,8 @@ type Post = Matchup['postA'];
 const AUTO_ADVANCE_MS = 2500;
 
 function eloRank(post: Post, other: Post): EloRank {
-  const elo = Math.round(Number(post.elo));
-  const otherElo = Math.round(Number(other.elo));
+  const elo = Math.round(post.elo);
+  const otherElo = Math.round(other.elo);
   return elo === otherElo ? 'equal' : elo > otherElo ? 'higher' : 'lower';
 }
 
@@ -46,7 +46,7 @@ function VoteCard({ post, label, disabled, onVote, reveal }: {
       <View style={styles.imageWrapper}>
         <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} thumbhash={post.thumbhash} borderRadius={0} />
         {reveal && (
-          <EloReveal elo={Number(post.elo)} wins={Number(post.wins)} losses={Number(post.losses)} rank={reveal.rank} />
+          <EloReveal elo={post.elo} wins={post.wins} losses={post.losses} rank={reveal.rank} />
         )}
       </View>
       {!reveal && <Pressable
@@ -88,7 +88,7 @@ function VoteCardBottom({ post, label, disabled, onVote, reveal }: {
       <View style={styles.imageWrapperBottom}>
         <ExpandableImage thumbnailUrl={post.thumbnailUrl} imageUrl={post.imageUrl} thumbhash={post.thumbhash} borderRadius={0} />
         {reveal && (
-          <EloReveal elo={Number(post.elo)} wins={Number(post.wins)} losses={Number(post.losses)} rank={reveal.rank} />
+          <EloReveal elo={post.elo} wins={post.wins} losses={post.losses} rank={reveal.rank} />
         )}
       </View>
       {!reveal && <Pressable

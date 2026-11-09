@@ -62,7 +62,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "api:types": "openapi-typescript http://localhost:5198/openapi/v1.json -o lib/api-types.ts"
+    "api:types": "openapi-typescript ../Server/obj/openapi/Server.json -o lib/api-types.ts"
   },
   "private": true
 }

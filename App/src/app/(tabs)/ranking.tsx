@@ -76,7 +76,7 @@ function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps
                 {trend === 'up' ? '▲  ' : '▼  '}
               </ThemedText>
             )}
-            <ThemedText type="smallBold">{Math.round(Number(photo.elo))} Elo</ThemedText>
+            <ThemedText type="smallBold">{Math.round(photo.elo)} Elo</ThemedText>
             {'  ·  '}
             <ThemedText type="small" style={{ color: '#4ADE80' }}>{photo.wins} wins</ThemedText>
             {'  ·  '}

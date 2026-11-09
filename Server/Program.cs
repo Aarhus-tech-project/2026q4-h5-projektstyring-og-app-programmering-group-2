@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Server.Repositories;
 using Server.Services;
 using Server.Workers;
+using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Server;
 
@@ -29,8 +31,7 @@ public class Program
         if (isApi)
         {
             builder.Services.AddJwtAuth(builder.Configuration);
-            if (builder.Environment.IsDevelopment())
-                builder.Services.AddSwaggerDocs();
+            builder.Services.AddSwaggerDocs();
             builder.Services.AddProblemDetails();
             builder.Services.AddScoped<MediaService>();
             builder.Services.AddSingleton<BlobStorageService>();
@@ -50,7 +51,8 @@ public class Program
             });
             builder.Services.AddExceptionHandler<ApiExceptionHandler>();
             builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("Blobs")));
-            builder.Services.AddControllers(o => o.Filters.Add<ValidationFilter>());
+            builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
+            builder.Services.AddControllers(o => o.Filters.Add<ValidationFilter>()).AddJsonOptions(o => o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.Strict);
             builder.Services.AddValidatorsFromAssemblyContaining<Program>();
         }
 
@@ -61,8 +63,9 @@ public class Program
 
         if (isApi)
         {   
-            using (var scope = app.Services.CreateScope())
+            if (Assembly.GetEntryAssembly()?.GetName().Name != "GetDocument.Insider")
             {
+                using var scope = app.Services.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 db.Users.FirstOrDefault(u => u.Email == "");
             }

@@ -227,7 +227,7 @@ export default function Profile() {
 
             <View style={styles.headerLeft}>
               <ThemedView type="backgroundElement" style={styles.eloBorder}>
-                <ThemedText type="smallBold" style={styles.eloText} adjustsFontSizeToFit>{Math.round(Number(profile?.elo ?? 1500))} ELO</ThemedText>
+                <ThemedText type="smallBold" style={styles.eloText} adjustsFontSizeToFit>{Math.round(profile?.elo ?? 1500)} ELO</ThemedText>
               </ThemedView>
               <ThemedText type="small" themeColor="textSecondary">
                 <ThemedText type="smallBold" style={{ color: '#4ADE80' }}>{profile?.wins ?? 0} W</ThemedText>
