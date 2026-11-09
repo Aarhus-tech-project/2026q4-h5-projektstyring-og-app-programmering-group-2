@@ -106,6 +106,8 @@ PODS:
     - ExpoModulesJSI
     - ExpoModulesWorklets
     - RNWorklets
+  - ExpoNetwork (58.0.4):
+    - ExpoModulesCore
   - ExpoRouter (58.0.30):
     - ExpoModulesCore
     - RNScreens
@@ -2320,6 +2322,7 @@ DEPENDENCIES:
   - ExpoModulesJSI (from `../node_modules/expo-modules-jsi/apple`)
   - ExpoModulesWorklets (from `../node_modules/expo-modules-core`)
   - ExpoModulesWorkletsAdapter (from `../node_modules/expo-modules-core`)
+  - ExpoNetwork (from `../node_modules/expo-network/ios`)
   - ExpoRouter (from `../node_modules/expo-router/ios`)
   - ExpoSecureStore (from `../node_modules/expo-secure-store/ios`)
   - ExpoSplashScreen (from `../node_modules/expo-splash-screen/ios`)
@@ -2480,6 +2483,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-modules-core"
   ExpoModulesWorkletsAdapter:
     :path: "../node_modules/expo-modules-core"
+  ExpoNetwork:
+    :path: "../node_modules/expo-network/ios"
   ExpoRouter:
     :path: "../node_modules/expo-router/ios"
   ExpoSecureStore:
@@ -2706,6 +2711,7 @@ SPEC CHECKSUMS:
   ExpoModulesJSI: 600554f1b699e994b78398d87a39d477b6cd4bed
   ExpoModulesWorklets: 25684e76e7b886dd31bf4538c3fd657bf07a694b
   ExpoModulesWorkletsAdapter: 7a3e1a2b9ef6bc033c31e7cbd7c511aecca70aa8
+  ExpoNetwork: a42e5fe6c3c70f517b0aad167f5a3eeec2fee7a4
   ExpoRouter: 02792d7e25c9095634a56c5b7256556674411212
   ExpoSecureStore: 64e1fe78b5b0a1edb61beff044bb2cad03084f9c
   ExpoSplashScreen: 6acdd0b6a179e5d834398d5ed29da633113d32c4
@@ -2817,4 +2823,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: a2ba9ef7d2532a0635f904e5e0a03cd72cd663a9
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.17.0
