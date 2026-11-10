@@ -139,6 +139,12 @@ export default function Profile() {
     onError: () => toast.error('Logged out on this device, but the server could not be reached.'),
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: deletePost,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile', 'posts'] }),
+    onError: (error) => toast.error(errorMessage(error, 'Could not delete the photo.')),
+  })
+
   async function onRefresh() {
     setRefreshing(true)
     try {
@@ -221,7 +227,7 @@ export default function Profile() {
           {tab === 'photos' && (
             <PhotoMenu
               options={[
-                { label: 'Delete', onPress: () => deletePost(item.id) }
+                { label: 'Delete', onPress: () => deleteMutation.mutate(item.id), destructive: true }
               ]}
             />
           )}
