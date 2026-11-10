@@ -58,13 +58,15 @@ function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps
           </View>
 
           <View style={styles.avatar}>
-            <Avatar
-              thumbnailUrl={photo.avatarThumbnailUrl}
-              imageUrl={photo.avatarUrl}
-              thumbhash={photo.avatarThumbhash}
-              size={40}
-              expandable={false}
-            />
+            <Pressable onPress={openProfile}>
+              <Avatar
+                thumbnailUrl={photo.avatarThumbnailUrl}
+                imageUrl={photo.avatarUrl}
+                thumbhash={photo.avatarThumbhash}
+                size={40}
+                expandable={false}
+              />
+            </Pressable>
           </View>
         </View>
 
@@ -78,9 +80,9 @@ function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps
             )}
             <ThemedText type="smallBold">{Math.round(photo.elo)} Elo</ThemedText>
             {'  ·  '}
-            <ThemedText type="small" style={{ color: '#4ADE80' }}>{photo.wins} wins</ThemedText>
+            <ThemedText type="small" style={{ color: '#4ADE80' }}>{photo.wins} W</ThemedText>
             {'  ·  '}
-            <ThemedText type="small" style={{ color: '#F87171' }}>{photo.losses} losses</ThemedText>
+            <ThemedText type="small" style={{ color: '#F87171' }}>{photo.losses} L</ThemedText>
           </ThemedText>
         </View>
       </ThemedView>
@@ -125,6 +127,11 @@ function FlipButton({ worst, size, onPress }: { worst: boolean; size: number; on
       )}
     </Pressable>
   );
+}
+
+function openProfile()
+{
+
 }
 
 function SkeletonRow() {
