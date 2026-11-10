@@ -1,5 +1,16 @@
 # Grafana itself expands the ${...} below from its own environment (set in docker-compose.yml)
 apiVersion: 1
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
+  - name: Loki
+    orgId: 1
+  - name: Tempo
+    orgId: 1
+  - name: tempo
+    orgId: 1
+  - name: Postgres
+    orgId: 1
 datasources:
   - name: Prometheus
     type: prometheus

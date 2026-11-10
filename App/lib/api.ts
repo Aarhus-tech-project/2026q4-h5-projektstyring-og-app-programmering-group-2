@@ -4,10 +4,12 @@ import createClient from "openapi-fetch";
 import { Platform } from "react-native";
 import type { components, paths } from "./api-types";
 import { clearSession, getDeviceId, saveSession } from "./auth";
+import { apiFetch } from "./connectivity";
 import { ApiError } from "./errors";
 
 export const api = createClient<paths>({
   baseUrl: process.env.EXPO_PUBLIC_API_URL,
+  fetch: apiFetch,
 });
 
 let refreshing: Promise<string | null> | null = null;
@@ -41,7 +43,7 @@ async function refresh() {
   const refreshToken = await SecureStore.getItemAsync("refreshtoken");
   if (!refreshToken) return null;
 
-  const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL?.replace(/\/+$/, "")}/api/login/refresh`, {
+  const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL?.replace(/\/+$/, "")}/api/login/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(refreshToken),

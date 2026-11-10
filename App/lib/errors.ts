@@ -1,3 +1,5 @@
+import { getConnectivity } from "./connectivity";
+
 export class ApiError extends Error {
   constructor(public status: number, public body?: unknown) {
     super(detailFrom(body) ?? `Request failed (${status})`);
@@ -19,11 +21,15 @@ function detailFrom(body: unknown) {
 }
 
 export function isNetworkError(error: unknown) {
-  return error instanceof TypeError && /network|fetch/i.test(error.message);
+  return error instanceof Error && /network request|fetch failed/i.test(error.message);
 }
 
 export function errorMessage(error: unknown, fallback = "Something went wrong.") {
-  if (isNetworkError(error)) return "No connection. Check your internet and try again.";
+  if (isNetworkError(error)) {
+    return getConnectivity() === "noInternet"
+      ? "No connection. Check your internet and try again."
+      : "Can't reach the server right now. Try again in a bit.";
+  }
   if (error instanceof ApiError) {
     if (error.status === 401) return "Your session expired. Log in again.";
     if (error.status === 403) return "You don't have access to this.";
