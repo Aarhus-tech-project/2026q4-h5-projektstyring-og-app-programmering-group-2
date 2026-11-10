@@ -1,7 +1,7 @@
 import { router, useSegments } from 'expo-router';
 import { NativeTabs } from 'expo-router/native-tabs';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { Platform, PlatformColor, useColorScheme } from 'react-native';
 import { toast } from 'sonner-native';
 
 import { Colors } from '@/constants/theme';
@@ -32,7 +32,7 @@ export default function AppTabs() {
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}
+      labelStyle={{ selected: { color: Platform.OS === 'ios' ? PlatformColor('label') : colors.text } }}
       screenListeners={({ route }) => ({
         tabPress: (event) => {
           if (!event.data.isPrevented || auth === 'unknown') return;
