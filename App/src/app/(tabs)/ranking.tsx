@@ -22,6 +22,7 @@ const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
 const medalColors = ['#FFD84D', '#C9CED6', '#E8A15C'];
 const shameColors = ['#EF4444', '#DC2626', '#B91C1C'];
+const trendColors = { up: '#4ADE80', down: '#F87171' } as const;
 
 const periods: { label: string; key: RankingPeriod }[] = [
   { label: 'Trending', key: 'trending' },
@@ -36,9 +37,10 @@ type LeaderboardRowProps = {
   photo: RankedPost;
   medals: string[];
   trend?: Trend;
+  showPlacement: boolean;
 };
 
-function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps) {
+function LeaderboardRow({ placement, photo, medals, trend, showPlacement }: LeaderboardRowProps) {
   const theme = useTheme();
   const medal = medals[placement - 1];
 
@@ -48,15 +50,37 @@ function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps
         <View style={styles.imageWrapper} >
           <ExpandableImage thumbnailUrl={photo.thumbnailUrl} imageUrl={photo.imageUrl} thumbhash={photo.thumbhash} borderRadius={10} />
 
-          <View
-            style={[
-              styles.badge,
-              { borderColor: medal ?? 'rgba(255, 255, 255, 0.3)', backgroundColor: medal ?? 'rgba(0, 0, 0, 0.6)' },
-            ]}>
-            <ThemedText type="smallBold" style={[styles.badgeText, { color: medal ? '#111111' : '#FFFFFF' }]}>
-              {placement}
-            </ThemedText>
-          </View>
+          {showPlacement && (
+            <View
+              style={[
+                styles.badge,
+                { borderColor: medal ?? 'rgba(255, 255, 255, 0.3)', backgroundColor: medal ?? 'rgba(0, 0, 0, 0.6)' },
+              ]}>
+              <ThemedText type="smallBold" style={[styles.badgeText, { color: medal ? '#111111' : '#FFFFFF' }]}>
+                {placement}
+              </ThemedText>
+            </View>
+          )}
+
+          {trend && (
+            <View
+              style={[
+                styles.badge,
+                { borderColor: trendColors[trend], backgroundColor: trendColors[trend] },
+              ]}>
+              <SymbolView
+                name={{
+                  ios: trend === 'up' ? 'arrow.up' : 'arrow.down',
+                  android: trend === 'up' ? 'arrow_upward' : 'arrow_downward',
+                  web: trend === 'up' ? 'arrow_upward' : 'arrow_downward',
+                }}
+                tintColor="#111111"
+                size={15}
+                weight="bold"
+                style={styles.badgeText}
+              />
+            </View>
+          )}
 
           <View style={styles.avatar}>
             <Pressable onPress={() => openProfile(photo.profile.userId)}>
@@ -74,11 +98,6 @@ function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps
         <View style={styles.info}>
 
           <ThemedText type="small" themeColor="textSecondary">
-            {trend && (
-              <ThemedText type="smallBold" style={{ color: trend === 'up' ? '#4ADE80' : '#F87171' }}>
-                {trend === 'up' ? '▲  ' : '▼  '}
-              </ThemedText>
-            )}
             <ThemedText type="smallBold">{Math.round(photo.elo)} Elo</ThemedText>
             {'  ·  '}
             <ThemedText type="small" style={{ color: '#4ADE80' }}>{photo.wins} W</ThemedText>
@@ -235,6 +254,7 @@ export default function RankingScreen() {
             photo={item.post}
             medals={showWorst ? shameColors : medalColors}
             trend={item.trend}
+            showPlacement={!trending}
           />
         )}
         ListEmptyComponent={
