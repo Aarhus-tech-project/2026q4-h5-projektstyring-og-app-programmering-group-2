@@ -818,6 +818,8 @@ export interface components {
             instance?: null | string;
         };
         Profile: {
+            /** Format: uuid */
+            userId: string;
             username: string;
             description: null | string;
             avatarThumbnailUrl: null | string;
