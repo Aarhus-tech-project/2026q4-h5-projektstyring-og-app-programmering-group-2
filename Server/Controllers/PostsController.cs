@@ -1,13 +1,18 @@
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Server.Controllers;
+using Server.Models;
+using static Server.PostsController;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Server;
 
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class PostsController(BlobStorageService storage, PostsRepository postsRepository, MediaService mediaService) : Controller
+public class PostsController(BlobStorageService storage, PostsRepository postsRepository, MediaService mediaService, ILogger<LoginController> logger) : Controller
 {
     public record DescriptionRequest(string? Description);
     public record PostRequest(IFormFile File);
@@ -25,6 +30,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     {
         await using var processed = await mediaService.Process(postRequest.File);
         await storage.Store(processed, HttpContext.RequestAborted);
+        logger.LogInformation("User {UserId} added post {post}", User.GetUserId(), postRequest.File.FileName);
 
         Post post = await postsRepository.CreatePost(User.GetUserId(), processed.Media);
 
@@ -37,6 +43,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     public async Task<IActionResult> DeletePost([FromQuery, BindRequired] Guid postId)
     {
         await postsRepository.DeletePost(User.GetUserId(), postId);
+        logger.LogInformation("User {UserId} deleted post {Platform}", User.GetUserId(), postId);
         return NoContent();
     }
 
@@ -45,6 +52,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     public async Task<ActionResult<List<PublicPostDTO>>> Favorites()
     {
         List<Post> posts = await postsRepository.GetFavorites(User.GetUserId());
+        logger.LogInformation("User {UserId} requests favorite posts", User.GetUserId());
         return posts.Select(p => new PublicPostDTO(p, storage)).ToList();
     }
 
@@ -54,6 +62,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     public async Task<IActionResult> AddFavorite([FromQuery, BindRequired] Guid postId)
     {
         await postsRepository.CreateFavorite(User.GetUserId(), postId);
+        logger.LogInformation("User {UserId} added post {PostId} to favorites", User.GetUserId(), postId);
         return NoContent();
     }
 
@@ -63,6 +72,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     public async Task<IActionResult> DeleteFavorite([FromQuery, BindRequired] Guid postId)
     {
         await postsRepository.DeleteFavorite(User.GetUserId(), postId);
+        logger.LogInformation("User {UserId} deleted post {PostId} from favorites", User.GetUserId(), postId);
         return NoContent();
     }
 
@@ -99,6 +109,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
         var user = await postsRepository.GetUser(userId);
         if (user == null) return NotFound();
         var (avatarThumbnailUrl, avatarUrl, avatarThumbhash) = AvatarFields(user);
+        logger.LogInformation("User {UserId} requests profile", User.GetUserId());
 
         return new Profile(user.Username, user.Description, avatarThumbnailUrl, avatarUrl, avatarThumbhash, user.Elo, user.Wins, user.Losses);
     }
@@ -108,6 +119,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     public async Task<ActionResult<PostPageDTO>> GetProfilePosts([FromQuery] Guid? before = null)
     {
         var (posts, nextCursor) = await postsRepository.GetUserPosts(User.GetUserId(), before);
+        logger.LogInformation("User {UserId} requests profile posts", User.GetUserId());
         return new PostPageDTO(posts.Select(p => new PublicPostDTO(p, storage)).ToList(), nextCursor);
     }
 
@@ -134,6 +146,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
         string? description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
 
         await postsRepository.SetDescription(User.GetUserId(), description);
+        logger.LogInformation("User {UserId} updated its description", User.GetUserId());
         return NoContent();
     }
 
