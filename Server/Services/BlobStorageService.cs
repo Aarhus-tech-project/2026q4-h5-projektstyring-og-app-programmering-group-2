@@ -36,7 +36,7 @@ public class BlobStorageService(BlobServiceClient blobs)
         {
             await blob.UploadAsync(stream, new BlobUploadOptions
             {
-                HttpHeaders = new BlobHttpHeaders { ContentType = "image/webp" },
+                HttpHeaders = new BlobHttpHeaders { ContentType = "image/webp", CacheControl = "public, max-age=31536000, immutable" },
                 Conditions = new BlobRequestConditions { IfNoneMatch = ETag.All },
             }, ct);
         }
