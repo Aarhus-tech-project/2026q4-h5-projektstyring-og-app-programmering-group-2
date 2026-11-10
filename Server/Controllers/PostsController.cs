@@ -116,6 +116,21 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
         return new Profile(user.Id, user.Username, user.Description, avatarThumbnailUrl, avatarUrl, avatarThumbhash, user.Elo, user.Wins, user.Losses);
     }
 
+    [HttpGet("profile/{userId:guid}")]
+    public async Task<ActionResult<Profile>> GetUserProfile(Guid userId)
+    {
+        var user = await postsRepository.GetUser(userId);
+        if (user == null) return NotFound();
+        return new Profile(user, storage);
+    }
+
+    [HttpGet("profile/{userId:guid}/posts")]
+    public async Task<ActionResult<PostPageDTO>> GetUserProfilePosts(Guid userId, [FromQuery] Guid? before = null)
+    {
+        var (posts, nextCursor) = await postsRepository.GetUserPosts(userId, before);
+        return new PostPageDTO(posts.Select(p => new PublicPostDTO(p, storage)).ToList(), nextCursor);
+    }
+
     [HttpGet("profile/posts")]
     [Authorize]
     public async Task<ActionResult<PostPageDTO>> GetProfilePosts([FromQuery] Guid? before = null)

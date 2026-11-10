@@ -9,13 +9,14 @@ import { BottomTabInset, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getRanking, RankedPost, RankingPeriod } from '../../../lib/api';
+
 
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
@@ -58,7 +59,7 @@ function LeaderboardRow({ placement, photo, medals, trend }: LeaderboardRowProps
           </View>
 
           <View style={styles.avatar}>
-            <Pressable onPress={openProfile}>
+            <Pressable onPress={() => openProfile(photo.profile.userId)}>
               <Avatar
                 thumbnailUrl={photo.avatarThumbnailUrl}
                 imageUrl={photo.avatarUrl}
@@ -129,9 +130,9 @@ function FlipButton({ worst, size, onPress }: { worst: boolean; size: number; on
   );
 }
 
-function openProfile()
-{
-  
+
+function openProfile(userId: string) {
+  router.push({ pathname: '/user/[userId]', params: { userId } });
 }
 
 function SkeletonRow() {
