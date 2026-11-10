@@ -848,8 +848,7 @@ export interface components {
         RankedPostDTO: {
             /** Format: uuid */
             id: string;
-            /** Format: uuid */
-            ownerId: string;
+            profile: components["schemas"]["Profile"];
             thumbnailUrl: string;
             imageUrl: string;
             thumbhash: null | string;
