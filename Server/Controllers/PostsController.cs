@@ -113,7 +113,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
         var (avatarThumbnailUrl, avatarUrl, avatarThumbhash) = AvatarFields(user);
         logger.LogInformation("User {UserId} requests profile", User.GetUserId());
 
-        return new Profile(user.Username, user.Description, avatarThumbnailUrl, avatarUrl, avatarThumbhash, user.Elo, user.Wins, user.Losses);
+        return new Profile(user.Id, user.Username, user.Description, avatarThumbnailUrl, avatarUrl, avatarThumbhash, user.Elo, user.Wins, user.Losses);
     }
 
     [HttpGet("profile/posts")]
