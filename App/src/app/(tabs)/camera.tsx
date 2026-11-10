@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-screens/experimental';
 import { toast } from 'sonner-native';
 import { uploadPost } from '../../../lib/api';
 import { errorMessage } from '../../../lib/errors';
+import { useTheme } from '@/hooks/use-theme';
 
 import { Asset, usePermissions } from 'expo-media-library';
 
@@ -22,6 +23,7 @@ export default function TabTwoScreen() {
   const camera = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const theme = useTheme();
 
   const upload = useMutation({
     mutationFn: async (photoUri: string) => {
@@ -36,10 +38,10 @@ export default function TabTwoScreen() {
     onError: (error) => toast.error(errorMessage(error, 'Could not upload your photo.')),
   });
 
-  if (!permission) return <View style={{ flex: 1, backgroundColor: '#000' }} />;
+  if (!permission) return <View style={{ flex: 1, backgroundColor: theme.background}} />;
   if (!permission.granted)
     return (
-      <View style={{ flex: 1, backgroundColor: '#111111' }}>
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
         <StateView
           icon={{ ios: 'camera', android: 'photo_camera', web: 'photo_camera' }}
           title="Camera access needed"
@@ -78,7 +80,7 @@ export default function TabTwoScreen() {
 
   if (uri)
     return (
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
         <Image source={{ uri }} style={{ flex: 1 }} contentFit="contain" />
         <SafeAreaView edges={{ bottom: true }} pointerEvents="box-none" style={styles.overlay}>
         <View style={styles.controls}>
@@ -94,7 +96,7 @@ export default function TabTwoScreen() {
     );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <CameraView ref={camera} style={{ flex: 1 }} facing="back" />
       <SafeAreaView edges={{ bottom: true }} pointerEvents="box-none" style={styles.overlay}>
       <View style={styles.controls}>
