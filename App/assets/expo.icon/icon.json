@@ -1,40 +1,70 @@
 {
-  "fill" : {
-    "automatic-gradient" : "extended-srgb:0.00000,0.47843,1.00000,1.00000"
+  "fill": {
+    "automatic-gradient": "extended-srgb:0.96078,0.96078,0.95686,1.00000"
   },
-  "groups" : [
+  "groups": [
     {
-      "layers" : [
+      "layers": [
         {
-          "image-name" : "expo-symbol 2.svg",
-          "name" : "expo-symbol 2",
-          "position" : {
-            "scale" : 1,
-            "translation-in-points" : [
-              1.1008400065293245e-05,
-              -16.046875
-            ]
-          }
-        },
-        {
-          "image-name" : "grid.png",
-          "name" : "grid"
+          "image-name": "layer-star.svg",
+          "name": "star",
+          "glass": true
         }
       ],
-      "shadow" : {
-        "kind" : "neutral",
-        "opacity" : 0.5
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
       },
-      "translucency" : {
-        "enabled" : true,
-        "value" : 0.5
-      }
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      },
+      "specular": true,
+      "lighting": "individual"
+    },
+    {
+      "layers": [
+        {
+          "image-name": "layer-front.svg",
+          "name": "front card",
+          "glass": true
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      },
+      "specular": true,
+      "lighting": "individual"
+    },
+    {
+      "layers": [
+        {
+          "image-name": "layer-back.svg",
+          "name": "back card",
+          "glass": true
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      },
+      "specular": true,
+      "lighting": "individual"
     }
   ],
-  "supported-platforms" : {
-    "circles" : [
+  "supported-platforms": {
+    "circles": [
       "watchOS"
     ],
-    "squares" : "shared"
+    "squares": "shared"
   }
 }
