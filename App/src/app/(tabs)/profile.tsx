@@ -221,9 +221,7 @@ export default function Profile() {
           {tab === 'photos' && (
             <PhotoMenu
               options={[
-                { label: 'Share', onPress: () => {} },
-                { label: 'Edit', onPress: () => {} },
-                { label: 'Delete', onPress: () => deletePost(item.id) },
+                { label: 'Delete', onPress: () => deletePost(item.id) }
               ]}
             />
           )}
