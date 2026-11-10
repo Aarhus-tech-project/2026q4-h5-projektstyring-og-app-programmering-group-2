@@ -1,7 +1,7 @@
 import { File } from "expo-file-system";
 import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
 import createClient from "openapi-fetch";
+import { Platform } from "react-native";
 import type { components, paths } from "./api-types";
 import { clearSession, getDeviceId, saveSession } from "./auth";
 import { ApiError } from "./errors";
@@ -135,6 +135,13 @@ export async function uploadPost(uri: string) {
   const { error, response } = await api.POST("/api/Posts", {
     body: { File: uri },
     bodySerializer: fileForm,
+  });
+  if (!response.ok) fail(response, error);
+}
+
+export async function deletePost(postId: string) {
+  const { error, response } = await api.DELETE("/api/Posts", {
+    params: { query: { postId } },
   });
   if (!response.ok) fail(response, error);
 }

@@ -17,7 +17,7 @@ import { ActivityIndicator, FlatList, Modal, Pressable, RefreshControl, StyleShe
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutLeft } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
-import { getMyPosts, getMyProfile, signOut, updateDescription, uploadAvatar } from '../../../lib/api';
+import { deletePost, getMyPosts, getMyProfile, signOut, updateDescription, uploadAvatar } from '../../../lib/api';
 import { setAppearance } from '../../../lib/appearance';
 import { useAuthStatus } from '../../../lib/auth';
 import { errorMessage } from '../../../lib/errors';
@@ -223,7 +223,7 @@ export default function Profile() {
               options={[
                 { label: 'Share', onPress: () => {} },
                 { label: 'Edit', onPress: () => {} },
-                { label: 'Delete', onPress: () => {} },
+                { label: 'Delete', onPress: () => deletePost(item.id) },
               ]}
             />
           )}
