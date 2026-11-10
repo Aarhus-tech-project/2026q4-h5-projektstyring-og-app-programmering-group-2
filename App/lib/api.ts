@@ -63,9 +63,15 @@ function fail(response: Response, error: unknown): never {
   throw new ApiError(response.status, error);
 }
 
-function fileForm(body: { File?: string }) {
+type UploadBody = { File?: string; CropX?: number; CropY?: number; CropSize?: number };
+
+function fileForm(body: UploadBody) {
   const form = new FormData();
   if (body.File) form.append("File", new File(body.File));
+  for (const key of ["CropX", "CropY", "CropSize"] as const) {
+    const value = body[key];
+    if (value !== undefined) form.append(key, value.toString());
+  }
   return form;
 }
 
@@ -133,9 +139,11 @@ export async function submitVote(matchupId: string, winnerPostId: string, loserP
 //-------------------------------------------------------------
 // Upload Post
 
-export async function uploadPost(uri: string) {
+export type SquareCrop = { x: number; y: number; size: number };
+
+export async function uploadPost(uri: string, crop?: SquareCrop) {
   const { error, response } = await api.POST("/api/Posts", {
-    body: { File: uri },
+    body: { File: uri, ...(crop && { CropX: crop.x, CropY: crop.y, CropSize: crop.size }) },
     bodySerializer: fileForm,
   });
   if (!response.ok) fail(response, error);

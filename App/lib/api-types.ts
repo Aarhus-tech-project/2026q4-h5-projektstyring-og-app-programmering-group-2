@@ -24,6 +24,12 @@ export interface paths {
                 content: {
                     "multipart/form-data": {
                         File?: components["schemas"]["IFormFile"];
+                        /** Format: float */
+                        CropX?: number;
+                        /** Format: float */
+                        CropY?: number;
+                        /** Format: float */
+                        CropSize?: number;
                     };
                 };
             };
@@ -842,6 +848,8 @@ export interface components {
         RankedPostDTO: {
             /** Format: uuid */
             id: string;
+            /** Format: uuid */
+            ownerId: string;
             thumbnailUrl: string;
             imageUrl: string;
             thumbhash: null | string;

@@ -15,7 +15,8 @@ namespace Server;
 public class PostsController(BlobStorageService storage, PostsRepository postsRepository, MediaService mediaService, ILogger<LoginController> logger) : Controller
 {
     public record DescriptionRequest(string? Description);
-    public record PostRequest(IFormFile File);
+    public record PostRequest(IFormFile File, float? CropX, float? CropY, float? CropSize);
+    public record AvatarRequest(IFormFile File);
     public record VoteRequest(Guid MatchupId, Guid WinnerPostId, Guid LoserPostId);
 
     private const long MaxUploadBytes = 25 * 1024 * 1024;
@@ -28,7 +29,8 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     [ProducesResponseType<Guid>(StatusCodes.Status202Accepted)]
     public async Task<ActionResult<Guid>> AddPost([FromForm]PostRequest postRequest)
     {
-        await using var processed = await mediaService.Process(postRequest.File);
+        SquareCrop? crop = postRequest is { CropX: { } x, CropY: { } y, CropSize: { } size } ? new(x, y, size) : null;
+        await using var processed = await mediaService.Process(postRequest.File, square: true, crop);
         await storage.Store(processed, HttpContext.RequestAborted);
         logger.LogInformation("User {UserId} added post {post}", User.GetUserId(), postRequest.File.FileName);
 
@@ -129,7 +131,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> SetAvatar([FromForm] PostRequest request)
+    public async Task<IActionResult> SetAvatar([FromForm] AvatarRequest request)
     {
         await using var processed = await mediaService.Process(request.File);
         await storage.Store(processed, HttpContext.RequestAborted);

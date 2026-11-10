@@ -342,7 +342,6 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    height: 250,
     flexDirection: 'column',
     alignItems: 'center',
     padding: Spacing.two,
@@ -351,7 +350,7 @@ const styles = StyleSheet.create({
   },
   imageWrapper: {
     width: '100%',
-    height: 200,
+    aspectRatio: 1,
   },
   thumbnail: {
     width: '100%',
@@ -359,9 +358,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   info: {
-    flex: 1,
     gap: 2,
     alignItems: 'center',
-    justifyContent: 'flex-end'
+    paddingTop: Spacing.two,
+    paddingBottom: Spacing.one,
   },
 });
