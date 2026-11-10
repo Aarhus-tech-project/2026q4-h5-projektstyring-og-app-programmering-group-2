@@ -18,12 +18,14 @@ public sealed record ProcessedMedia(Media Media, Stream Original, MemoryStream P
     }
 }
 
+public readonly record struct SquareCrop(float X, float Y, float Size);
+
 public class MediaService
 {
     private const long MaxPixels = 50_000_000;
     private static readonly SemaphoreSlim ProcessingSlots = new(Environment.ProcessorCount);
 
-    public async Task<ProcessedMedia> Process(IFormFile file, int maxSize = 2048, int thumbnailSize = 400, int quality = 80)
+    public async Task<ProcessedMedia> Process(IFormFile file, bool square = false, SquareCrop? crop = null, int maxSize = 2048, int thumbnailSize = 400, int quality = 80)
     {
         // Read the upload once. Streams from file.OpenReadStream() share one underlying buffer,
         // so reading two of them throws "The inner stream position has changed unexpectedly".
@@ -43,7 +45,7 @@ public class MediaService
         await ProcessingSlots.WaitAsync();
         try
         {
-            return Process(bytes, file.Length, exif, codec, maxSize, thumbnailSize, quality);
+            return Process(bytes, file.Length, exif, codec, square, crop, maxSize, thumbnailSize, quality);
         }
         finally
         {
@@ -51,7 +53,7 @@ public class MediaService
         }
     }
 
-    private static ProcessedMedia Process(byte[] bytes, long originalSize, Exif exif, SKCodec codec, int maxSize, int thumbnailSize, int quality)
+    private static ProcessedMedia Process(byte[] bytes, long originalSize, Exif exif, SKCodec codec, bool square, SquareCrop? crop, int maxSize, int thumbnailSize, int quality)
     {
         using var source = SKBitmap.Decode(codec) ?? throw new UnsupportedImageException();
         using var sourceImage = SKImage.FromBitmap(source);
@@ -62,11 +64,14 @@ public class MediaService
         var width = rotated ? source.Height : source.Width;
         var height = rotated ? source.Width : source.Height;
 
-        var scale = Math.Min(1f, (float)maxSize / Math.Max(width, height));
-        var info = new SKImageInfo(Math.Max(1, (int)Math.Round(width * scale)), Math.Max(1, (int)Math.Round(height * scale)));
+        var area = square ? SquareArea(width, height, crop) : SKRectI.Create(width, height);
+
+        var scale = Math.Min(1f, (float)maxSize / Math.Max(area.Width, area.Height));
+        var info = new SKImageInfo(Math.Max(1, (int)Math.Round(area.Width * scale)), Math.Max(1, (int)Math.Round(area.Height * scale)));
 
         using var surface = SKSurface.Create(info);
         surface.Canvas.Scale(scale);
+        surface.Canvas.Translate(-area.Left, -area.Top);
         surface.Canvas.Concat(OrientationMatrix(origin, source.Width, source.Height));
         surface.Canvas.DrawImage(sourceImage, 0, 0, Sampling);
 
@@ -77,7 +82,7 @@ public class MediaService
 
         var media = new Media
         {
-            Hash = SHA256.HashData(bytes),
+            Hash = square ? SHA256.HashData([.. bytes, .. System.Text.Encoding.ASCII.GetBytes($"square:{area.Left},{area.Top},{area.Width}")]) : SHA256.HashData(bytes),
             Kind = MediaKind.Photo,
             Width = info.Width,
             Height = info.Height,
@@ -90,6 +95,18 @@ public class MediaService
         };
 
         return new ProcessedMedia(media, new MemoryStream(bytes, writable: false), output, Encode(thumbnail, quality));
+    }
+
+    private static SKRectI SquareArea(int width, int height, SquareCrop? crop)
+    {
+        var shortSide = Math.Min(width, height);
+        if (crop is not { } c)
+            return SKRectI.Create((width - shortSide) / 2, (height - shortSide) / 2, shortSide, shortSide);
+
+        var side = Math.Clamp((int)Math.Round(shortSide * c.Size), 1, shortSide);
+        var left = Math.Clamp((int)Math.Round(width * c.X), 0, width - side);
+        var top = Math.Clamp((int)Math.Round(height * c.Y), 0, height - side);
+        return SKRectI.Create(left, top, side, side);
     }
 
     private static readonly SKSamplingOptions Sampling = new(SKFilterMode.Linear, SKMipmapMode.Linear);

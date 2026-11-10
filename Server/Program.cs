@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Server.Repositories;
 using Server.Services;
 using Server.Workers;
+using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -14,6 +15,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         var builder = WebApplication.CreateBuilder(args);
         AppContext.SetSwitch("Azure.Experimental.EnableActivitySource", true);
         builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true);

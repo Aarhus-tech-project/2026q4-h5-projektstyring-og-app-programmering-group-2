@@ -24,6 +24,12 @@ export interface paths {
                 content: {
                     "multipart/form-data": {
                         File?: components["schemas"]["IFormFile"];
+                        /** Format: float */
+                        CropX?: number;
+                        /** Format: float */
+                        CropY?: number;
+                        /** Format: float */
+                        CropSize?: number;
                     };
                 };
             };
