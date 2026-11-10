@@ -4,16 +4,16 @@ import { EloReveal, type EloRank } from '@/components/ui/elo-reveal';
 import { ExpandableImage } from '@/components/ui/expandable-image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view';
-import { BottomTabInset, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { useFavorites, useToggleFavorite } from '@/hooks/use-favorites';
 import { useTheme } from '@/hooks/use-theme';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import { useEffect, useRef, useState } from 'react';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-screens/experimental';
 import { toast } from 'sonner-native';
 import { getMatchup, submitVote, type Matchup } from '../../../lib/api';
 import { useAuthStatus } from '../../../lib/auth';
@@ -249,7 +249,7 @@ export default function VoteScreen() {
 
   return (
     <ThemedView style={styles.screen}>
-      <SafeAreaView style={styles.screen} edges={['top']}>
+      <SafeAreaView style={styles.screen} edges={{ top: true, bottom: true }}>
         {content}
       </SafeAreaView>
     </ThemedView>
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Spacing.one,
     paddingTop: Spacing.three,
-    paddingBottom: (Platform.OS === 'ios' ? BottomTabInset : 0) + Spacing.three,
+    paddingBottom: Spacing.three,
   },
   card: {
     flex: 1,

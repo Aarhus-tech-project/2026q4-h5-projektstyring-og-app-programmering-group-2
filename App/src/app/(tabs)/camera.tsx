@@ -9,34 +9,39 @@ import { Image } from 'expo-image';
 import { Asset, usePermissions } from 'expo-media-library';
 import { useIsFocused } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Linking, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import {
   GestureDetector,
   usePanGesture,
   usePinchGesture,
+  useExclusiveGestures,
   useSimultaneousGestures,
   useTapGesture,
 } from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
+  FadeIn,
   useSharedValue,
+  withSequence,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-screens/experimental';
+import { Fonts } from '@/constants/theme';
 import { toast } from 'sonner-native';
 import { uploadPost, type SquareCrop } from '../../../lib/api';
 import { errorMessage } from '../../../lib/errors';
-import { getMaxZoomFactor } from '../../../modules/camera-zoom';
 
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
 const WIDE = 'AVCaptureDeviceTypeBuiltInWideAngleCamera';
-const MAX_MAGNIFICATION = 10;
-const FALLBACK_MAX_ZOOM_FACTOR = 10;
+const MAX_ZOOM = 0.5;
+const ZOOM_PER_PINCH_DOUBLING = 0.12;
 const MAX_CROP_SCALE = 5;
-const FRAME_TOP_GAP = 8;
 const SENSOR_ASPECT = 4 / 3;
+const BELOW_FRAME_MIN = 160;
+const PRESS_SPRING = { damping: 14, stiffness: 320 };
 
 const FLASH_ORDER: FlashMode[] = ['off', 'auto', 'on'];
 const FLASH_ICON: Record<string, SymbolViewProps['name']> = {
@@ -82,36 +87,24 @@ function CaptureScreen({ onCapture }: { onCapture: (photo: Photo) => void }) {
   const camera = useRef<CameraView>(null);
   const [facing, setFacing] = useState<CameraType>('back');
   const [flash, setFlash] = useState<FlashMode>('off');
-  const [magnification, setMagnification] = useState(1);
-  const [maxZoomFactors, setMaxZoomFactors] = useState<Record<string, number>>({});
+  const [grid, setGrid] = useState(false);
+  const [zoom, setZoom] = useState(0);
   const [ready, setReady] = useState(false);
   const [capturing, setCapturing] = useState(false);
-  const pinchStart = useRef(1);
+  const pinchStart = useRef(0);
   const flipTurns = useSharedValue(0);
+  const blink = useSharedValue(0);
   const focused = useIsFocused();
   const { width: frameSize } = useWindowDimensions();
   const sensorOverflow = (frameSize * SENSOR_ASPECT - frameSize) / 2;
 
-  const maxZoomFactor = maxZoomFactors[facing];
-  const maxMagnification = Math.min(MAX_MAGNIFICATION, maxZoomFactor ?? MAX_MAGNIFICATION);
-  const zoom = Math.min(1, Math.max(0, Math.log(magnification) / Math.log(maxZoomFactor ?? FALLBACK_MAX_ZOOM_FACTOR)));
-
-  useEffect(() => {
-    if (!ready || Platform.OS !== 'ios' || maxZoomFactors[facing]) return;
-    const timer = setTimeout(() => {
-      const factor = getMaxZoomFactor(WIDE, facing === 'front' ? 'front' : 'back');
-      if (factor && factor > 1) setMaxZoomFactors((current) => ({ ...current, [facing]: factor }));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [ready, facing, maxZoomFactors]);
-
-  const changeMagnification = (next: number) => {
-    setMagnification(Math.min(maxMagnification, Math.max(1, next)));
+  const changeZoom = (next: number) => {
+    setZoom(Math.min(MAX_ZOOM, Math.max(0, next)));
   };
 
   const flipCamera = () => {
     setReady(false);
-    setMagnification(1);
+    setZoom(0);
     flipTurns.value = withTiming(flipTurns.value + 1, { duration: 350 });
     setFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
@@ -119,24 +112,27 @@ function CaptureScreen({ onCapture }: { onCapture: (photo: Photo) => void }) {
   const pinch = usePinchGesture({
     runOnJS: true,
     onActivate: () => {
-      pinchStart.current = magnification;
+      pinchStart.current = zoom;
     },
-    onUpdate: (event) => changeMagnification(pinchStart.current * event.scale),
+    onUpdate: (event) => changeZoom(pinchStart.current + Math.log2(event.scale) * ZOOM_PER_PINCH_DOUBLING),
   });
   const doubleTap = useTapGesture({
     runOnJS: true,
     numberOfTaps: 2,
+    maxDistance: 12,
     onActivate: flipCamera,
   });
-  const previewGestures = useSimultaneousGestures(pinch, doubleTap);
+  const previewGestures = useExclusiveGestures(pinch, doubleTap);
 
   const flipIconStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${flipTurns.value * 180}deg` }],
   }));
+  const blinkStyle = useAnimatedStyle(() => ({ opacity: blink.value }));
 
   const takePhoto = async () => {
     if (!ready || capturing) return;
     setCapturing(true);
+    blink.set(withSequence(withTiming(0.9, { duration: 50 }), withTiming(0, { duration: 260 })));
     try {
       const shot = await camera.current?.takePictureAsync({ exif: true });
       if (shot) onCapture({ uri: shot.uri, width: shot.width, height: shot.height });
@@ -150,6 +146,7 @@ function CaptureScreen({ onCapture }: { onCapture: (photo: Photo) => void }) {
   return (
     <View style={styles.screen}>
       <SafeAreaView edges={{ top: true, bottom: true }} style={styles.column}>
+        <View style={[styles.aboveFrame, { minHeight: sensorOverflow }]} />
         <View style={[styles.frame, { width: frameSize, height: frameSize }]}>
           <GestureDetector gesture={previewGestures}>
             <View style={[styles.sensor, { top: -sensorOverflow, height: frameSize + sensorOverflow * 2 }]}>
@@ -160,6 +157,7 @@ function CaptureScreen({ onCapture }: { onCapture: (photo: Photo) => void }) {
                   facing={facing}
                   flash={flash}
                   zoom={zoom}
+                  animateShutter={false}
                   mirror={facing === 'front'}
                   selectedLens={Platform.OS === 'ios' && facing === 'back' ? WIDE : undefined}
                   onCameraReady={() => setReady(true)}
@@ -169,43 +167,62 @@ function CaptureScreen({ onCapture }: { onCapture: (photo: Photo) => void }) {
               <View pointerEvents="none" style={[styles.sensorShade, { bottom: 0, height: sensorOverflow }]} />
             </View>
           </GestureDetector>
-          <GridOverlay />
+          {grid && <GridOverlay />}
+          <View pointerEvents="none" style={styles.frameEdge} />
+          <Animated.View pointerEvents="none" style={[styles.blink, blinkStyle]} />
         </View>
 
-        <ZoomSlider
-          magnification={magnification}
-          max={maxMagnification}
-          showValue={maxZoomFactor !== undefined}
-          onChange={changeMagnification}
-        />
+        <View style={[styles.belowFrame, { paddingTop: sensorOverflow, minHeight: BELOW_FRAME_MIN + sensorOverflow }]}>
+          <ZoomSlider
+            zoom={zoom}
+            onChange={changeZoom}
+            grid={grid}
+            onToggleGrid={() => setGrid((g) => !g)}
+          />
 
-        <View style={styles.shutterRow}>
-          <RoundButton
-            label={FLASH_LABEL[flash]}
-            onPress={() => setFlash(FLASH_ORDER[(FLASH_ORDER.indexOf(flash) + 1) % FLASH_ORDER.length])}>
-            <SymbolView name={FLASH_ICON[flash]} tintColor={flash === 'off' ? '#FFFFFF' : '#FFD23F'} size={22} />
-          </RoundButton>
-          <Pressable
-            onPress={takePhoto}
-            disabled={!ready || capturing}
-            accessibilityRole="button"
-            accessibilityLabel="Take photo"
-            style={({ pressed }) => [styles.shutterRing, (pressed || capturing) && styles.shutterPressed, !ready && styles.dimmed]}>
-            <View style={styles.shutterCore} />
-          </Pressable>
-          <RoundButton label={facing === 'back' ? 'Switch to front camera' : 'Switch to back camera'} onPress={flipCamera}>
-            <Animated.View style={flipIconStyle}>
-              <SymbolView
-                name={{ ios: 'arrow.triangle.2.circlepath', android: 'flip_camera_android', web: 'flip_camera_android' }}
-                tintColor="#FFFFFF"
-                size={22}
-                weight="semibold"
-              />
-            </Animated.View>
-          </RoundButton>
+          <View style={styles.shutterRow}>
+            <RoundButton
+              label={FLASH_LABEL[flash]}
+              onPress={() => setFlash(FLASH_ORDER[(FLASH_ORDER.indexOf(flash) + 1) % FLASH_ORDER.length])}>
+              <SymbolView name={FLASH_ICON[flash]} tintColor={flash === 'off' ? '#FFFFFF' : '#FFD23F'} size={22} />
+            </RoundButton>
+            <ShutterButton disabled={!ready || capturing} onPress={takePhoto} />
+            <RoundButton label={facing === 'back' ? 'Switch to front camera' : 'Switch to back camera'} onPress={flipCamera}>
+              <Animated.View style={flipIconStyle}>
+                <SymbolView
+                  name={{ ios: 'arrow.triangle.2.circlepath', android: 'flip_camera_android', web: 'flip_camera_android' }}
+                  tintColor="#FFFFFF"
+                  size={22}
+                  weight="semibold"
+                />
+              </Animated.View>
+            </RoundButton>
+          </View>
         </View>
       </SafeAreaView>
     </View>
+  );
+}
+
+function ShutterButton({ disabled, onPress }: { disabled: boolean; onPress: () => void }) {
+  const press = useSharedValue(1);
+  const coreStyle = useAnimatedStyle(() => ({ transform: [{ scale: press.value }] }));
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      onPressIn={() => {
+        press.set(withSpring(0.86, PRESS_SPRING));
+      }}
+      onPressOut={() => {
+        press.set(withSpring(1, PRESS_SPRING));
+      }}
+      accessibilityRole="button"
+      accessibilityLabel="Take photo"
+      style={[styles.shutterRing, disabled && styles.dimmed]}>
+      <Animated.View style={[styles.shutterCore, coreStyle]} />
+    </Pressable>
   );
 }
 
@@ -223,16 +240,16 @@ function RoundButton({ label, onPress, children }: { label: string; onPress: () 
   );
 }
 
-function ZoomSlider({ magnification, max, showValue, onChange }: {
-  magnification: number;
-  max: number;
-  showValue: boolean;
-  onChange: (magnification: number) => void;
+function ZoomSlider({ zoom, onChange, grid, onToggleGrid }: {
+  zoom: number;
+  onChange: (zoom: number) => void;
+  grid: boolean;
+  onToggleGrid: () => void;
 }) {
   const [trackWidth, setTrackWidth] = useState(0);
-  const span = Math.log(max);
-  const position = span > 0 ? Math.min(1, Math.log(magnification) / span) : 0;
-  const fromX = (x: number) => (trackWidth > 0 ? Math.exp(Math.min(1, Math.max(0, x / trackWidth)) * span) : magnification);
+  const position = zoom / MAX_ZOOM;
+  const fromX = (x: number) => (trackWidth > 0 ? Math.min(1, Math.max(0, x / trackWidth)) * MAX_ZOOM : zoom);
+  const zoomed = zoom > 0;
 
   const drag = usePanGesture({
     runOnJS: true,
@@ -244,16 +261,14 @@ function ZoomSlider({ magnification, max, showValue, onChange }: {
   return (
     <View style={styles.zoomRow}>
       <Pressable
-        onPress={() => onChange(1)}
+        onPress={() => onChange(0)}
+        disabled={!zoomed}
         accessibilityRole="button"
-        accessibilityLabel="Reset zoom"
+        accessibilityLabel="Reset zoom to 1×"
         hitSlop={8}
-        style={styles.zoomValue}>
-        {showValue ? (
-          <Text style={styles.zoomValueText}>{formatMagnification(magnification)}×</Text>
-        ) : (
-          <SymbolView name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }} tintColor="rgba(255,255,255,0.7)" size={16} />
-        )}
+        style={({ pressed }) => [styles.zoomChip, pressed && styles.pressed]}>
+        <Chrome style={StyleSheet.absoluteFill} />
+        <Text style={[styles.zoomValueText, !zoomed && styles.zoomValueIdle]}>1×</Text>
       </Pressable>
       <GestureDetector gesture={drag}>
         <View
@@ -261,30 +276,37 @@ function ZoomSlider({ magnification, max, showValue, onChange }: {
           onLayout={(e) => setTrackWidth(e.nativeEvent.layout.width)}
           accessibilityRole="adjustable"
           accessibilityLabel="Zoom"
-          accessibilityValue={{ text: `${formatMagnification(magnification)} times` }}
+          accessibilityValue={{ min: 0, max: 100, now: Math.round(position * 100) }}
           accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
-          onAccessibilityAction={(e) => onChange(magnification * (e.nativeEvent.actionName === 'increment' ? 1.25 : 0.8))}>
+          onAccessibilityAction={(e) => onChange(zoom + (e.nativeEvent.actionName === 'increment' ? 0.05 : -0.05))}>
           <View style={styles.zoomTrack} />
           <View style={[styles.zoomFill, { width: position * trackWidth }]} />
-          <View style={[styles.zoomThumb, { left: position * trackWidth - 11 }]} />
+          <View style={[styles.zoomThumb, { left: position * trackWidth - 12 }]} />
         </View>
       </GestureDetector>
+      <Pressable
+        onPress={onToggleGrid}
+        accessibilityRole="switch"
+        accessibilityLabel="Grid"
+        accessibilityState={{ checked: grid }}
+        hitSlop={8}
+        style={({ pressed }) => [styles.zoomChip, grid && styles.chipOn, pressed && styles.pressed]}>
+        {!grid && <Chrome style={StyleSheet.absoluteFill} />}
+        <SymbolView name={{ ios: 'grid', android: 'grid_on', web: 'grid_on' }} tintColor={grid ? '#111111' : 'rgba(255,255,255,0.8)'} size={16} />
+      </Pressable>
     </View>
   );
-}
-
-function formatMagnification(value: number) {
-  const rounded = Math.round(value * 10) / 10;
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
 function CropScreen({ photo, onDone }: { photo: Photo; onDone: () => void }) {
   const queryClient = useQueryClient();
   const { width: frameSize } = useWindowDimensions();
+  const sensorOverflow = (frameSize * SENSOR_ASPECT - frameSize) / 2;
   const [size, setSize] = useState({ width: photo.width, height: photo.height });
   const scale = useSharedValue(1);
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
+  const guides = useSharedValue(0);
 
   const base = frameSize / Math.min(size.width, size.height);
   const shownWidth = size.width * base;
@@ -303,8 +325,19 @@ function CropScreen({ photo, onDone }: { photo: Photo; onDone: () => void }) {
     onError: (error) => toast.error(errorMessage(error, 'Could not post your photo.')),
   });
 
+  const showGuides = () => {
+    'worklet';
+    guides.value = withTiming(1, { duration: 120 });
+  };
+  const hideGuides = () => {
+    'worklet';
+    guides.value = withTiming(0, { duration: 350 });
+  };
+
   const pan = usePanGesture({
     enabled: !upload.isPending,
+    onBegin: showGuides,
+    onFinalize: hideGuides,
     onUpdate: (event) => {
       'worklet';
       offsetX.value = clampOffset(offsetX.value + event.changeX, shownWidth, scale.value, frameSize);
@@ -313,6 +346,8 @@ function CropScreen({ photo, onDone }: { photo: Photo; onDone: () => void }) {
   });
   const pinch = usePinchGesture({
     enabled: !upload.isPending,
+    onBegin: showGuides,
+    onFinalize: hideGuides,
     onUpdate: (event) => {
       'worklet';
       const next = Math.min(MAX_CROP_SCALE, Math.max(1, scale.value * event.scaleChange));
@@ -336,6 +371,7 @@ function CropScreen({ photo, onDone }: { photo: Photo; onDone: () => void }) {
   });
   const gestures = useSimultaneousGestures(pan, pinch, doubleTap);
 
+  const guidesStyle = useAnimatedStyle(() => ({ opacity: guides.value }));
   const imageStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: offsetX.value }, { translateY: offsetY.value }, { scale: scale.value }],
   }));
@@ -361,8 +397,9 @@ function CropScreen({ photo, onDone }: { photo: Photo; onDone: () => void }) {
   };
 
   return (
-    <View style={styles.screen}>
+    <Animated.View entering={FadeIn.duration(200)} style={styles.screen}>
       <SafeAreaView edges={{ top: true, bottom: true }} style={styles.column}>
+        <View style={[styles.aboveFrame, { minHeight: sensorOverflow }]} />
         <View style={[styles.frame, { width: frameSize, height: frameSize }]}>
           <GestureDetector gesture={gestures}>
             <View style={StyleSheet.absoluteFill}>
@@ -386,15 +423,19 @@ function CropScreen({ photo, onDone }: { photo: Photo; onDone: () => void }) {
               </Animated.View>
               <View pointerEvents="none" style={[styles.cropShade, { bottom: frameSize }]} />
               <View pointerEvents="none" style={[styles.cropShade, { top: frameSize }]} />
-              <View pointerEvents="none" style={styles.cropBorder}>
+              <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, guidesStyle]}>
                 <GridOverlay />
-              </View>
+              </Animated.View>
+              <View pointerEvents="none" style={styles.cropBorder} />
             </View>
           </GestureDetector>
         </View>
 
-        <View style={styles.controls}>
-          <Text style={styles.cropHint}>Drag and pinch to frame your photo</Text>
+        <View style={[styles.controls, { paddingTop: sensorOverflow, minHeight: BELOW_FRAME_MIN + sensorOverflow }]}>
+          <View style={styles.cropHint}>
+            <SymbolView name={{ ios: 'hand.draw', android: 'pan_tool', web: 'pan_tool' }} tintColor="rgba(255,255,255,0.55)" size={15} />
+            <Text style={styles.cropHintText}>Drag and pinch to frame your photo</Text>
+          </View>
           <View style={styles.reviewBar}>
             <Pressable
               onPress={retake}
@@ -420,7 +461,7 @@ function CropScreen({ photo, onDone }: { photo: Photo; onDone: () => void }) {
           </View>
         </View>
       </SafeAreaView>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -465,8 +506,16 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
+  aboveFrame: {
+    flexGrow: 1,
+    flexBasis: 0,
+  },
   frame: {
-    marginTop: FRAME_TOP_GAP,
+    flexShrink: 0,
+  },
+  belowFrame: {
+    flexGrow: 1,
+    flexBasis: 0,
   },
   sensor: {
     position: 'absolute',
@@ -479,10 +528,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    backgroundColor: '#000000',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   controls: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 0,
     justifyContent: 'space-evenly',
     alignItems: 'center',
     paddingBottom: 8,
@@ -499,21 +549,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     height: 52,
-    marginTop: 12,
+    marginTop: 8,
     paddingHorizontal: 20,
   },
-  zoomValue: {
-    width: 44,
-    height: 32,
-    borderRadius: 16,
+  zoomChip: {
+    width: 48,
+    height: 34,
+    borderRadius: 17,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
+  chipOn: {
+    backgroundColor: '#FFFFFF',
+  },
+  zoomValueIdle: {
+    opacity: 0.55,
   },
   zoomValueText: {
     color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '600',
+    fontFamily: Fonts?.rounded,
+    fontSize: 14,
+    fontWeight: '700',
     fontVariant: ['tabular-nums'],
   },
   zoomTrackArea: {
@@ -522,22 +579,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   zoomTrack: {
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.22)',
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   zoomFill: {
     position: 'absolute',
     left: 0,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.85)',
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   zoomThumb: {
     position: 'absolute',
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     shadowColor: '#000000',
     shadowOpacity: 0.35,
@@ -553,26 +610,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   shutterRing: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 78,
+    height: 78,
+    borderRadius: 39,
     borderWidth: 4,
     borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
   shutterCore: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 62,
+    height: 62,
+    borderRadius: 31,
     backgroundColor: '#FFFFFF',
   },
-  shutterPressed: {
-    transform: [{ scale: 0.92 }],
+  blink: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: '#000000',
+  },
+  frameEdge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.22)',
   },
   gridLine: {
     position: 'absolute',
-    backgroundColor: 'rgba(255,255,255,0.28)',
+    backgroundColor: 'rgba(255,255,255,0.45)',
   },
   cropShade: {
     position: 'absolute',
@@ -587,11 +658,16 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.8)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,255,255,0.6)',
   },
   cropHint: {
-    color: 'rgba(255,255,255,0.65)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  cropHintText: {
+    color: 'rgba(255,255,255,0.55)',
     fontSize: 14,
     fontWeight: '500',
   },
