@@ -224,6 +224,16 @@ export default function Profile() {
       renderItem={({ item }) => (
         <View style={styles.gridItems}>
           <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} />
+          <View style={styles.statsRow}>
+              <ThemedView type="backgroundElement" style={styles.eloBorderMini}>
+                <ThemedText type="smallBold" style={styles.eloTextMini} adjustsFontSizeToFit>{Math.round(item?.elo ?? 1500)}</ThemedText>
+              </ThemedView>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.statsTextMini}>
+                <ThemedText type="smallBold" style={[styles.statsTextMini, { color: '#4ADE80' }]}>{item?.wins ?? 0}W</ThemedText>
+                {' '}
+                <ThemedText type="smallBold" style={[styles.statsTextMini, { color: '#F87171' }]}>{item?.losses ?? 0}L</ThemedText>
+              </ThemedText>
+            </View>
           {tab === 'photos' && (
             <PhotoMenu
               options={[
@@ -461,7 +471,18 @@ const styles = StyleSheet.create({
     fontSize: 24,
     lineHeight: 30,
   },
-
+  eloBorderMini: {
+    borderWidth: 1,
+    borderColor: '#FFD84D',
+    borderRadius: 999,
+    paddingHorizontal: Spacing.one,
+    paddingVertical: Spacing.one,
+  },
+  eloTextMini: {
+    color: '#FFD84D',
+    fontSize: 10,
+    lineHeight: 10,
+  },
   contentContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -535,7 +556,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  
   settingRow: {
   flexDirection: 'row',
   alignItems: 'center',
@@ -544,7 +564,6 @@ const styles = StyleSheet.create({
   borderTopWidth: 1,
   borderBottomWidth: 1,
 },
-
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -580,6 +599,18 @@ const styles = StyleSheet.create({
   padding: Spacing.one,
   borderRadius: 999,
   backgroundColor: 'rgba(0, 0, 0, 0.45)',
+},
+statsRow: {
+  position: 'absolute',
+  left: Spacing.one,
+  bottom: Spacing.one,
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: Spacing.one,
+},
+statsTextMini: {
+  fontSize: 12,
+  lineHeight: 12,
 },
 
 });
