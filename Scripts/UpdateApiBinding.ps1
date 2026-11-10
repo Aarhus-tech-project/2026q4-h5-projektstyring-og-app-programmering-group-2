@@ -1,6 +1,5 @@
-$root = Split-Path $PSScriptRoot -Parent
-
-dotnet build "$root/Server" -p:OpenApiGenerateDocumentsOnBuild=true
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-npm run api:types --prefix "$root/App"
+Stop-Process -Name Server -ErrorAction SilentlyContinue
+dotnet build ./Server -p:OpenApiGenerateDocumentsOnBuild=true
+if ($LASTEXITCODE) { exit $LASTEXITCODE }
+npm run api:types --prefix ./App
+exit $LASTEXITCODE
