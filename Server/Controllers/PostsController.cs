@@ -99,6 +99,7 @@ public class PostsController(BlobStorageService storage, PostsRepository postsRe
     public async Task<ActionResult<List<RankedPostDTO>>> Ranking([FromQuery] RankingPeriod period = RankingPeriod.All, [FromQuery] RankingOrder order = RankingOrder.Top)
     {
         List<Post> posts = await postsRepository.GetRanking(period, order);
+        Response.Headers.CacheControl = "public, max-age=0, s-maxage=30";
         return posts.Select(p => new RankedPostDTO(p, storage)).ToList();
     }
 
