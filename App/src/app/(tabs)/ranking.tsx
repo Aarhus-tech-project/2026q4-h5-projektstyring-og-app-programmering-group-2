@@ -131,7 +131,7 @@ function FlipButton({ worst, size, onPress }: { worst: boolean; size: number; on
 
 function openProfile()
 {
-
+  
 }
 
 function SkeletonRow() {

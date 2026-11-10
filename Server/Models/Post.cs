@@ -45,11 +45,12 @@ public record PublicPostDTO(Guid Id, string ThumbnailUrl, string ImageUrl, strin
 
 public record PostPageDTO(List<PublicPostDTO> Posts, Guid? NextCursor);
 
-public record RankedPostDTO(Guid Id, Guid OwnerId, string ThumbnailUrl, string ImageUrl, string? Thumbhash, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt,
+public record RankedPostDTO(Guid Id, Profile Profile, string ThumbnailUrl, string ImageUrl, string? Thumbhash, float Elo, int Wins, int Losses, DateTimeOffset CreatedAt,
     string? AvatarThumbnailUrl, string? AvatarUrl, string? AvatarThumbhash)
 {
     internal RankedPostDTO(Post p, BlobStorageService storage)
-        : this(p.Id, p.UserId, storage.ThumbnailUrl(p.MediaHash), storage.ImageUrl(p.MediaHash),
+        : this(p.Id, new Profile(p.User, storage), 
+            storage.ThumbnailUrl(p.MediaHash), storage.ImageUrl(p.MediaHash),
             p.Media.Thumbhash is { } thumbhash ? Convert.ToBase64String(thumbhash) : null,
             p.Elo, p.Wins, p.Losses, p.CreatedAt,
             p.User.AvatarHash is { } avatar ? storage.ThumbnailUrl(avatar) : null,

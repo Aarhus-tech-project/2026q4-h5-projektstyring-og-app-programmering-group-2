@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Client.Extensions.Msal;
+using Server;
 using System.Security.Claims;
 
 public class User
@@ -21,4 +23,14 @@ public record RegisterRequest(string Username, string Email, string Password);
 
 public record LoginRequest(string Email, string Password, Guid DeviceId, string DeviceName, string Platform);
 
-public record Profile(string Username, string? Description, string? AvatarThumbnailUrl, string? AvatarUrl, string? AvatarThumbhash, float Elo, int Wins, int Losses);
+public record Profile(string Username, string? Description, string? AvatarThumbnailUrl, string? AvatarUrl, string? AvatarThumbhash, float Elo, int Wins, int Losses)
+{
+    internal Profile(User u, BlobStorageService storage)
+        : this(u.Username, u.Description,
+            u.AvatarHash is { } avatar ? storage.ThumbnailUrl(avatar) : null,
+            u.AvatarHash is { } avatarImage ? storage.ImageUrl(avatarImage) : null,
+            u.Avatar?.Thumbhash is { } thumbhash ? Convert.ToBase64String(thumbhash) : null,
+            u.Elo, u.Wins, u.Losses)
+    {
+    }
+}
