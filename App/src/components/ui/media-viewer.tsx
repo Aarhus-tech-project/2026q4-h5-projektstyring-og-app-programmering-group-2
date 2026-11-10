@@ -1,7 +1,11 @@
 import { BlurView } from "expo-blur";
 import { Image, ImageContentFit } from "expo-image";
 import { ReactNode, useState } from "react";
-import { DimensionValue, Modal, Pressable, StyleSheet, useWindowDimensions } from "react-native";
+import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
+import { SymbolView } from "expo-symbols";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { DimensionValue, Modal, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
+import { scheduleOnRN } from "react-native-worklets";
 import {
   GestureDetector,
   GestureHandlerRootView,
@@ -9,7 +13,7 @@ import {
   usePinchGesture,
   useSimultaneousGestures,
 } from "react-native-gesture-handler";
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { interpolate, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 export type MediaItem = {
   type: "image";
@@ -36,14 +40,17 @@ type MediaViewerProps = {
   config?: MediaViewerConfig;
   renderLayout: (helpers: { renderItem: RenderItem }) => ReactNode;
 };
-
+const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 const IMAGE_HEIGHT = 500;
 const MIN_SCALE = 1;
 const MAX_SCALE = 4;
+const DISMISS_DISTANCE = 120;
+const DISMISS_VELOCITY = 800;
 
 export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const openItem = openIndex !== null ? items[openIndex] : null;
+  const insets = useSafeAreaInsets();
 
   const { width: screenWidth } = useWindowDimensions();
 
@@ -51,15 +58,17 @@ export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
 
-  const close = () => {
+  const open = (index: number) => {
     scale.value = 1;
     translateX.value = 0;
     translateY.value = 0;
+    setOpenIndex(index);
+  };
+
+  const close = () => {
     setOpenIndex(null);
   };
 
-  // Keeps the image from being dragged past its edges.
-  // targetScale is the scale the image is settling at (it may still be animating there).
   const clampPosition = (targetScale: number) => {
     "worklet";
     const maxX = (screenWidth * (targetScale - 1)) / 2;
@@ -81,12 +90,31 @@ export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
 
   const pan = usePanGesture({
     onUpdate: (e) => {
-      if (scale.value <= 1) return; // not zoomed: don't move
+      if (scale.value > 1) {
       translateX.value += e.changeX;
       translateY.value += e.changeY;
-    },
-    onDeactivate: () => {
-      clampPosition(scale.value);
+    } else {
+      translateY.value += e.changeY;
+    }
+  },
+    onDeactivate: (e) => {
+      if (scale.value > 1) {
+        clampPosition(scale.value);
+        return;
+      }
+
+      const farEnough = Math.abs(translateY.value) > DISMISS_DISTANCE;
+      const fastEnough = Math.abs(e.velocityY) > DISMISS_VELOCITY;
+
+      if (farEnough || fastEnough) {
+        const direction = translateY.value > 0 ? 1 : -1;
+        translateY.value = withTiming(direction * 1000, {duration: 200}, () => {
+          scheduleOnRN(close);
+        });
+      } else {
+        translateY.value = withTiming(0);
+      }
+
     },
   });
 
@@ -99,6 +127,11 @@ export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
       { scale: scale.value },
     ],
   }));
+  
+  const backdropStyle = useAnimatedStyle(() => ({
+  opacity: scale.value > 1 ? 1 : interpolate(Math.abs(translateY.value), [0, 300], [1, 0]),
+  }));
+
 
   const renderItem: RenderItem = (index, options) => {
     const item = items[index];
@@ -106,7 +139,7 @@ export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
       <Pressable
         key={index}
         style={[options?.frame, { overflow: "hidden" }]}
-        onPress={() => setOpenIndex(index)}
+        onPress={() => open(index)}
       >
         <Image
           source={{ uri: item.thumbnail?.source ?? item.source }}
@@ -123,10 +156,13 @@ export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
     <>
       {renderLayout({ renderItem })}
 
-      <Modal visible={openItem !== null} transparent animationType="fade" onRequestClose={close}>
+          <Modal visible={openItem !== null} transparent animationType="fade" onRequestClose={close}>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <Pressable style={styles.backdrop} onPress={close}>
-            <BlurView intensity={60} tint={tint} style={StyleSheet.absoluteFill} />
+          <View style={styles.backdrop}>
+            <Animated.View style={[StyleSheet.absoluteFill, backdropStyle]}>
+              <BlurView intensity={60} tint={tint} style={StyleSheet.absoluteFill} />
+            </Animated.View>
+
             {openItem && (
               <GestureDetector gesture={gestures}>
                 <Animated.View style={zoomStyle}>
@@ -139,7 +175,21 @@ export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
                 </Animated.View>
               </GestureDetector>
             )}
-          </Pressable>
+
+            <Animated.View style={[styles.closeWrapper, { top: insets.top + 8 }, backdropStyle]}>
+              <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel="Close">
+                {useGlass ? (
+                  <GlassView style={styles.closeButton} glassEffectStyle="regular" isInteractive>
+                    <SymbolView name={{ ios: "xmark", android: "close", web: "close" }} size={18} tintColor="#fff" />
+                  </GlassView>
+                ) : (
+                  <BlurView intensity={40} tint={tint} style={styles.closeButton}>
+                    <SymbolView name={{ ios: "xmark", android: "close", web: "close" }} size={18} tintColor="#fff" />
+                  </BlurView>
+                )}
+              </Pressable>
+            </Animated.View>
+          </View>
         </GestureHandlerRootView>
       </Modal>
     </>
@@ -149,4 +199,16 @@ export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
 const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: "center" },
   image: { width: "100%", height: IMAGE_HEIGHT },
+
+  closeWrapper: { position: "absolute", right: 16 },
+  closeButton: {
+  width: 44,
+  height: 44,
+  borderRadius: 22,
+  overflow: "hidden",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
 });
+
