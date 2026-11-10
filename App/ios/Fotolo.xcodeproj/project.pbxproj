@@ -8,12 +8,12 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		16624DD33BDE2201A2F902D0 /* libPods-Fotolo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A2C9B0A65DB2DADA6B06470 /* libPods-Fotolo.a */; };
-		2875436D559FDBFC63EABB57 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D92A006AEC5A3E5C6414A536 /* PrivacyInfo.xcprivacy */; };
-		2DAA3F5E6CA94AF880CE323F /* expo.icon in Resources */ = {isa = PBXBuildFile; fileRef = 2A0EEFB119E94B7DBDB30459 /* expo.icon */; };
+		251B276731E848B185472C5C /* expo.icon in Resources */ = {isa = PBXBuildFile; fileRef = 367B473AB6C547BBA0005FAB /* expo.icon */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		65B6F3DECABF605C42D29D2D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9A5BDECD3B31BA0D9F4DAE /* ExpoModulesProvider.swift */; };
+		9DE638BA7E59457444B58DD5 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 814E71FA9E89DC50CEC17253 /* ExpoModulesProvider.swift */; };
+		A250405D8B40D5684DBA9DED /* libPods-Fotolo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 635F62EF58C5D1B6D42DE197 /* libPods-Fotolo.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		DCDAE06C609A49E0CF3D329C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4377FA8C68DCDAA560A0CA06 /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 		F11748442D0307B40044C1D9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748432D0307B40044C1D9 /* SceneDelegate.swift */; };
 /* End PBXBuildFile section */
@@ -22,18 +22,18 @@
 		13B07F961A680F5B00A75B9A /* Fotolo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fotolo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Fotolo/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Fotolo/Info.plist; sourceTree = "<group>"; };
-		1A2C9B0A65DB2DADA6B06470 /* libPods-Fotolo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Fotolo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2A0EEFB119E94B7DBDB30459 /* expo.icon */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = expo.icon; path = Fotolo/expo.icon; sourceTree = "<group>"; };
-		3B9903006AFD6011D90E665A /* Pods-Fotolo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fotolo.release.xcconfig"; path = "Target Support Files/Pods-Fotolo/Pods-Fotolo.release.xcconfig"; sourceTree = "<group>"; };
+		367B473AB6C547BBA0005FAB /* expo.icon */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = expo.icon; path = Fotolo/expo.icon; sourceTree = "<group>"; };
+		4377FA8C68DCDAA560A0CA06 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Fotolo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		635F62EF58C5D1B6D42DE197 /* libPods-Fotolo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Fotolo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		814E71FA9E89DC50CEC17253 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Fotolo/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		9CFF4E13D48B2322AAACC893 /* Pods-Fotolo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fotolo.release.xcconfig"; path = "Target Support Files/Pods-Fotolo/Pods-Fotolo.release.xcconfig"; sourceTree = "<group>"; };
+		AA2632C1F0F6EF538501EF65 /* Pods-Fotolo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fotolo.debug.xcconfig"; path = "Target Support Files/Pods-Fotolo/Pods-Fotolo.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Fotolo/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		BC94A8AE9B51F4043E801157 /* Pods-Fotolo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fotolo.debug.xcconfig"; path = "Target Support Files/Pods-Fotolo/Pods-Fotolo.debug.xcconfig"; sourceTree = "<group>"; };
-		D92A006AEC5A3E5C6414A536 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Fotolo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Fotolo/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748432D0307B40044C1D9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = Fotolo/SceneDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Fotolo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Fotolo-Bridging-Header.h"; path = "Fotolo/Fotolo-Bridging-Header.h"; sourceTree = "<group>"; };
-		FB9A5BDECD3B31BA0D9F4DAE /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Fotolo/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,7 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				16624DD33BDE2201A2F902D0 /* libPods-Fotolo.a in Frameworks */,
+				A250405D8B40D5684DBA9DED /* libPods-Fotolo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -58,35 +58,27 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				2A0EEFB119E94B7DBDB30459 /* expo.icon */,
-				D92A006AEC5A3E5C6414A536 /* PrivacyInfo.xcprivacy */,
+				367B473AB6C547BBA0005FAB /* expo.icon */,
+				4377FA8C68DCDAA560A0CA06 /* PrivacyInfo.xcprivacy */,
 			);
 			name = Fotolo;
-			sourceTree = "<group>";
-		};
-		27AC9166B757F6522FAB8DB0 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				74B555ED799AFD2BB7CA1D5F /* Fotolo */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				1A2C9B0A65DB2DADA6B06470 /* libPods-Fotolo.a */,
+				635F62EF58C5D1B6D42DE197 /* libPods-Fotolo.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		74B555ED799AFD2BB7CA1D5F /* Fotolo */ = {
+		6EF90D1CD27D89292A721F5C /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				FB9A5BDECD3B31BA0D9F4DAE /* ExpoModulesProvider.swift */,
+				DA39C57B6FFE5B5265B6DEF7 /* Fotolo */,
 			);
-			name = Fotolo;
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -103,8 +95,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				C85AF13E21AD0F74CCBA9F9D /* Pods */,
-				27AC9166B757F6522FAB8DB0 /* ExpoModulesProviders */,
+				DF9443ED0D89D7451796E78D /* Pods */,
+				6EF90D1CD27D89292A721F5C /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -128,11 +120,19 @@
 			path = Fotolo/Supporting;
 			sourceTree = "<group>";
 		};
-		C85AF13E21AD0F74CCBA9F9D /* Pods */ = {
+		DA39C57B6FFE5B5265B6DEF7 /* Fotolo */ = {
 			isa = PBXGroup;
 			children = (
-				BC94A8AE9B51F4043E801157 /* Pods-Fotolo.debug.xcconfig */,
-				3B9903006AFD6011D90E665A /* Pods-Fotolo.release.xcconfig */,
+				814E71FA9E89DC50CEC17253 /* ExpoModulesProvider.swift */,
+			);
+			name = Fotolo;
+			sourceTree = "<group>";
+		};
+		DF9443ED0D89D7451796E78D /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				AA2632C1F0F6EF538501EF65 /* Pods-Fotolo.debug.xcconfig */,
+				9CFF4E13D48B2322AAACC893 /* Pods-Fotolo.release.xcconfig */,
 			);
 			name = Pods;
 			path = Pods;
@@ -146,13 +146,14 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Fotolo" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				A6DC59103B8A76628ED70140 /* [Expo] Configure project */,
+				DE9CAF4FD4D76F7991A0B038 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				5A5B405F718A55305B42AD8D /* [CP] Embed Pods Frameworks */,
+				9451CFF7B1D740199B427C06 /* [Expo Dev Launcher] Strip Local Network Keys for Release */,
+				1C552B6BC5C82BE88366B44C /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -172,9 +173,7 @@
 				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = B9D9UYSWH5;
 						LastSwiftMigration = 1250;
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -204,8 +203,8 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				2DAA3F5E6CA94AF880CE323F /* expo.icon in Resources */,
-				2875436D559FDBFC63EABB57 /* PrivacyInfo.xcprivacy in Resources */,
+				251B276731E848B185472C5C /* expo.icon in Resources */,
+				DCDAE06C609A49E0CF3D329C /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,7 +250,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		5A5B405F718A55305B42AD8D /* [CP] Embed Pods Frameworks */ = {
+		1C552B6BC5C82BE88366B44C /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -343,7 +342,21 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Fotolo/Pods-Fotolo-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		A6DC59103B8A76628ED70140 /* [Expo] Configure project */ = {
+		9451CFF7B1D740199B427C06 /* [Expo Dev Launcher] Strip Local Network Keys for Release */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo Dev Launcher] Strip Local Network Keys for Release";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Strip dev-launcher-specific local network permission keys from release builds.\n# This only removes _expo._tcp Bonjour services and the dev-launcher usage description.\n# Other Bonjour services and custom descriptions are preserved for production use.\n#\n# Detect debug builds via the DEBUG compile condition rather than the configuration name,\n# so custom debug configurations (e.g. \"Dev\", \"Staging\") that define DEBUG keep the keys.\ncase \" $SWIFT_ACTIVE_COMPILATION_CONDITIONS \" in\n  *\" DEBUG \"*) IS_DEBUG_BUILD=1 ;;\n  *) IS_DEBUG_BUILD=0 ;;\nesac\n\nif [ \"$IS_DEBUG_BUILD\" != \"1\" ]; then\n  PLIST_PATH=\"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\n  if [ -f \"$PLIST_PATH\" ]; then\n    # Check if NSBonjourServices exists\n    if /usr/libexec/PlistBuddy -c \"Print :NSBonjourServices\" \"$PLIST_PATH\" >/dev/null 2>&1; then\n      # Get the count of services\n      COUNT=$(/usr/libexec/PlistBuddy -c \"Print :NSBonjourServices\" \"$PLIST_PATH\" 2>/dev/null | grep \"^    \" | wc -l | tr -d ' ')\n\n      # Remove _expo._tcp\n      for ((i=COUNT-1; i>=0; i--)); do\n        SERVICE=$(/usr/libexec/PlistBuddy -c \"Print :NSBonjourServices:$i\" \"$PLIST_PATH\" 2>/dev/null || echo \"\")\n        if echo \"$SERVICE\" | grep -q \"_expo._tcp\"; then\n          /usr/libexec/PlistBuddy -c \"Delete :NSBonjourServices:$i\" \"$PLIST_PATH\" 2>/dev/null || true\n        fi\n      done\n\n      # If the array is now empty, remove it entirely\n      REMAINING=$(/usr/libexec/PlistBuddy -c \"Print :NSBonjourServices\" \"$PLIST_PATH\" 2>/dev/null | grep \"^    \" | wc -l | tr -d ' ')\n      if [ \"$REMAINING\" -eq \"0\" ]; then\n        /usr/libexec/PlistBuddy -c \"Delete :NSBonjourServices\" \"$PLIST_PATH\" 2>/dev/null || true\n      fi\n    fi\n\n    # Only delete the description if it matches the dev-launcher default text\n    DESC=$(/usr/libexec/PlistBuddy -c \"Print :NSLocalNetworkUsageDescription\" \"$PLIST_PATH\" 2>/dev/null || echo \"\")\n    if echo \"$DESC\" | grep -q \"Expo Dev Launcher\"; then\n      /usr/libexec/PlistBuddy -c \"Delete :NSLocalNetworkUsageDescription\" \"$PLIST_PATH\" 2>/dev/null || true\n    fi\n  fi\nfi\n";
+		};
+		DE9CAF4FD4D76F7991A0B038 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -376,7 +389,7 @@
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
 				F11748442D0307B40044C1D9 /* SceneDelegate.swift in Sources */,
-				65B6F3DECABF605C42D29D2D /* ExpoModulesProvider.swift in Sources */,
+				9DE638BA7E59457444B58DD5 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -385,13 +398,11 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BC94A8AE9B51F4043E801157 /* Pods-Fotolo.debug.xcconfig */;
+			baseConfigurationReference = AA2632C1F0F6EF538501EF65 /* Pods-Fotolo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = expo;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Fotolo/Fotolo.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = B9D9UYSWH5;
 				ENABLE_BITCODE = NO;
@@ -425,13 +436,11 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3B9903006AFD6011D90E665A /* Pods-Fotolo.release.xcconfig */;
+			baseConfigurationReference = 9CFF4E13D48B2322AAACC893 /* Pods-Fotolo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = expo;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Fotolo/Fotolo.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = B9D9UYSWH5;
 				INFOPLIST_FILE = Fotolo/Info.plist;
