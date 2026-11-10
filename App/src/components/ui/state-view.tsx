@@ -3,6 +3,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useConnectivity } from '../../../lib/connectivity';
 import { errorMessage, isNetworkError } from '../../../lib/errors';
 
 type StateViewProps = {
@@ -47,13 +48,17 @@ export function ErrorState({ error, onRetry, retrying, style }: {
   retrying?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
+  const connectivity = useConnectivity();
   const offline = isNetworkError(error);
+  const noInternet = connectivity === 'noInternet';
   return (
     <StateView
-      icon={offline
-        ? { ios: 'wifi.slash', android: 'wifi_off', web: 'wifi_off' }
-        : { ios: 'exclamationmark.triangle', android: 'error', web: 'error' }}
-      title={offline ? "You're offline" : "Couldn't load this"}
+      icon={!offline
+        ? { ios: 'exclamationmark.triangle', android: 'error', web: 'error' }
+        : noInternet
+          ? { ios: 'wifi.slash', android: 'wifi_off', web: 'wifi_off' }
+          : { ios: 'icloud.slash', android: 'cloud_off', web: 'cloud_off' }}
+      title={!offline ? "Couldn't load this" : noInternet ? "You're offline" : "Can't reach the server"}
       message={errorMessage(error)}
       actionLabel="Try again"
       onAction={onRetry}
@@ -64,7 +69,15 @@ export function ErrorState({ error, onRetry, retrying, style }: {
 }
 
 export function OfflineState({ style }: { style?: StyleProp<ViewStyle> }) {
-  return (
+  const serverDown = useConnectivity() === 'serverDown';
+  return serverDown ? (
+    <StateView
+      icon={{ ios: 'icloud.slash', android: 'cloud_off', web: 'cloud_off' }}
+      title="Can't reach the server"
+      message="Fotolo's server isn't responding. This loads automatically as soon as it's back."
+      style={style}
+    />
+  ) : (
     <StateView
       icon={{ ios: 'wifi.slash', android: 'wifi_off', web: 'wifi_off' }}
       title="You're offline"

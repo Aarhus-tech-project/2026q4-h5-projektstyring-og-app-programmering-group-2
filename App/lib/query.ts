@@ -1,6 +1,7 @@
 import { focusManager, onlineManager, QueryClient } from "@tanstack/react-query";
 import * as Network from "expo-network";
 import { AppState } from "react-native";
+import { getConnectivity, recheckServer, setInternetReachable, subscribeConnectivity } from "./connectivity";
 import { shouldRetry } from "./errors";
 
 export const queryClient = new QueryClient({
@@ -21,14 +22,21 @@ function isOnline(state: Network.NetworkState) {
 }
 
 onlineManager.setEventListener((setOnline) => {
+  const unsubscribe = subscribeConnectivity(() => setOnline(getConnectivity() === "online"));
   Network.getNetworkStateAsync()
-    .then((state) => setOnline(isOnline(state)))
+    .then((state) => setInternetReachable(isOnline(state)))
     .catch(() => {});
-  const subscription = Network.addNetworkStateListener((state) => setOnline(isOnline(state)));
-  return () => subscription.remove();
+  const subscription = Network.addNetworkStateListener((state) => setInternetReachable(isOnline(state)));
+  return () => {
+    unsubscribe();
+    subscription.remove();
+  };
 });
 
 focusManager.setEventListener((setFocused) => {
-  const subscription = AppState.addEventListener("change", (state) => setFocused(state === "active"));
+  const subscription = AppState.addEventListener("change", (state) => {
+    setFocused(state === "active");
+    if (state === "active") recheckServer();
+  });
   return () => subscription.remove();
 });

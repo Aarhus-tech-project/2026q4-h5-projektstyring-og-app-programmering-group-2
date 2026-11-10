@@ -1,21 +1,17 @@
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { onlineManager } from '@tanstack/react-query';
 import { SymbolView } from 'expo-symbols';
-import { useSyncExternalStore } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useConnectivity } from '../../../lib/connectivity';
 
 export function OfflineBanner() {
   const insets = useSafeAreaInsets();
-  const online = useSyncExternalStore(
-    (listener) => onlineManager.subscribe(listener),
-    () => onlineManager.isOnline(),
-    () => true,
-  );
+  const connectivity = useConnectivity();
 
-  if (online) return null;
+  if (connectivity === 'online') return null;
+  const serverDown = connectivity === 'serverDown';
 
   return (
     <Animated.View
@@ -23,8 +19,16 @@ export function OfflineBanner() {
       exiting={FadeOutUp}
       accessibilityRole="alert"
       style={[styles.banner, { top: insets.top + Spacing.one }]}>
-      <SymbolView name={{ ios: 'wifi.slash', android: 'wifi_off', web: 'wifi_off' }} tintColor="#111111" size={14} />
-      <ThemedText type="smallBold" style={styles.text}>No internet connection</ThemedText>
+      <SymbolView
+        name={serverDown
+          ? { ios: 'icloud.slash', android: 'cloud_off', web: 'cloud_off' }
+          : { ios: 'wifi.slash', android: 'wifi_off', web: 'wifi_off' }}
+        tintColor="#111111"
+        size={14}
+      />
+      <ThemedText type="smallBold" style={styles.text}>
+        {serverDown ? "Can't reach the server" : 'No internet connection'}
+      </ThemedText>
     </Animated.View>
   );
 }

@@ -2,9 +2,11 @@ import { router, useSegments } from 'expo-router';
 import { NativeTabs } from 'expo-router/native-tabs';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
+import { toast } from 'sonner-native';
 
 import { Colors } from '@/constants/theme';
 import { setPendingRoute, useAuthStatus } from '../../lib/auth';
+import { useConnectivity } from '../../lib/connectivity';
 import { queryClient } from '../../lib/query';
 
 const protectedTabs = ['vote', 'camera', 'profile'];
@@ -13,6 +15,7 @@ export default function AppTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
   const auth = useAuthStatus();
+  const connectivity = useConnectivity();
   const segments = useSegments();
   const locked = auth !== 'signedIn';
   const currentTab = segments[1];
@@ -33,6 +36,12 @@ export default function AppTabs() {
       screenListeners={({ route }) => ({
         tabPress: (event) => {
           if (!event.data.isPrevented || auth === 'unknown') return;
+          if (connectivity !== 'online') {
+            toast.error(connectivity === 'noInternet'
+              ? "You're offline. Connect to the internet to log in."
+              : "Can't reach the server, so you can't log in right now.");
+            return;
+          }
           setPendingRoute(route.name);
           router.push('/login');
         },
