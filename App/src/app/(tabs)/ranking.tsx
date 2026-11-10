@@ -132,7 +132,7 @@ function FlipButton({ worst, size, onPress }: { worst: boolean; size: number; on
 
 
 function openProfile(userId: string) {
-  router.push({ pathname: '/user/[userId]', params: { userId } });
+  router.push({ pathname: '/othersProfile', params: { userId } });
 }
 
 function SkeletonRow() {

@@ -199,6 +199,25 @@ export async function updateDescription(description: string) {
 }
 
 //-------------------------------------------------------------
+// Get Others Profile Data
+
+export async function getUserProfile(userId: string) {
+  const { data, error, response } = await api.GET("/api/Posts/profile/{userId}", {
+    params: { path: { userId } },
+  });
+  if (!response.ok || !data) fail(response, error);
+  return data;
+}
+
+export async function getUserPosts(userId: string, before?: string) {
+  const { data, error, response } = await api.GET("/api/Posts/profile/{userId}/posts", {
+    params: { path: { userId }, query: before ? { before } : {} },
+  });
+  if (!response.ok || !data) fail(response, error);
+  return data;
+}
+
+//-------------------------------------------------------------
 // Favorites
 
 export async function getFavorites() {
