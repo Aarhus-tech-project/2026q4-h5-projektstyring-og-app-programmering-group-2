@@ -24,6 +24,7 @@ useEffect(() => {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="login" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="capture" options={{ presentation: 'fullScreenModal' }} />
           </Stack>
           <OfflineBanner />
          <Toaster theme={scheme === 'dark' ? 'dark' : 'light'} position="top-center" />

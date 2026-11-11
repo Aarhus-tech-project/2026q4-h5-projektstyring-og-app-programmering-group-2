@@ -36,13 +36,18 @@ export default function AppTabs() {
       screenListeners={({ route }) => ({
         tabPress: (event) => {
           if (!event.data.isPrevented || auth === 'unknown') return;
+          const target = route.name === 'camera' ? 'capture' : route.name;
+          if (route.name === 'camera' && !locked) {
+            router.push('/capture');
+            return;
+          }
           if (connectivity !== 'online') {
             toast.error(connectivity === 'noInternet'
               ? "You're offline. Connect to the internet to log in."
               : "Can't reach the server, so you can't log in right now.");
             return;
           }
-          setPendingRoute(route.name);
+          setPendingRoute(target);
           router.push('/login');
         },
       })}>
@@ -56,7 +61,7 @@ export default function AppTabs() {
           <NativeTabs.Trigger.Icon sf={{ default: "rectangle.split.2x1", selected: "rectangle.split.2x1.fill" }} md="compare" />
         </NativeTabs.Trigger>
 
-        <NativeTabs.Trigger name="camera" disabled={locked}>
+        <NativeTabs.Trigger name="camera" disabled>
           <NativeTabs.Trigger.Label>Camera</NativeTabs.Trigger.Label>
           <NativeTabs.Trigger.Icon sf={{ default: "camera", selected: "camera.fill" }} md="photo_camera" />
         </NativeTabs.Trigger>

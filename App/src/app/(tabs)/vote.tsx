@@ -12,7 +12,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-screens/experimental';
 import { toast } from 'sonner-native';
@@ -38,6 +38,7 @@ function VoteCard({ post, label, disabled, onVote, reveal }: {
   reveal: { rank: EloRank; picked: boolean } | null;
 }) {
   const theme = useTheme();
+  const dark = useColorScheme() === 'dark';
   const favorites = useFavorites();
   const toggleFavorite = useToggleFavorite();
   const favorited = favorites.data?.some((p) => p.id === post.id) ?? false;
@@ -55,6 +56,7 @@ function VoteCard({ post, label, disabled, onVote, reveal }: {
         disabled={disabled}
         style={({ pressed }) => [
           styles.voteButton,
+          dark && styles.voteButtonOutline,
           disabled && styles.disabled,
         ]}>
         <ThemedText type="smallBold" style={styles.text}>{label}</ThemedText>
@@ -80,6 +82,7 @@ function VoteCardBottom({ post, label, disabled, onVote, reveal }: {
   reveal: { rank: EloRank; picked: boolean } | null;
 }) {
   const theme = useTheme();
+  const dark = useColorScheme() === 'dark';
   const favorites = useFavorites();
   const toggleFavorite = useToggleFavorite();
   const favorited = favorites.data?.some((p) => p.id === post.id) ?? false;
@@ -97,6 +100,7 @@ function VoteCardBottom({ post, label, disabled, onVote, reveal }: {
         disabled={disabled}
         style={({ pressed }) => [
           styles.voteButtonBottom,
+          dark && styles.voteButtonOutline,
           disabled && styles.disabled,
         ]}>
         <ThemedText type="smallBold" style={styles.text} >{label}</ThemedText>
@@ -301,6 +305,10 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 36,
     borderTopRightRadius: 36
   },
+  voteButtonOutline: {
+    borderWidth: 2,
+    borderColor: '#000',
+  },
   voteButton: {
   position: 'absolute',
   bottom: -30,
@@ -308,8 +316,6 @@ const styles = StyleSheet.create({
   paddingVertical: Spacing.four,
   paddingHorizontal: Spacing.six,
   backgroundColor: '#B2F2BB',
-  borderWidth: 2,
-  borderColor: '#000',
   borderRadius: 16,
 },
 cardBottom: {
@@ -334,8 +340,6 @@ voteButtonBottom: {
   paddingVertical: Spacing.four,
   paddingHorizontal: Spacing.six,
   backgroundColor: '#B2F2BB',
-  borderWidth: 2,
-  borderColor: '#000',
   borderRadius: 16,
 },
 star: {

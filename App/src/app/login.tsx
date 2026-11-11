@@ -20,7 +20,7 @@ const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
 const REASONS: Record<string, string> = {
   vote: 'You need an account to vote on photos.',
-  camera: 'You need an account to post photos.',
+  capture: 'You need an account to post photos.',
   profile: 'You need an account to have a profile.',
 };
 
