@@ -3,7 +3,7 @@ import { Image, ImageContentFit } from "expo-image";
 import { ReactNode, useState } from "react";
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { initialWindowMetrics, useSafeAreaInsets } from "react-native-safe-area-context";
 import { DimensionValue, Modal, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { scheduleOnRN } from "react-native-worklets";
 import {
@@ -12,8 +12,12 @@ import {
   usePanGesture,
   usePinchGesture,
   useSimultaneousGestures,
+  useTapGesture,
 } from "react-native-gesture-handler";
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import { ThemedText } from "../themed-text";
+import { Spacing } from "@/constants/theme";
+import { Avatar } from "./avatar";
 
 export type MediaItem = {
   type: "image";
@@ -35,10 +39,19 @@ type MediaViewerConfig = {
 
 type RenderItem = (index: number, options?: { frame?: Frame }) => ReactNode;
 
+export type MediaUser = {
+  username: string;
+  avatarThumbnailUrl: string | null;
+  avatarUrl: string | null;
+  avatarThumbhash: string | null;
+  elo: number;
+}
+
 type MediaViewerProps = {
   items: MediaItem[];
   config?: MediaViewerConfig;
   renderLayout: (helpers: { renderItem: RenderItem }) => ReactNode;
+  user?: MediaUser;
 };
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 const IMAGE_HEIGHT = 500;
@@ -47,10 +60,11 @@ const MAX_SCALE = 4;
 const DISMISS_DISTANCE = 120;
 const DISMISS_VELOCITY = 800;
 
-export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
+export function MediaViewer({ items, config, renderLayout, user }: MediaViewerProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const openItem = openIndex !== null ? items[openIndex] : null;
   const insets = useSafeAreaInsets();
+  const deviceBottom = initialWindowMetrics?.insets.bottom ?? insets.bottom;
 
   const { width: screenWidth } = useWindowDimensions();
 
@@ -136,17 +150,13 @@ export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
   const renderItem: RenderItem = (index, options) => {
     const item = items[index];
     return (
-      <Pressable
+      <TapThumbnail
         key={index}
-        style={[options?.frame, { overflow: "hidden" }]}
-        onPress={() => open(index)}
-      >
-        <Image
-          source={{ uri: item.thumbnail?.source ?? item.source }}
-          contentFit={config?.thumbnail?.fit ?? "cover"}
-          style={StyleSheet.absoluteFill}
-        />
-      </Pressable>
+        uri={item.thumbnail?.source ?? item.source}
+        fit={config?.thumbnail?.fit ?? "cover"}
+        frame={options?.frame}
+        onTap={() => open(index)}
+      />
     );
   };
 
@@ -189,10 +199,55 @@ export function MediaViewer({ items, config, renderLayout }: MediaViewerProps) {
                 )}
               </Pressable>
             </Animated.View>
+            {user && (
+            <Animated.View
+             style={[styles.barWrapper, { bottom: Math.max(deviceBottom - 15, 8) }, backdropStyle]}
+            >
+              <View style={styles.bar}>
+                {useGlass ? (
+                  <GlassView style={StyleSheet.absoluteFill} glassEffectStyle="regular" />
+                ) : (
+                  <BlurView intensity={40} tint={tint} style={StyleSheet.absoluteFill} />
+                )}
+
+               <Avatar
+                  thumbnailUrl={user.avatarThumbnailUrl}
+                  imageUrl={user.avatarUrl}
+                  thumbhash={user.avatarThumbhash}
+                  size={52}
+                  expandable={false}
+                />
+                <View style={styles.barText}>
+                  <ThemedText type="smallBold" numberOfLines={1} style={styles.barName}>
+                    {user.username}
+                  </ThemedText>
+                  <View style={styles.eloRow}>
+                    <ThemedText type="small" style={styles.barElo}>{Math.round(user.elo)} Elo</ThemedText>
+                  </View>
+                </View>
+
+              </View>
+            </Animated.View>)}
           </View>
         </GestureHandlerRootView>
       </Modal>
     </>
+  );
+}
+
+// TEST: gesture-handler tap instead of Pressable, to see if it opens while a list is still scrolling.
+function TapThumbnail({ uri, fit, frame, onTap }: { uri: string; fit: ImageContentFit; frame?: Frame; onTap: () => void }) {
+  const tap = useTapGesture({
+    runOnJS: true,
+    onActivate: () => onTap(),
+  });
+
+  return (
+    <GestureDetector gesture={tap}>
+      <View style={[frame, { overflow: "hidden" }]}>
+        <Image source={{ uri }} contentFit={fit} style={StyleSheet.absoluteFill} />
+      </View>
+    </GestureDetector>
   );
 }
 
@@ -209,6 +264,53 @@ const styles = StyleSheet.create({
   alignItems: "center",
   justifyContent: "center",
 },
+
+barWrapper: {
+  position: "absolute",
+  alignSelf: "center",
+  maxWidth: "85%",
+},
+bar: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: Spacing.two,
+  paddingLeft: Spacing.one + 2,
+  paddingRight: Spacing.three + 4,
+  paddingVertical: Spacing.one + 2,
+  borderRadius: 999,
+  overflow: "hidden",
+  borderWidth: StyleSheet.hairlineWidth,
+  borderColor: "rgba(255,255,255,0.2)",
+},
+barText: {
+  flexShrink: 1,
+},
+barName: {
+  color: "#fff",
+  lineHeight: 18,
+  marginBottom: 4
+},
+eloRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: 'center',
+  gap: Spacing.one,
+},
+barElo: {
+  color: "#FFD84D",
+  fontSize: 12,
+  lineHeight: 16,
+  borderWidth: 2,
+  borderRadius: 999,
+  padding: 5,
+  borderColor: '#FFD84D',
+},
+
+ avatar: {
+    position: 'absolute',
+    right: 12,
+    bottom: 12,
+  },
 
 });
 

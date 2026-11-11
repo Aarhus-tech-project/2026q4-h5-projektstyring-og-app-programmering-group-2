@@ -48,7 +48,7 @@ function LeaderboardRow({ placement, photo, medals, trend, showPlacement }: Lead
     <View style={styles.row}>
       <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
         <View style={styles.imageWrapper} >
-          <ExpandableImage thumbnailUrl={photo.thumbnailUrl} imageUrl={photo.imageUrl} thumbhash={photo.thumbhash} borderRadius={10} />
+          <ExpandableImage thumbnailUrl={photo.thumbnailUrl} imageUrl={photo.imageUrl} thumbhash={photo.thumbhash} borderRadius={10} user={photo.profile} />
 
           {showPlacement && (
             <View
