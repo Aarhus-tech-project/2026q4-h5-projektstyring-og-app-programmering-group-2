@@ -63,6 +63,10 @@ export function setPendingRoute(route: string | null) {
   pendingRoute = route;
 }
 
+export function peekPendingRoute() {
+  return pendingRoute;
+}
+
 export function takePendingRoute() {
   const route = pendingRoute;
   pendingRoute = null;

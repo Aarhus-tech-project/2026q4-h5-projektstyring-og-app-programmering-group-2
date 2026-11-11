@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Wordmark } from '@/components/ui/brand';
 import { EloReveal, type EloRank } from '@/components/ui/elo-reveal';
 import { ExpandableImage } from '@/components/ui/expandable-image';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -250,6 +251,7 @@ export default function VoteScreen() {
   return (
     <ThemedView style={styles.screen}>
       <SafeAreaView style={styles.screen} edges={{ top: true, bottom: true }}>
+        <Wordmark size={20} style={styles.brand} />
         {content}
       </SafeAreaView>
     </ThemedView>
@@ -259,6 +261,10 @@ export default function VoteScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+  },
+  brand: {
+    alignSelf: 'center',
+    paddingTop: Spacing.two,
   },
   text: {
     color: 'black',

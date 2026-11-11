@@ -27,8 +27,12 @@ import { ModalConfirmDelete } from '@/components/ui/modalConfirmDelete';
 function ProfileSkeleton() {
   return (
     <View>
-      <View style={styles.username}>
-        <Skeleton style={{ width: 140, height: 22 }} />
+      <View style={styles.topBar}>
+        <View style={styles.topBarSide} />
+        <View style={[styles.topBarTitle, { alignItems: 'center' }]}>
+          <Skeleton style={{ width: 140, height: 22 }} />
+        </View>
+        <View style={styles.topBarSide} />
       </View>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -197,6 +201,18 @@ export default function Profile() {
   return (
     <ThemedView style={styles.screen}>
     <SafeAreaView style={styles.scrollable}>
+    <View style={styles.topBar}>
+      <Pressable
+        onPress={() => setSettingsOpen(true)}
+        accessibilityRole="button"
+        accessibilityLabel="Settings"
+        hitSlop={8}
+        style={({ pressed }) => [styles.topBarSide, pressed && styles.pressed]}>
+        <SymbolView name={{ ios: 'gearshape', android: 'settings', web: 'settings' }} tintColor={theme.text} size={22} />
+      </Pressable>
+      <ThemedText type="subtitle" numberOfLines={1} style={styles.topBarTitle}>{profile?.username}</ThemedText>
+      <View style={styles.topBarSide} />
+    </View>
     <FlatList
       data={posts}
       keyExtractor={(photo) => photo.id}
@@ -243,14 +259,7 @@ export default function Profile() {
       )}
       ListHeaderComponent={
         <>
-          <View style={styles.username} >
-          <ThemedText type='subtitle'>{profile?.username}</ThemedText>
-          </View>
           <View style={styles.header}>
-            <Pressable onPress={() => setSettingsOpen(true)} style={styles.menuButton}>
-              <SymbolView name={{ ios: 'line.3.horizontal', android: 'menu', web: 'menu' }} tintColor={theme.text} size={24} />
-            </Pressable>
-
             <View style={styles.headerLeft}>
               <ThemedView type="backgroundElement" style={styles.eloBorder}>
                 <ThemedText type="smallBold" style={styles.eloText} adjustsFontSizeToFit>{Math.round(profile?.elo ?? 1500)} ELO</ThemedText>
@@ -339,7 +348,7 @@ export default function Profile() {
             backgroundColor: theme.backgroundElement,
             borderColor: theme.border,
             paddingTop: insets.top + Spacing.three,
-            paddingBottom: BottomTabInset + Spacing.four,
+            paddingBottom: insets.bottom + BottomTabInset + Spacing.four,
           },
         ]}>
         <View style={styles.panelHeader}>
@@ -419,11 +428,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  username: {
-    flex: 1,
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.one,
+  },
+  topBarSide: {
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 10,
+  },
+  topBarTitle: {
+    flex: 1,
+    textAlign: 'center',
   },
 
   screen: {
@@ -584,9 +603,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
 
-  menuButton: {
-  alignSelf: 'flex-start',
-  },
   descriptionEditIcon: {
   position: 'absolute',
   top: Spacing.two,
