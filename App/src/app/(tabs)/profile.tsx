@@ -12,7 +12,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Modal, Pressable, RefreshControl, StyleSheet, Switch, useColorScheme, useWindowDimensions, View, type HostInstance } from 'react-native';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutLeft } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,7 +22,6 @@ import { setAppearance } from '../../../lib/appearance';
 import { useAuthStatus } from '../../../lib/auth';
 import { errorMessage } from '../../../lib/errors';
 import { ModalConfirmDelete } from '@/components/ui/modalConfirmDelete';
-
 
 function ProfileSkeleton() {
   return (
@@ -96,6 +95,67 @@ function PhotoMenu({ options }: { options: MenuOption[] }) {
   )
 }
 
+type Sort = 'newest' | 'best' | 'worst'
+
+const SORT_OPTIONS: { key: Sort; label: string }[] = [
+  { key: 'newest', label: 'Newest' },
+  { key: 'best', label: 'Best Elo' },
+  { key: 'worst', label: 'Worst Elo' },
+]
+
+function SortMenu({ value, onChange }: { value: Sort; onChange: (sort: Sort) => void }) {
+  const theme = useTheme()
+  const { height } = useWindowDimensions()
+  const ref = useRef<HostInstance>(null)
+  const [pos, setPos] = useState<{ left: number; top?: number; bottom?: number } | null>(null)
+  const current = SORT_OPTIONS.find((o) => o.key === value) ?? SORT_OPTIONS[0]
+
+  const open = () =>
+    ref.current?.measureInWindow((x, y, w, h) =>
+      setPos({
+        left: Math.max(Spacing.two, x + w - MENU_WIDTH),
+        ...(y + h + 160 < height ? { top: y + h + Spacing.one } : { bottom: height - y + Spacing.one }),
+      })
+    )
+
+  return (
+    <>
+      <Pressable
+        ref={ref}
+        onPress={open}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel={`Sort photos, currently ${current.label}`}
+        style={({ pressed }) => [styles.sortButton, pressed && styles.pressed]}>
+        <SymbolView
+          name={{ ios: 'chevron.down', android: 'expand_more', web: 'expand_more' }}
+          tintColor={theme.textSecondary}
+          size={16}
+          weight="semibold"
+        />
+      </Pressable>
+      <Modal visible={!!pos} transparent animationType="fade" onRequestClose={() => setPos(null)}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={() => setPos(null)} />
+        {pos && (
+          <ThemedView type="backgroundElement" style={[styles.menu, pos, { borderColor: theme.border }]}>
+            {SORT_OPTIONS.map((o) => (
+              <Pressable
+                key={o.key}
+                onPress={() => { setPos(null); onChange(o.key) }}
+                style={({ pressed }) => [styles.menuItem, styles.sortItem, pressed && styles.pressed]}>
+                <ThemedText>{o.label}</ThemedText>
+                {o.key === value && (
+                  <SymbolView name={{ ios: 'checkmark', android: 'check', web: 'check' }} tintColor={theme.text} size={14} />
+                )}
+              </Pressable>
+            ))}
+          </ThemedView>
+        )}
+      </Modal>
+    </>
+  )
+}
+
 export default function Profile() {
   const theme = useTheme()
   const [tab, setTab] = useState<'photos' | 'favorites'>('photos')
@@ -107,6 +167,7 @@ export default function Profile() {
   const [refreshing, setRefreshing] = useState(false)
   const queryClient = useQueryClient()
   const auth = useAuthStatus()
+  const [sort, setSort] = useState<Sort>('newest')
 
   const profileQuery = useQuery({
     queryKey: ['profile'],
@@ -121,6 +182,11 @@ export default function Profile() {
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: auth === 'signedIn',
   })
+  
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = postsQuery
+  useEffect(() => {
+    if (sort !== 'newest' && hasNextPage && !isFetchingNextPage) fetchNextPage()
+  }, [sort, hasNextPage, isFetchingNextPage, fetchNextPage])
   const favoritesQuery = useFavorites()
   useFocusEffect(useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['profile'] }, { cancelRefetch: false })
@@ -194,10 +260,13 @@ export default function Profile() {
   }
 
 
-  const posts = tab === 'photos' ? (postsQuery.data?.pages.flatMap((page) => page.posts) ?? []) : (favoritesQuery.data ?? [])
+  const loaded = tab === 'photos' ? (postsQuery.data?.pages.flatMap((page) => page.posts) ?? []) : (favoritesQuery.data ?? [])
+
+  const posts = sort === 'best' ? [...loaded].sort((a,b) => b.elo - a.elo) : sort === 'worst' ? [...loaded].sort((a,b) => a.elo - b.elo) : loaded
   const loadMorePosts = () => {
     if (tab === 'photos' && postsQuery.hasNextPage && !postsQuery.isFetchingNextPage) postsQuery.fetchNextPage()
   }
+
   return (
     <ThemedView style={styles.screen}>
     <SafeAreaView style={styles.scrollable}>
@@ -295,12 +364,13 @@ export default function Profile() {
             </ThemedView>
           </Pressable>
           <View style={[styles.body, {borderColor: theme.border}]}>
-            <Pressable style={styles.tab} onPress={() => setTab('photos')}>
+            <Pressable style={[styles.tab, styles.photosTab]} onPress={() => setTab('photos')}>
               <SymbolView
                 name={{ ios: 'photo', android: 'image', web: 'image' }}
                 tintColor={tab === 'photos' ? theme.text : theme.textSecondary}
                 size={32}
               />
+              <SortMenu value={sort} onChange={setSort} />
             </Pressable>
             <View style={[styles.line, {borderColor: theme.border}]}></View>
             <Pressable style={styles.tab} onPress={() => setTab('favorites')}>
@@ -311,6 +381,7 @@ export default function Profile() {
               />
             </Pressable>
           </View>
+
         </>
       }
     />
@@ -427,6 +498,21 @@ const styles = StyleSheet.create({
   scrollable: {
     flex: 1,
   },
+
+  photosTab: {
+  flexDirection: 'row',
+  justifyContent: 'center',
+  gap: Spacing.one,
+},
+  sortButton: {
+  padding: Spacing.one,
+},
+  sortItem: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+},
+
 
   topBar: {
     flexDirection: 'row',
