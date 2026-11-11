@@ -1,0 +1,16 @@
+{
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "tsdk": "App/node_modules/typescript/lib"
+        }
+      }
+    },
+    "eslint": {
+      "settings": {
+        "workingDirectories": [{ "mode": "auto" }]
+      }
+    }
+  }
+}
