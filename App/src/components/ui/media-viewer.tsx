@@ -18,6 +18,7 @@ import Animated, { interpolate, useAnimatedStyle, useSharedValue, withTiming } f
 import { ThemedText } from "../themed-text";
 import { Spacing } from "@/constants/theme";
 import { Avatar } from "./avatar";
+import { useTheme } from "@/hooks/use-theme";
 
 export type MediaItem = {
   type: "image";
@@ -61,6 +62,7 @@ const DISMISS_DISTANCE = 120;
 const DISMISS_VELOCITY = 800;
 
 export function MediaViewer({ items, config, renderLayout, user }: MediaViewerProps) {
+  const theme = useTheme();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const openItem = openIndex !== null ? items[openIndex] : null;
   const insets = useSafeAreaInsets();
@@ -203,7 +205,7 @@ export function MediaViewer({ items, config, renderLayout, user }: MediaViewerPr
             <Animated.View
              style={[styles.barWrapper, { bottom: Math.max(deviceBottom - 15, 8) }, backdropStyle]}
             >
-              <View style={styles.bar}>
+              <View style={[styles.bar, {backgroundColor: theme.backgroundElement, borderColor: theme.background}]}>
                 {useGlass ? (
                   <GlassView style={StyleSheet.absoluteFill} glassEffectStyle="regular" />
                 ) : (
@@ -286,7 +288,6 @@ barText: {
   flexShrink: 1,
 },
 barName: {
-  color: "#fff",
   lineHeight: 18,
   marginBottom: 4
 },
