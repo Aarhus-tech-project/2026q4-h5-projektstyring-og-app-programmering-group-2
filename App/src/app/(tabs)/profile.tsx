@@ -208,7 +208,7 @@ export default function Profile() {
         accessibilityLabel="Settings"
         hitSlop={8}
         style={({ pressed }) => [styles.topBarSide, pressed && styles.pressed]}>
-        <SymbolView name={{ ios: 'gearshape', android: 'settings', web: 'settings' }} tintColor={theme.text} size={22} />
+        <SymbolView name={{ ios: 'gearshape.fill', android: 'settings', web: 'settings' }} tintColor={theme.text} size={22} />
       </Pressable>
       <ThemedText type="subtitle" numberOfLines={1} style={styles.topBarTitle}>{profile?.username}</ThemedText>
       <View style={styles.topBarSide} />

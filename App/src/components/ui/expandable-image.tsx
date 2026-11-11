@@ -1,4 +1,4 @@
-import { Image } from 'expo-image';
+import { Image, type ImageContentFit } from 'expo-image';
 import { MediaUser, MediaViewer } from './media-viewer';
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
@@ -11,11 +11,12 @@ type ExpandableImageProps = {
   thumbhash?: string | null;
   borderRadius?: number;
   user?: MediaUser;
+  fit?: ImageContentFit;
 };
 
 const SHOW_ONLY_THUMBHASH = false;
 
-export function ExpandableImage({ thumbnailUrl, imageUrl, thumbhash, borderRadius = 0, user }: ExpandableImageProps) {
+export function ExpandableImage({ thumbnailUrl, imageUrl, thumbhash, borderRadius = 0, user, fit = 'cover' }: ExpandableImageProps) {
   const [expanded, setExpanded] = useState(false);
 
   if (SHOW_ONLY_THUMBHASH && thumbhash) {
@@ -42,7 +43,7 @@ export function ExpandableImage({ thumbnailUrl, imageUrl, thumbhash, borderRadiu
       )}
       <MediaViewer
         items={[{ type: 'image', source: imageUrl, thumbnail: { source: thumbnailUrl } }]}
-        config={{ theme: 'dark', thumbnail: { fit: 'cover' } }}
+        config={{ theme: 'dark', thumbnail: { fit } }}
         user={user}
         renderLayout={({ renderItem }) =>
           renderItem(0, {
