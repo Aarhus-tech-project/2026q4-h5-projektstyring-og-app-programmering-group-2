@@ -226,7 +226,7 @@ export default function Profile() {
       }
       renderItem={({ item }) => (
         <View style={styles.gridItems}>
-          <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} />
+          <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} user={tab === 'photos' ? profile : undefined} />
           <View style={styles.statsRow}>
               <ThemedView type="backgroundElement" style={styles.eloBorderMini}>
                 <ThemedText type="smallBold" style={styles.eloTextMini} adjustsFontSizeToFit>{Math.round(item?.elo ?? 1500)}</ThemedText>
