@@ -6,6 +6,7 @@ import { PeriodPicker } from '@/components/ui/period-picker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view';
 import { BottomTabInset, Spacing } from '@/constants/theme';
+import { useFavorites, useToggleFavorite } from '@/hooks/use-favorites';
 import { useTheme } from '@/hooks/use-theme';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
@@ -16,6 +17,7 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-nat
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getRanking, RankedPost, RankingPeriod } from '../../../lib/api';
+import { useAuthStatus } from '../../../lib/auth';
 
 
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
@@ -43,6 +45,10 @@ type LeaderboardRowProps = {
 function LeaderboardRow({ placement, photo, medals, trend, showPlacement }: LeaderboardRowProps) {
   const theme = useTheme();
   const medal = medals[placement - 1];
+  const signedIn = useAuthStatus() === 'signedIn';
+  const favorites = useFavorites();
+  const toggleFavorite = useToggleFavorite();
+  const favorited = favorites.data?.some((p) => p.id === photo.id) ?? false;
 
   return (
     <View style={styles.row}>
@@ -104,6 +110,21 @@ function LeaderboardRow({ placement, photo, medals, trend, showPlacement }: Lead
             {'  ·  '}
             <ThemedText type="small" style={{ color: '#F87171' }}>{photo.losses} L</ThemedText>
           </ThemedText>
+
+          {signedIn && (
+            <Pressable
+              style={styles.star}
+              hitSlop={8}
+              onPress={() => toggleFavorite.mutate({ post: photo, favorite: !favorited })}
+              accessibilityRole="button"
+              accessibilityLabel={favorited ? 'Remove from favorites' : 'Add to favorites'}>
+              <SymbolView
+                name={{ ios: favorited ? 'star.fill' : 'star', android: 'star', web: 'star' }}
+                tintColor={favorited ? '#FFD84D' : theme.textSecondary}
+                size={20}
+              />
+            </Pressable>
+          )}
         </View>
       </ThemedView>
     </View>
@@ -379,9 +400,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   info: {
+    width: '100%',
     gap: 2,
     alignItems: 'center',
     paddingTop: Spacing.two,
     paddingBottom: Spacing.one,
+  },
+  star: {
+    position: 'absolute',
+    right: Spacing.one,
+    top: Spacing.two,
   },
 });
