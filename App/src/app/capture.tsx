@@ -180,11 +180,7 @@ function CaptureScreen({ onCapture }: { onCapture: (photo: Photo) => void }) {
   return (
     <View style={styles.screen}>
       <SafeAreaView edges={{ top: true, bottom: true }} style={styles.column}>
-        <View style={[styles.aboveFrame, { minHeight: sensorOverflow }]}>
-          <View style={styles.closeRow}>
-            <CloseButton glass />
-          </View>
-        </View>
+        <View style={[styles.aboveFrame, { minHeight: sensorOverflow }]} />
         <View style={[styles.frame, { width: frameSize, height: frameSize }]}>
           <GestureDetector gesture={previewGestures}>
             <View style={[styles.sensor, { top: -sensorOverflow, height: frameSize + sensorOverflow * 2 }]}>
@@ -216,15 +212,13 @@ function CaptureScreen({ onCapture }: { onCapture: (photo: Photo) => void }) {
             onChange={changeZoom}
             grid={grid}
             onToggleGrid={() => setGrid((g) => !g)}
+            flash={flash}
+            onCycleFlash={() => setFlash(FLASH_ORDER[(FLASH_ORDER.indexOf(flash) + 1) % FLASH_ORDER.length])}
           />
 
           <View style={styles.shutterRow}>
-            <RoundButton
-              label={FLASH_LABEL[flash]}
-              systemImage={FLASH_SYMBOL[flash]}
-              active={flash !== 'off'}
-              onPress={() => setFlash(FLASH_ORDER[(FLASH_ORDER.indexOf(flash) + 1) % FLASH_ORDER.length])}>
-              <SymbolView name={FLASH_ICON[flash]} tintColor={flash === 'off' ? '#FFFFFF' : '#FFD23F'} size={22} />
+            <RoundButton label="Close camera" systemImage="xmark" onPress={() => router.back()}>
+              <SymbolView name={{ ios: 'xmark', android: 'close', web: 'close' }} tintColor="#FFFFFF" size={20} weight="semibold" />
             </RoundButton>
             <ShutterButton disabled={!ready || capturing} onPress={takePhoto} />
             <RoundButton
@@ -330,11 +324,13 @@ function RoundButton({ label, systemImage, active, onPress, children }: {
   );
 }
 
-function ZoomSlider({ zoom, onChange, grid, onToggleGrid }: {
+function ZoomSlider({ zoom, onChange, grid, onToggleGrid, flash, onCycleFlash }: {
   zoom: number;
   onChange: (zoom: number) => void;
   grid: boolean;
   onToggleGrid: () => void;
+  flash: FlashMode;
+  onCycleFlash: () => void;
 }) {
   const [trackWidth, setTrackWidth] = useState(0);
   const position = zoom / MAX_ZOOM;
@@ -352,7 +348,13 @@ function ZoomSlider({ zoom, onChange, grid, onToggleGrid }: {
     return (
       <View style={styles.zoomRow}>
         <Host matchContents={{ vertical: true }} colorScheme="dark" style={styles.zoomHost}>
-          <HStack spacing={14}>
+          <HStack spacing={12}>
+            <NativeButton
+              label={FLASH_LABEL[flash]}
+              systemImage={FLASH_SYMBOL[flash]}
+              onPress={onCycleFlash}
+              modifiers={[buttonStyle(glassStyle), labelStyle('iconOnly'), foregroundStyle(flash === 'off' ? '#FFFFFF' : BRAND_GOLD)]}
+            />
             <NativeButton
               label="1×"
               onPress={() => onChange(0)}
@@ -378,6 +380,15 @@ function ZoomSlider({ zoom, onChange, grid, onToggleGrid }: {
 
   return (
     <View style={styles.zoomRow}>
+      <Pressable
+        onPress={onCycleFlash}
+        accessibilityRole="button"
+        accessibilityLabel={FLASH_LABEL[flash]}
+        hitSlop={8}
+        style={({ pressed }) => [styles.zoomChip, pressed && styles.pressed]}>
+        <Chrome style={StyleSheet.absoluteFill} />
+        <SymbolView name={FLASH_ICON[flash]} tintColor={flash === 'off' ? '#FFFFFF' : BRAND_GOLD} size={16} />
+      </Pressable>
       <Pressable
         onPress={() => onChange(0)}
         disabled={!zoomed}
@@ -657,10 +668,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexBasis: 0,
     zIndex: 1,
-  },
-  closeRow: {
-    paddingHorizontal: 16,
-    paddingTop: 4,
   },
   closeArea: {
     paddingHorizontal: 16,

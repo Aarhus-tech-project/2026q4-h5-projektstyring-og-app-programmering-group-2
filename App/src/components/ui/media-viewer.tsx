@@ -55,7 +55,6 @@ type MediaViewerProps = {
   user?: MediaUser;
 };
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
-const IMAGE_HEIGHT = 500;
 const MIN_SCALE = 1;
 const MAX_SCALE = 4;
 const DISMISS_DISTANCE = 120;
@@ -88,7 +87,7 @@ export function MediaViewer({ items, config, renderLayout, user }: MediaViewerPr
   const clampPosition = (targetScale: number) => {
     "worklet";
     const maxX = (screenWidth * (targetScale - 1)) / 2;
-    const maxY = (IMAGE_HEIGHT * (targetScale - 1)) / 2;
+    const maxY = (screenWidth * (targetScale - 1)) / 2;
     translateX.value = withTiming(Math.min(maxX, Math.max(-maxX, translateX.value)));
     translateY.value = withTiming(Math.min(maxY, Math.max(-maxY, translateY.value)));
   };
@@ -181,8 +180,8 @@ export function MediaViewer({ items, config, renderLayout, user }: MediaViewerPr
                   <Image
                     source={{ uri: openItem.source }}
                     placeholder={{ uri: openItem.thumbnail?.source }}
-                    contentFit="cover"
-                    style={styles.image}
+                    contentFit="contain"
+                    style={{ width: screenWidth, height: screenWidth }}
                   />
                 </Animated.View>
               </GestureDetector>
@@ -255,7 +254,6 @@ function TapThumbnail({ uri, fit, frame, onTap }: { uri: string; fit: ImageConte
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: "center" },
-  image: { width: "100%", height: IMAGE_HEIGHT },
 
   closeWrapper: { position: "absolute", right: 16 },
   closeButton: {
