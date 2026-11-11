@@ -21,6 +21,7 @@ import { deletePost, getMyPosts, getMyProfile, signOut, updateDescription, uploa
 import { setAppearance } from '../../../lib/appearance';
 import { useAuthStatus } from '../../../lib/auth';
 import { errorMessage } from '../../../lib/errors';
+import { ModalConfirmDelete } from '@/components/ui/modalConfirmDelete';
 
 
 function ProfileSkeleton() {
@@ -57,6 +58,7 @@ function PhotoMenu({ options }: { options: MenuOption[] }) {
   const { height } = useWindowDimensions()
   const ref = useRef<HostInstance>(null)
   const [pos, setPos] = useState<{ left: number; top?: number; bottom?: number } | null>(null)
+
 
   const open = () =>
     ref.current?.measureInWindow((x, y, w, h) =>
@@ -95,6 +97,7 @@ export default function Profile() {
   const [tab, setTab] = useState<'photos' | 'favorites'>('photos')
   const [editing, setEditing] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const isDark = useColorScheme() === 'dark'
   const insets = useSafeAreaInsets()
   const [refreshing, setRefreshing] = useState(false)
@@ -228,16 +231,11 @@ export default function Profile() {
               <ThemedView type="backgroundElement" style={styles.eloBorderMini}>
                 <ThemedText type="smallBold" style={styles.eloTextMini} adjustsFontSizeToFit>{Math.round(item?.elo ?? 1500)}</ThemedText>
               </ThemedView>
-              <ThemedText type="small" themeColor="textSecondary" style={styles.statsTextMini}>
-                <ThemedText type="smallBold" style={[styles.statsTextMini, { color: '#4ADE80' }]}>{item?.wins ?? 0}W</ThemedText>
-                {' '}
-                <ThemedText type="smallBold" style={[styles.statsTextMini, { color: '#F87171' }]}>{item?.losses ?? 0}L</ThemedText>
-              </ThemedText>
             </View>
           {tab === 'photos' && (
             <PhotoMenu
               options={[
-                { label: 'Delete', onPress: () => deleteMutation.mutate(item.id), destructive: true }
+                { label: 'Delete', onPress: () => setDeletingId(item.id), destructive: true }
               ]}
             />
           )}
@@ -314,7 +312,19 @@ export default function Profile() {
     onClose={() => setEditing(false)}
   />
   
+  
 )}
+{deletingId && (
+  <ModalConfirmDelete
+    onConfirm={() => {
+      deleteMutation.mutate(deletingId)
+      setDeletingId(null)
+    }}
+    onClose={() => setDeletingId(null)}
+  />
+)}
+
+
   {settingsOpen && (
     <>
       <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.backdrop}>
