@@ -1,9 +1,10 @@
 using FluentValidation;
 using Server;
+using Server.Controllers;
 
 namespace Validator;
 
-public class DescriptionRequestValidator : AbstractValidator<PostsController.DescriptionRequest>
+public class DescriptionRequestValidator : AbstractValidator<ProfileController.DescriptionRequest>
 {
     public DescriptionRequestValidator()
     {

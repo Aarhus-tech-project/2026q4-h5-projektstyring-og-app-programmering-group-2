@@ -5,7 +5,7 @@ using Server.Exceptions;
 
 namespace Server.Repositories;
 
-public class LoginRepository(AppDbContext db)
+public class AuthRepository(AppDbContext db)
 {
     private readonly PasswordHasher<User> passwordHasher = new();
 

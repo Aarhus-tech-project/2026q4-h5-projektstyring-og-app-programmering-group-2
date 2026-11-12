@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Server.Repositories;
 
 namespace Server.Workers;
 
@@ -8,7 +9,7 @@ public class VoteWorker(IServiceScopeFactory scopeFactory, ILogger<VoteWorker> l
     private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(1);
     private const int BatchSize = 10_000;
     private const long VoteCountingLockKey = 7_000_001;
-    private static readonly TimeSpan EloChangeRetention = PostsRepository.TrendingWindow * 2;
+    private static readonly TimeSpan EloChangeRetention = RankingRepository.TrendingWindow * 2;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

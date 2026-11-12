@@ -22,6 +22,7 @@ public readonly record struct SquareCrop(float X, float Y, float Size);
 
 public class MediaService
 {
+    public const long MaxUploadBytes = 25 * 1024 * 1024;
     private const long MaxPixels = 50_000_000;
     private static readonly SemaphoreSlim ProcessingSlots = new(Environment.ProcessorCount);
 

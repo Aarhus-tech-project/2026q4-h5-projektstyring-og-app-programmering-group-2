@@ -43,7 +43,7 @@ async function refresh() {
   const refreshToken = await SecureStore.getItemAsync("refreshtoken");
   if (!refreshToken) return null;
 
-  const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL?.replace(/\/+$/, "")}/api/login/refresh`, {
+  const res = await apiFetch(`${process.env.EXPO_PUBLIC_API_URL?.replace(/\/+$/, "")}/api/Auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(refreshToken),
@@ -80,7 +80,7 @@ function fileForm(body: UploadBody) {
 
 export async function login(email: string, password: string, deviceName: string) {
   const deviceId = await getDeviceId();
-  const { data, error, response } = await api.POST("/api/Login/login", {
+  const { data, error, response } = await api.POST("/api/Auth/login", {
     body: { email, password, deviceId, deviceName, platform: Platform.OS },
   });
   if (!response.ok || !data) fail(response, error);
@@ -88,7 +88,7 @@ export async function login(email: string, password: string, deviceName: string)
 }
 
 export async function register(email: string, username: string, password: string) {
-  const { error, response } = await api.POST("/api/Login/register", {
+  const { error, response } = await api.POST("/api/Auth/register", {
     body: { email, username, password },
   });
   if (!response.ok) fail(response, error);
@@ -96,7 +96,7 @@ export async function register(email: string, username: string, password: string
 
 export async function signOut() {
   try {
-    await api.POST("/api/Login/logout");
+    await api.POST("/api/Auth/logout");
   } finally {
     await clearSession();
   }
@@ -111,7 +111,7 @@ export type Post = components["schemas"]["PublicPostDTO"];
 export type RankedPost = components["schemas"]["RankedPostDTO"];
 
 export async function getRanking(period: RankingPeriod, order: RankingOrder) {
-  const { data, error, response } = await api.GET("/api/Posts/ranking", {
+  const { data, error, response } = await api.GET("/api/Ranking", {
     params: { query: { period, order } },
   });
   if (!response.ok) fail(response, error);
@@ -124,13 +124,13 @@ export async function getRanking(period: RankingPeriod, order: RankingOrder) {
 export type Matchup = components["schemas"]["MatchupDTO"];
 
 export async function getMatchup() {
-  const { data, error, response } = await api.GET("/api/Posts/matchup");
+  const { data, error, response } = await api.GET("/api/Voting/matchup");
   if (!response.ok || !data) fail(response, error);
   return data;
 }
 
 export async function submitVote(matchupId: string, winnerPostId: string, loserPostId: string) {
-  const { error, response } = await api.POST("/api/Posts/vote", {
+  const { error, response } = await api.POST("/api/Voting/vote", {
     body: { matchupId, winnerPostId, loserPostId },
   });
   if (!response.ok) fail(response, error);
@@ -162,7 +162,7 @@ export async function deletePost(postId: string) {
 export type Profile = components["schemas"]["Profile"];
 
 export async function getMyProfile() {
-  const { data, error, response } = await api.GET("/api/Posts/profile");
+  const { data, error, response } = await api.GET("/api/Profile");
   if (!response.ok || !data) fail(response, error);
   return data;
 }
@@ -170,7 +170,7 @@ export async function getMyProfile() {
 export type PostPage = components["schemas"]["PostPageDTO"];
 
 export async function getMyPosts(before?: string) {
-  const { data, error, response } = await api.GET("/api/Posts/profile/posts", {
+  const { data, error, response } = await api.GET("/api/Profile/posts", {
     params: { query: before ? { before } : {} },
   });
   if (!response.ok || !data) fail(response, error);
@@ -181,7 +181,7 @@ export async function getMyPosts(before?: string) {
 // Upload Avatar
 
 export async function uploadAvatar(uri: string) {
-  const { error, response } = await api.PUT("/api/Posts/profile/avatar", {
+  const { error, response } = await api.PUT("/api/Profile/avatar", {
     body: { File: uri },
     bodySerializer: fileForm,
   });
@@ -192,7 +192,7 @@ export async function uploadAvatar(uri: string) {
 // Update Description
 
 export async function updateDescription(description: string) {
-  const { error, response } = await api.PUT("/api/Posts/profile/description", {
+  const { error, response } = await api.PUT("/api/Profile/description", {
     body: { description },
   });
   if (!response.ok) fail(response, error);
@@ -202,7 +202,7 @@ export async function updateDescription(description: string) {
 // Get Others Profile Data
 
 export async function getUserProfile(userId: string) {
-  const { data, error, response } = await api.GET("/api/Posts/profile/{userId}", {
+  const { data, error, response } = await api.GET("/api/Profile/{userId}", {
     params: { path: { userId } },
   });
   if (!response.ok || !data) fail(response, error);
@@ -210,7 +210,7 @@ export async function getUserProfile(userId: string) {
 }
 
 export async function getUserPosts(userId: string, before?: string) {
-  const { data, error, response } = await api.GET("/api/Posts/profile/{userId}/posts", {
+  const { data, error, response } = await api.GET("/api/Profile/{userId}/posts", {
     params: { path: { userId }, query: before ? { before } : {} },
   });
   if (!response.ok || !data) fail(response, error);
@@ -227,14 +227,14 @@ export async function getFavorites() {
 }
 
 export async function addFavorite(postId: string) {
-  const { error, response } = await api.POST("/api/Posts/favorite", {
+  const { error, response } = await api.POST("/api/Posts/favorites", {
     params: { query: { postId } },
   });
   if (!response.ok) fail(response, error);
 }
 
 export async function removeFavorite(postId: string) {
-  const { error, response } = await api.DELETE("/api/Posts/favorite", {
+  const { error, response } = await api.DELETE("/api/Posts/favorites", {
     params: { query: { postId } },
   });
   if (!response.ok) fail(response, error);

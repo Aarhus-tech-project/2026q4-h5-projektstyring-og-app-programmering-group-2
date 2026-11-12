@@ -38,8 +38,13 @@ public class Program
             builder.Services.AddHealthChecks().AddDbContextCheck<AppDbContext>();
             builder.Services.AddScoped<MediaService>();
             builder.Services.AddSingleton<BlobStorageService>();
-            builder.Services.AddScoped<LoginRepository>();
+            builder.Services.AddScoped<AuthRepository>();
+            builder.Services.AddScoped<MediaRepository>();
             builder.Services.AddScoped<PostsRepository>();
+            builder.Services.AddScoped<FavoritesRepository>();
+            builder.Services.AddScoped<VotingRepository>();
+            builder.Services.AddScoped<RankingRepository>();
+            builder.Services.AddScoped<ProfileRepository>();
             builder.Services.AddScoped<TokenService>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddRateLimiting();

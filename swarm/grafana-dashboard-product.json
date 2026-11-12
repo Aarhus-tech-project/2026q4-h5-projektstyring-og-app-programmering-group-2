@@ -309,7 +309,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Login/register\", http_request_method=\"POST\", http_response_status_code=~\"2..\"}[$__range])) or vector(0)",
+          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Auth/register\", http_request_method=\"POST\", http_response_status_code=~\"2..\"}[$__range])) or vector(0)",
           "legendFormat": "",
           "editorMode": "code",
           "range": true
@@ -446,7 +446,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Posts/matchup\", http_request_method=\"GET\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
+          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Voting/matchup\", http_request_method=\"GET\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
           "legendFormat": "Matchups shown",
           "editorMode": "code",
           "range": true
@@ -457,7 +457,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Posts/vote\", http_request_method=\"POST\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
+          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Voting/vote\", http_request_method=\"POST\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
           "legendFormat": "Votes cast",
           "editorMode": "code",
           "range": true
@@ -583,7 +583,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Login/register\", http_request_method=\"POST\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
+          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Auth/register\", http_request_method=\"POST\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
           "legendFormat": "Signups",
           "editorMode": "code",
           "range": true
@@ -594,7 +594,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Login/login\", http_request_method=\"POST\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
+          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Auth/login\", http_request_method=\"POST\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
           "legendFormat": "Logins",
           "editorMode": "code",
           "range": true
@@ -657,7 +657,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Posts/ranking\", http_request_method=\"GET\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
+          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Ranking\", http_request_method=\"GET\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
           "legendFormat": "Ranking",
           "editorMode": "code",
           "range": true
@@ -668,7 +668,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Posts/profile\", http_request_method=\"GET\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
+          "expr": "sum(increase(http_server_request_duration_seconds_count{http_route=\"api/Profile\", http_request_method=\"GET\", http_response_status_code=~\"2..\"}[$__interval])) or vector(0)",
           "legendFormat": "Profile",
           "editorMode": "code",
           "range": true

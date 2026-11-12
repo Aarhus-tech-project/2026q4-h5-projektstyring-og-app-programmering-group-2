@@ -11,7 +11,7 @@ namespace Server.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class LoginController(ILogger<LoginController> logger, LoginRepository loginRepository, AuthService authService, TokenService tokenService) : ControllerBase
+public class AuthController(ILogger<AuthController> logger, AuthRepository authRepository, AuthService authService, TokenService tokenService) : ControllerBase
 {
     public record TokenResponse(string AccessToken, string RefreshToken);
 
@@ -19,7 +19,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository lo
     [HttpPost("login")]
     public async Task<ActionResult<TokenResponse>> Login([FromBody] LoginRequest request)
     {
-        User user = await loginRepository.Login(request) ?? throw new InvalidLoginException();
+        User user = await authRepository.Login(request) ?? throw new InvalidLoginException();
 
         await authService.RevokeDeviceSessions(user.Id, request.DeviceId);
         string refreshToken = tokenService.GenerateRefreshToken();
@@ -56,7 +56,7 @@ public class LoginController(ILogger<LoginController> logger, LoginRepository lo
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        Guid userId = await loginRepository.Register(request);
+        Guid userId = await authRepository.Register(request);
         logger.LogInformation("User {UserId} registered", userId);
         return Ok();
     }

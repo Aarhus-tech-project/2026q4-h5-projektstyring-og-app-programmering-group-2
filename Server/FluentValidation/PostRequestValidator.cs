@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Server;
+using Server.Controllers;
 
 namespace Validator;
 
@@ -21,7 +22,7 @@ public class PostRequestValidator : AbstractValidator<PostsController.PostReques
     }
 }
 
-public class AvatarRequestValidator : AbstractValidator<PostsController.AvatarRequest>
+public class AvatarRequestValidator : AbstractValidator<ProfileController.AvatarRequest>
 {
     public AvatarRequestValidator()
     {

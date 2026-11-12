@@ -276,7 +276,7 @@ configs:
     name: fotolo-grafana-dashboard-logs-traces-v1
     file: ./grafana-dashboard-logs-traces.json
   grafana-dashboard-product:
-    name: fotolo-grafana-dashboard-product-v1
+    name: fotolo-grafana-dashboard-product-v2
     file: ./grafana-dashboard-product.json
   prometheus-config:
     name: fotolo-prometheus-config-v1
