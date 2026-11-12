@@ -45,6 +45,7 @@ export function ExpandableImage({ thumbnailUrl, imageUrl, thumbhash, borderRadiu
       <MediaViewer
         source={imageUrl}
         thumbnail={thumbnailUrl}
+        borderRadius={borderRadius}
         user={user}
         stats={stats}
       />
