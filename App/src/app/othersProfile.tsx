@@ -6,14 +6,16 @@ import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view'
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getUserPosts, getUserProfile } from '../../lib/api';
 
 export default function UserProfileScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -77,22 +79,24 @@ export default function UserProfileScreen() {
           }
           renderItem={({ item }) => (
             <View style={styles.gridItems}>
-              <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} user={profile} />
+              <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} user={profile}/>
               <View style={styles.statsRow}>
                 <ThemedView type="backgroundElement" style={styles.eloBorderMini}>
                   <ThemedText type="smallBold" style={styles.eloTextMini} adjustsFontSizeToFit>{Math.round(item.elo)}</ThemedText>
                 </ThemedView>
-                <ThemedText type="small" themeColor="textSecondary" style={styles.statsTextMini}>
-                  <ThemedText type="smallBold" style={[styles.statsTextMini, { color: '#4ADE80' }]}>{item.wins}W</ThemedText>
-                  {' '}
-                  <ThemedText type="smallBold" style={[styles.statsTextMini, { color: '#F87171' }]}>{item.losses}L</ThemedText>
-                </ThemedText>
               </View>
             </View>
           )}
           ListHeaderComponent={
             <>
               <View style={styles.username}>
+                <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backButton}>
+                  <SymbolView
+                    name={{ ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' }}
+                    tintColor={theme.text}
+                    size={24}
+                  />
+                </Pressable>
                 <ThemedText type="subtitle">{profile.username}</ThemedText>
               </View>
               <View style={styles.header}>
@@ -100,11 +104,6 @@ export default function UserProfileScreen() {
                   <ThemedView type="backgroundElement" style={styles.eloBorder}>
                     <ThemedText type="smallBold" style={styles.eloText} adjustsFontSizeToFit>{Math.round(profile.elo)} ELO</ThemedText>
                   </ThemedView>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    <ThemedText type="smallBold" style={{ color: '#4ADE80' }}>{profile.wins} W</ThemedText>
-                    {'  ·  '}
-                    <ThemedText type="smallBold" style={{ color: '#F87171' }}>{profile.losses} L</ThemedText>
-                  </ThemedText>
                 </View>
                 <Avatar
                   thumbnailUrl={profile.avatarThumbnailUrl}
@@ -133,6 +132,13 @@ const styles = StyleSheet.create({
   username: {
     alignItems: 'center',
     marginTop: 10,
+  },
+  backButton: {
+    position: 'absolute',
+    left: Spacing.three,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
   },
   header: {
     flexDirection: 'row',
