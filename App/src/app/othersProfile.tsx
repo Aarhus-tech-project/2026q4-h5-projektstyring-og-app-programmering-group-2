@@ -79,7 +79,7 @@ export default function UserProfileScreen() {
           }
           renderItem={({ item }) => (
             <View style={styles.gridItems}>
-              <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} user={profile}/>
+              <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} user={profile} stats={{ wins: item.wins, losses: item.losses, elo: item.elo }} />
               <View style={styles.statsRow}>
                 <ThemedView type="backgroundElement" style={styles.eloBorderMini}>
                   <ThemedText type="smallBold" style={styles.eloTextMini} adjustsFontSizeToFit>{Math.round(item.elo)}</ThemedText>

@@ -1,11 +1,11 @@
+import { Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/use-theme";
 import { BlurView } from "expo-blur";
-import { Image } from "expo-image";
-import { useState } from "react";
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
+import { Image } from "expo-image";
 import { SymbolView } from "expo-symbols";
-import { initialWindowMetrics, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useState } from "react";
 import { Modal, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
-import { scheduleOnRN } from "react-native-worklets";
 import {
   GestureDetector,
   GestureHandlerRootView,
@@ -15,10 +15,10 @@ import {
   useTapGesture,
 } from "react-native-gesture-handler";
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import { initialWindowMetrics, useSafeAreaInsets } from "react-native-safe-area-context";
+import { scheduleOnRN } from "react-native-worklets";
 import { ThemedText } from "../themed-text";
-import { Spacing } from "@/constants/theme";
 import { Avatar } from "./avatar";
-import { useTheme } from "@/hooks/use-theme";
 
 export type MediaUser = {
   username: string;
@@ -56,7 +56,7 @@ export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }
   const insets = useSafeAreaInsets();
   const deviceBottom = initialWindowMetrics?.insets.bottom ?? insets.bottom;
 
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
@@ -158,6 +158,21 @@ export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }
                 />
               </Animated.View>
             </GestureDetector>
+            {stats && (
+
+            <Animated.View style={[styles.statsWrapper, { top: (screenHeight + screenWidth) / 2 + Spacing.three }, backdropStyle]}>
+              <View style={[styles.statsPanel, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
+                <View style={styles.statsEloBorder}>
+                  <ThemedText type="smallBold" style={styles.statsEloText}>{Math.round(stats.elo)} ELO</ThemedText>
+                </View>
+                <ThemedText type="small" themeColor="textSecondary">
+                  <ThemedText type="smallBold" style={{ color: '#4ADE80' }}>{stats.wins} W</ThemedText>
+                  {'  ·  '}
+                  <ThemedText type="smallBold" style={{ color: '#F87171' }}>{stats.losses} L</ThemedText>
+                </ThemedText>
+              </View>
+            </Animated.View>
+          )}
 
             <Animated.View style={[styles.closeWrapper, { top: insets.top + 8 }, backdropStyle]}>
               <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel="Close">
@@ -277,12 +292,35 @@ barElo: {
   padding: 5,
   borderColor: '#FFD84D',
 },
-
- avatar: {
+avatar: {
     position: 'absolute',
     right: 12,
     bottom: 12,
   },
+  statsWrapper: {
+  position: "absolute",
+  alignSelf: "center",
+},
+statsPanel: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: Spacing.three,
+  paddingVertical: Spacing.one + 2,
+  paddingLeft: Spacing.one + 2,
+  paddingRight: Spacing.three,
+  borderRadius: 999,
+  borderWidth: 1,
+},
+statsEloBorder: {
+  borderWidth: 1,
+  borderColor: "#FFD84D",
+  borderRadius: 999,
+  paddingHorizontal: Spacing.two,
+  paddingVertical: Spacing.one,
+},
+statsEloText: {
+  color: "#FFD84D",
+},
 
 });
 

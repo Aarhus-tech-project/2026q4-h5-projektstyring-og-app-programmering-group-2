@@ -2,6 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Avatar } from '@/components/ui/avatar';
 import { ExpandableImage } from '@/components/ui/expandable-image';
+import { ModalConfirmDelete } from '@/components/ui/modalConfirmDelete';
 import { ModalDescription } from '@/components/ui/modalDescription';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState, StateView } from '@/components/ui/state-view';
@@ -21,7 +22,6 @@ import { deletePost, getMyPosts, getMyProfile, signOut, updateDescription, uploa
 import { setAppearance } from '../../../lib/appearance';
 import { useAuthStatus } from '../../../lib/auth';
 import { errorMessage } from '../../../lib/errors';
-import { ModalConfirmDelete } from '@/components/ui/modalConfirmDelete';
 
 function ProfileSkeleton() {
   return (
@@ -311,7 +311,7 @@ export default function Profile() {
       }
       renderItem={({ item }) => (
         <View style={styles.gridItems}>
-          <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} user={tab === 'photos' ? profile : undefined} />
+          <ExpandableImage thumbnailUrl={item.thumbnailUrl} imageUrl={item.imageUrl} thumbhash={item.thumbhash} user={tab === 'photos' ? profile : undefined} stats={{ wins: item.wins, losses: item.losses, elo: item.elo }} />
           <View style={styles.statsRow}>
               <ThemedView type="backgroundElement" style={styles.eloBorderMini}>
                 <ThemedText type="smallBold" style={styles.eloTextMini} adjustsFontSizeToFit>{Math.round(item?.elo ?? 1500)}</ThemedText>
