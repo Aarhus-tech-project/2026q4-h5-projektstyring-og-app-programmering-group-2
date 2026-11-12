@@ -1,10 +1,10 @@
 import { BlurView } from "expo-blur";
-import { Image, ImageContentFit } from "expo-image";
-import { ReactNode, useState } from "react";
+import { Image } from "expo-image";
+import { useState } from "react";
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
 import { SymbolView } from "expo-symbols";
 import { initialWindowMetrics, useSafeAreaInsets } from "react-native-safe-area-context";
-import { DimensionValue, Modal, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
+import { Modal, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { scheduleOnRN } from "react-native-worklets";
 import {
   GestureDetector,
@@ -20,26 +20,6 @@ import { Spacing } from "@/constants/theme";
 import { Avatar } from "./avatar";
 import { useTheme } from "@/hooks/use-theme";
 
-export type MediaItem = {
-  type: "image";
-  source: string;
-  thumbnail?: { source: string };
-};
-
-type Frame = {
-  width?: DimensionValue;
-  height?: DimensionValue;
-  borderRadius?: number;
-  backgroundColor?: string;
-};
-
-type MediaViewerConfig = {
-  theme?: "dark" | "light";
-  thumbnail?: { fit?: ImageContentFit };
-};
-
-type RenderItem = (index: number, options?: { frame?: Frame }) => ReactNode;
-
 export type MediaUser = {
   username: string;
   avatarThumbnailUrl: string | null;
@@ -48,22 +28,31 @@ export type MediaUser = {
   elo: number;
 }
 
-type MediaViewerProps = {
-  items: MediaItem[];
-  config?: MediaViewerConfig;
-  renderLayout: (helpers: { renderItem: RenderItem }) => ReactNode;
-  user?: MediaUser;
+export type MediaStats = {
+  wins: number;
+  losses: number;
+  elo: number;
 };
+
+type MediaViewerProps = {
+  source: string;
+  thumbnail?: string;
+  borderRadius?: number;
+  user?: MediaUser;
+  stats?: MediaStats;
+};
+
+const tint = "dark";
+
 const useGlass = isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 const MIN_SCALE = 1;
 const MAX_SCALE = 4;
 const DISMISS_DISTANCE = 120;
 const DISMISS_VELOCITY = 800;
 
-export function MediaViewer({ items, config, renderLayout, user }: MediaViewerProps) {
+export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }: MediaViewerProps) {
   const theme = useTheme();
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const openItem = openIndex !== null ? items[openIndex] : null;
+  const [isOpen, setIsOpen] = useState(false);
   const insets = useSafeAreaInsets();
   const deviceBottom = initialWindowMetrics?.insets.bottom ?? insets.bottom;
 
@@ -73,15 +62,15 @@ export function MediaViewer({ items, config, renderLayout, user }: MediaViewerPr
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
 
-  const open = (index: number) => {
+  const open = () => {
     scale.value = 1;
     translateX.value = 0;
     translateY.value = 0;
-    setOpenIndex(index);
+    setIsOpen(true);
   };
 
   const close = () => {
-    setOpenIndex(null);
+    setIsOpen(false);
   };
 
   const clampPosition = (targetScale: number) => {
@@ -148,44 +137,27 @@ export function MediaViewer({ items, config, renderLayout, user }: MediaViewerPr
   }));
 
 
-  const renderItem: RenderItem = (index, options) => {
-    const item = items[index];
-    return (
-      <TapThumbnail
-        key={index}
-        uri={item.thumbnail?.source ?? item.source}
-        fit={config?.thumbnail?.fit ?? "cover"}
-        frame={options?.frame}
-        onTap={() => open(index)}
-      />
-    );
-  };
-
-  const tint = config?.theme === "light" ? "light" : "dark";
-
   return (
     <>
-      {renderLayout({ renderItem })}
+      <TapThumbnail uri={thumbnail ?? source} borderRadius={borderRadius} onTap={open} />
 
-          <Modal visible={openItem !== null} transparent animationType="fade" onRequestClose={close}>
+      <Modal visible={isOpen} transparent animationType="fade" onRequestClose={close}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <View style={styles.backdrop}>
             <Animated.View style={[StyleSheet.absoluteFill, backdropStyle]}>
               <BlurView intensity={60} tint={tint} style={StyleSheet.absoluteFill} />
             </Animated.View>
 
-            {openItem && (
-              <GestureDetector gesture={gestures}>
-                <Animated.View style={zoomStyle}>
-                  <Image
-                    source={{ uri: openItem.source }}
-                    placeholder={{ uri: openItem.thumbnail?.source }}
-                    contentFit="contain"
-                    style={{ width: screenWidth, height: screenWidth }}
-                  />
-                </Animated.View>
-              </GestureDetector>
-            )}
+            <GestureDetector gesture={gestures}>
+              <Animated.View style={zoomStyle}>
+                <Image
+                  source={{ uri: source }}
+                  placeholder={thumbnail ? { uri: thumbnail } : undefined}
+                  contentFit="contain"
+                  style={{ width: screenWidth, height: screenWidth }}
+                />
+              </Animated.View>
+            </GestureDetector>
 
             <Animated.View style={[styles.closeWrapper, { top: insets.top + 8 }, backdropStyle]}>
               <Pressable onPress={close} hitSlop={8} accessibilityRole="button" accessibilityLabel="Close">
@@ -237,7 +209,7 @@ export function MediaViewer({ items, config, renderLayout, user }: MediaViewerPr
 }
 
 // TEST: gesture-handler tap instead of Pressable, to see if it opens while a list is still scrolling.
-function TapThumbnail({ uri, fit, frame, onTap }: { uri: string; fit: ImageContentFit; frame?: Frame; onTap: () => void }) {
+function TapThumbnail({ uri, borderRadius, onTap }: { uri: string; borderRadius: number; onTap: () => void }) {
   const tap = useTapGesture({
     runOnJS: true,
     onActivate: () => onTap(),
@@ -245,8 +217,8 @@ function TapThumbnail({ uri, fit, frame, onTap }: { uri: string; fit: ImageConte
 
   return (
     <GestureDetector gesture={tap}>
-      <View style={[frame, { overflow: "hidden" }]}>
-        <Image source={{ uri }} contentFit={fit} style={StyleSheet.absoluteFill} />
+      <View style={[styles.thumbnail, { borderRadius }]}>
+        <Image source={{ uri }} contentFit="cover" style={StyleSheet.absoluteFill} />
       </View>
     </GestureDetector>
   );
@@ -254,6 +226,7 @@ function TapThumbnail({ uri, fit, frame, onTap }: { uri: string; fit: ImageConte
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: "center" },
+  thumbnail: { width: "100%", height: "100%", overflow: "hidden" },
 
   closeWrapper: { position: "absolute", right: 16 },
   closeButton: {
