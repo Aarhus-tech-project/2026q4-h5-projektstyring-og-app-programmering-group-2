@@ -3,9 +3,9 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
-import { applySavedAppearance } from '../../lib/appearance';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Toaster } from 'sonner-native';
+import { applySavedAppearance } from '../../lib/appearance';
 import { queryClient } from '../../lib/query';
 
 
@@ -30,6 +30,6 @@ useEffect(() => {
          <Toaster theme={scheme === 'dark' ? 'dark' : 'light'} position="top-center" />
         </ThemeProvider>
       </QueryClientProvider>
-    </GestureHandlerRootView>
+    </GestureHandlerRootView> 
   );
 }

@@ -18,6 +18,7 @@ import {
 import Animated, { interpolate, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { initialWindowMetrics, useSafeAreaInsets } from "react-native-safe-area-context";
 import { scheduleOnRN } from "react-native-worklets";
+import { useUserId } from "../../../lib/auth";
 import { ThemedText } from "../themed-text";
 import { Avatar } from "./avatar";
 
@@ -57,6 +58,7 @@ export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }
   const theme = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const insets = useSafeAreaInsets();
+  const myUserId = useUserId();
   const deviceBottom = initialWindowMetrics?.insets.bottom ?? insets.bottom;
 
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -200,14 +202,18 @@ export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }
              style={[styles.barWrapper, { bottom: Math.max(deviceBottom - 15, 8) }, backdropStyle]}
             >
               <Pressable
-                onPress={() => {
-                if (pathname === "/othersProfile" && currentUserId === user.userId) {
-                  close();
-                  return;
-                }
-                openProfile(user.userId);
-                setTimeout(close, 250);
-              }}
+               onPress={() => {
+                  if (pathname === "/othersProfile" && currentUserId === user.userId) {
+                    close();
+                    return;
+                  }
+                  if (user.userId === myUserId) {
+                    router.navigate("/profile");
+                  } else {
+                    openProfile(user.userId);
+                  }
+                  setTimeout(close, 250);
+                }}
               >
                 <View style={[styles.bar, {backgroundColor: theme.backgroundElement, borderColor: theme.background}]}>
                   {useGlass ? (

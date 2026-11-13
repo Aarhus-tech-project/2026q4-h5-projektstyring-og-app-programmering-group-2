@@ -5,6 +5,7 @@ export type AuthStatus = "unknown" | "signedIn" | "signedOut";
 
 let status: AuthStatus = "unknown";
 let pendingRoute: string | null = null;
+let userId: string | null = null;
 const listeners = new Set<() => void>();
 
 function emit(next: AuthStatus) {
@@ -19,22 +20,37 @@ function subscribe(listener: () => void) {
 }
 
 SecureStore.getItemAsync("accesstoken")
-  .then((token) => emit(token ? "signedIn" : "signedOut"))
+  .then((token) => {
+    userId = token ? readUserId(token) : null;
+    emit(token ? "signedIn" : "signedOut");
+  })
   .catch(() => emit("signedOut"));
 
-export function useAuthStatus() {
-  return useSyncExternalStore(subscribe, () => status, () => status);
+
+function readUserId(token: string): string | null {
+  const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+  return payload.sub ?? payload.nameid ?? null;
+}
+
+export function useUserId() {
+  return useSyncExternalStore(subscribe, () => userId, () => userId);
 }
 
 export async function saveSession(accessToken: string, refreshToken: string) {
   await SecureStore.setItemAsync("accesstoken", accessToken);
   await SecureStore.setItemAsync("refreshtoken", refreshToken);
+  userId = readUserId(accessToken);
   emit("signedIn");
+}
+
+export function useAuthStatus() {
+  return useSyncExternalStore(subscribe, () => status, () => status);
 }
 
 export async function clearSession() {
   await SecureStore.deleteItemAsync("accesstoken");
   await SecureStore.deleteItemAsync("refreshtoken");
+  userId = null;
   emit("signedOut");
 }
 
