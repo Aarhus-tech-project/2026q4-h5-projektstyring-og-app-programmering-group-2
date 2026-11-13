@@ -3,6 +3,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { BlurView } from "expo-blur";
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
@@ -26,6 +27,7 @@ export type MediaUser = {
   avatarUrl: string | null;
   avatarThumbhash: string | null;
   elo: number;
+  userId: string;
 }
 
 export type MediaStats = {
@@ -49,6 +51,7 @@ const MIN_SCALE = 1;
 const MAX_SCALE = 4;
 const DISMISS_DISTANCE = 120;
 const DISMISS_VELOCITY = 800;
+
 
 export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }: MediaViewerProps) {
   const theme = useTheme();
@@ -131,6 +134,8 @@ export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }
       { scale: scale.value },
     ],
   }));
+
+  
   
   const backdropStyle = useAnimatedStyle(() => ({
   opacity: scale.value > 1 ? 1 : interpolate(Math.abs(translateY.value), [0, 300], [1, 0]),
@@ -141,7 +146,7 @@ export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }
     <>
       <TapThumbnail uri={thumbnail ?? source} borderRadius={borderRadius} onTap={open} />
 
-      <Modal visible={isOpen} transparent animationType="fade" onRequestClose={close}>
+      <Modal visible={isOpen} transparent animationType={"fade"} onRequestClose={close}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <View style={styles.backdrop}>
             <Animated.View style={[StyleSheet.absoluteFill, backdropStyle]}>
@@ -187,34 +192,39 @@ export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }
                 )}
               </Pressable>
             </Animated.View>
-            {user && (
+                        {user && (
             <Animated.View
              style={[styles.barWrapper, { bottom: Math.max(deviceBottom - 15, 8) }, backdropStyle]}
             >
-              <View style={[styles.bar, {backgroundColor: theme.backgroundElement, borderColor: theme.background}]}>
-                {useGlass ? (
-                  <GlassView style={StyleSheet.absoluteFill} glassEffectStyle="regular" />
-                ) : (
-                  <BlurView intensity={40} tint={tint} style={StyleSheet.absoluteFill} />
-                )}
-
-               <Avatar
-                  thumbnailUrl={user.avatarThumbnailUrl}
-                  imageUrl={user.avatarUrl}
-                  thumbhash={user.avatarThumbhash}
-                  size={52}
-                  expandable={false}
-                />
-                <View style={styles.barText}>
-                  <ThemedText type="smallBold" numberOfLines={1} style={styles.barName}>
-                    {user.username}
-                  </ThemedText>
-                  <View style={styles.eloRow}>
-                    <ThemedText type="small" style={styles.barElo}>{Math.round(user.elo)} Elo</ThemedText>
+              <Pressable
+                onPress={() => {
+                  openProfile(user.userId);
+                  setTimeout(close, 200);
+                }}
+              >
+                <View style={[styles.bar, {backgroundColor: theme.backgroundElement, borderColor: theme.background}]}>
+                  {useGlass ? (
+                    <GlassView style={StyleSheet.absoluteFill} glassEffectStyle="regular" pointerEvents="none" />
+                  ) : (
+                    <BlurView intensity={40} tint={tint} style={StyleSheet.absoluteFill} pointerEvents="none" />
+                  )}
+                  <Avatar
+                    thumbnailUrl={user.avatarThumbnailUrl}
+                    imageUrl={user.avatarUrl}
+                    thumbhash={user.avatarThumbhash}
+                    size={52}
+                    expandable={false}
+                  />
+                  <View style={styles.barText}>
+                    <ThemedText type="smallBold" numberOfLines={1} style={styles.barName}>
+                      {user.username}
+                    </ThemedText>
+                    <View style={styles.eloRow}>
+                      <ThemedText type="small" style={styles.barElo}>{Math.round(user.elo)} Elo</ThemedText>
+                    </View>
                   </View>
                 </View>
-
-              </View>
+              </Pressable>
             </Animated.View>)}
           </View>
         </GestureHandlerRootView>
@@ -237,6 +247,10 @@ function TapThumbnail({ uri, borderRadius, onTap }: { uri: string; borderRadius:
       </View>
     </GestureDetector>
   );
+}
+
+function openProfile(userId: string) {
+  router.push({ pathname: '/othersProfile', params: { userId } });
 }
 
 const styles = StyleSheet.create({
