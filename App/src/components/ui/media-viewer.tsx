@@ -3,7 +3,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { BlurView } from "expo-blur";
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { router, useLocalSearchParams, usePathname } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
@@ -60,6 +60,9 @@ export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }
   const deviceBottom = initialWindowMetrics?.insets.bottom ?? insets.bottom;
 
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+
+  const pathname = usePathname();
+  const { userId: currentUserId } = useLocalSearchParams<{ userId?: string }>();
 
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
@@ -198,9 +201,13 @@ export function MediaViewer({ source, thumbnail, borderRadius = 0, user, stats }
             >
               <Pressable
                 onPress={() => {
-                  openProfile(user.userId);
-                  setTimeout(close, 200);
-                }}
+                if (pathname === "/othersProfile" && currentUserId === user.userId) {
+                  close();
+                  return;
+                }
+                openProfile(user.userId);
+                setTimeout(close, 250);
+              }}
               >
                 <View style={[styles.bar, {backgroundColor: theme.backgroundElement, borderColor: theme.background}]}>
                   {useGlass ? (
