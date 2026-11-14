@@ -13,6 +13,7 @@ sys.path.insert(0, str(HERE / "src"))
 
 import database
 import services
+import media
 
 CHROME_CANDIDATES = [
     os.environ.get("CHROME", ""),
@@ -55,7 +56,7 @@ def png_from_svg(svg_path, png_path, scale=2):
 
 
 def build_hand_laid_out():
-    for name, module in [("database", database), ("services", services)]:
+    for name, module in [("database", database), ("services", services), ("media", media)]:
         svg = HERE / f"{name}.svg"
         svg.write_text(module.build())
         print(f"  wrote {svg.relative_to(ROOT)}")
