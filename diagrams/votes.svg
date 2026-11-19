@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="828" viewBox="0 0 1400 828"><title>Fotolo votes and Elo</title><rect width="100%" height="100%" fill="#ffffff"/><defs><filter id="shadow" x="-5%" y="-5%" width="110%" height="120%"><feDropShadow dx="0" dy="1.5" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.10"/></filter><marker id="a-e11d48" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#e11d48"/></marker><marker id="a-4f46e5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#4f46e5"/></marker><marker id="a-0d9488" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#0d9488"/></marker><marker id="a-475569" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#475569"/></marker><marker id="a-0f172a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#0f172a"/></marker></defs>
+<text x="48.0" y="46.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="central" >Fotolo · votes and Elo</text>
+<text x="48.0" y="76.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >Every post has an Elo rating (new posts start at 1000). Winning a matchup takes points from the loser.</text>
+<text x="48.0" y="132.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="central" >1 · How a vote gets counted</text>
+<path d="M 302.0 208.0 L 395.3 208.0" fill="none" stroke="#0f172a" stroke-width="1.7" stroke-linejoin="round" marker-end="url(#a-0f172a)"/>
+<path d="M 653.3 208.0 L 746.7 208.0" fill="none" stroke="#0f172a" stroke-width="1.7" stroke-linejoin="round" marker-end="url(#a-0f172a)"/>
+<path d="M 1004.7 208.0 L 1098.0 208.0" fill="none" stroke="#0f172a" stroke-width="1.7" stroke-linejoin="round" marker-end="url(#a-0f172a)"/>
+<g filter="url(#shadow)">
+<rect x="48.0" y="160.0" width="250.0" height="96.0" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" />
+</g>
+<clipPath id="c4393710400"><rect x="48.0" y="160" width="250" height="96" rx="10"/></clipPath>
+<rect x="48.0" y="160.0" width="5.0" height="96.0" rx="0" fill="#e11d48" stroke="none" stroke-width="1" clip-path="url(#c4393710400)"/>
+<text x="173.0" y="200.5" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >You vote</text>
+<text x="173.0" y="219.5" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >tap the better of two photos</text>
+<g filter="url(#shadow)">
+<rect x="399.3" y="160.0" width="250.0" height="96.0" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" />
+</g>
+<clipPath id="c4393709632"><rect x="399.3333333333333" y="160" width="250" height="96" rx="10"/></clipPath>
+<rect x="399.3" y="160.0" width="5.0" height="96.0" rx="0" fill="#4f46e5" stroke="none" stroke-width="1" clip-path="url(#c4393709632)"/>
+<text x="524.3" y="193.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >Saved as pending</text>
+<text x="524.3" y="212.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >the API only stores the vote</text>
+<text x="524.3" y="227.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >Elo isn&#x27;t changed yet</text>
+<g filter="url(#shadow)">
+<rect x="750.7" y="160.0" width="250.0" height="96.0" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" />
+</g>
+<clipPath id="c4393710208"><rect x="750.6666666666666" y="160" width="250" height="96" rx="10"/></clipPath>
+<rect x="750.7" y="160.0" width="5.0" height="96.0" rx="0" fill="#4f46e5" stroke="none" stroke-width="1" clip-path="url(#c4393710208)"/>
+<text x="875.7" y="193.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >Vote worker</text>
+<text x="875.7" y="212.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >counts all pending votes,</text>
+<text x="875.7" y="227.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >oldest first</text>
+<rect x="911.1" y="151.0" width="81.6" height="18.0" rx="9" fill="#4f46e5" stroke="none" stroke-width="1" />
+<text x="951.9" y="160.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >every minute</text>
+<g filter="url(#shadow)">
+<rect x="1102.0" y="160.0" width="250.0" height="96.0" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" />
+</g>
+<clipPath id="c4393710160"><rect x="1102.0" y="160" width="250" height="96" rx="10"/></clipPath>
+<rect x="1102.0" y="160.0" width="5.0" height="96.0" rx="0" fill="#0d9488" stroke="none" stroke-width="1" clip-path="url(#c4393710160)"/>
+<text x="1227.0" y="193.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="700" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >Rankings update</text>
+<text x="1227.0" y="212.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >new Elo, wins, losses</text>
+<text x="1227.0" y="227.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >and trending</text>
+<text x="700.0" y="288.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >Only one worker counts, so every vote is applied once, in the order it was cast.</text>
+<text x="48.0" y="340.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="central" >2 · How much a win is worth</text>
+<text x="312.6" y="340.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >the winner gets 32 × the chance it had of losing</text>
+<rect x="48.0" y="368.0" width="636.0" height="420.0" rx="14" fill="#ffffff" stroke="#0f172a" stroke-width="1.4" stroke-opacity="0.55"/>
+<text x="66.0" y="390.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="central" >Expected win</text>
+<text x="173.4" y="390.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >the favourite wins: small change</text>
+<g filter="url(#shadow)">
+<rect x="159.7" y="442.0" width="120.0" height="120.0" rx="16" fill="#6366f1" stroke="none" stroke-width="1" fill-opacity="0.9"/>
+</g>
+<text x="219.7" y="502.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="54" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >A</text>
+<rect x="155.7" y="438.0" width="128.0" height="128.0" rx="19" fill="none" stroke="#0d9488" stroke-width="3" />
+<rect x="190.7" y="427.0" width="58.0" height="22.0" rx="11" fill="#0d9488" stroke="none" stroke-width="1" />
+<text x="219.7" y="438.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >WINS</text>
+<text x="219.7" y="588.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >Elo 1200</text>
+<text x="219.7" y="608.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >76% chance to win</text>
+<text x="219.7" y="654.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#0d9488" text-anchor="middle" dominant-baseline="central" >+8</text>
+<text x="219.7" y="684.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >1200 → 1208</text>
+<g filter="url(#shadow)">
+<rect x="452.3" y="442.0" width="120.0" height="120.0" rx="16" fill="#f59e0b" stroke="none" stroke-width="1" fill-opacity="0.35"/>
+</g>
+<text x="512.3" y="502.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="54" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >B</text>
+<text x="512.3" y="588.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >Elo 1000</text>
+<text x="512.3" y="608.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >24% chance to win</text>
+<text x="512.3" y="654.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#e11d48" text-anchor="middle" dominant-baseline="central" >−8</text>
+<text x="512.3" y="684.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >1000 → 992</text>
+<text x="366.0" y="502.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#94a3b8" text-anchor="middle" dominant-baseline="central" >vs</text>
+<rect x="68.0" y="718.0" width="596.0" height="40.0" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" />
+<text x="366.0" y="738.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >A had a 24% chance of losing  →  32 × 24% = 8 points move from B to A</text>
+<rect x="716.0" y="368.0" width="636.0" height="420.0" rx="14" fill="#ffffff" stroke="#0f172a" stroke-width="1.4" stroke-opacity="0.55"/>
+<text x="734.0" y="390.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="central" >Upset</text>
+<text x="784.6" y="390.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >the underdog wins: big change</text>
+<g filter="url(#shadow)">
+<rect x="827.7" y="442.0" width="120.0" height="120.0" rx="16" fill="#6366f1" stroke="none" stroke-width="1" fill-opacity="0.35"/>
+</g>
+<text x="887.7" y="502.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="54" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >A</text>
+<text x="887.7" y="588.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >Elo 1200</text>
+<text x="887.7" y="608.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >76% chance to win</text>
+<text x="887.7" y="654.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#e11d48" text-anchor="middle" dominant-baseline="central" >−24</text>
+<text x="887.7" y="684.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >1200 → 1176</text>
+<g filter="url(#shadow)">
+<rect x="1120.3" y="442.0" width="120.0" height="120.0" rx="16" fill="#f59e0b" stroke="none" stroke-width="1" fill-opacity="0.9"/>
+</g>
+<text x="1180.3" y="502.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="54" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >B</text>
+<rect x="1116.3" y="438.0" width="128.0" height="128.0" rx="19" fill="none" stroke="#0d9488" stroke-width="3" />
+<rect x="1151.3" y="427.0" width="58.0" height="22.0" rx="11" fill="#0d9488" stroke="none" stroke-width="1" />
+<text x="1180.3" y="438.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >WINS</text>
+<text x="1180.3" y="588.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >Elo 1000</text>
+<text x="1180.3" y="608.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >24% chance to win</text>
+<text x="1180.3" y="654.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="34" font-weight="700" fill="#0d9488" text-anchor="middle" dominant-baseline="central" >+24</text>
+<text x="1180.3" y="684.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >1000 → 1024</text>
+<text x="1034.0" y="502.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#94a3b8" text-anchor="middle" dominant-baseline="central" >vs</text>
+<rect x="736.0" y="718.0" width="596.0" height="40.0" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" />
+<text x="1034.0" y="738.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >B had a 76% chance of losing  →  32 × 76% = 24 points move from A to B</text></svg>
