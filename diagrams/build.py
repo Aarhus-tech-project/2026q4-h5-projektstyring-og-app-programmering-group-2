@@ -15,6 +15,7 @@ import database
 import services
 import media
 import votes
+import auth
 
 CHROME_CANDIDATES = [
     os.environ.get("CHROME", ""),
@@ -57,7 +58,7 @@ def png_from_svg(svg_path, png_path, scale=2):
 
 
 def build_hand_laid_out():
-    for name, module in [("database", database), ("services", services), ("media", media), ("votes", votes)]:
+    for name, module in [("database", database), ("services", services), ("media", media), ("votes", votes), ("auth", auth)]:
         svg = HERE / f"{name}.svg"
         svg.write_text(module.build())
         print(f"  wrote {svg.relative_to(ROOT)}")
