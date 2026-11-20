@@ -107,51 +107,51 @@ def build():
                     f'orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="{c}"/></marker>' for c in colors)
           + '</defs>')
 
-    s.text(48, 46, "Fotolo · services and data flow", size=24, weight="700")
-    s.text(48, 76, "Everything server-side runs as one Docker Swarm stack. Media never passes through it: "
-                   "the app fetches images straight from Azure Blob Storage.", size=13, fill=MUTED)
+    s.text(48, 46, "Fotolo · services og dataflow", size=24, weight="700")
+    s.text(48, 76, "Alt på serversiden kører som én Docker Swarm-stack. Medier går aldrig igennem den: "
+                   "appen henter billeder direkte fra Azure Blob Storage.", size=13, fill=MUTED)
 
     SX, SY, SW, SH = 520, 112, 1196, 740
-    frame(s, SX, SY, SW, SH, "Docker Swarm", COMPUTE, "stack fotolo · swarm/docker-compose.yml · stateful services pinned to the manager node", fill="#fbfbff")
+    frame(s, SX, SY, SW, SH, "Docker Swarm", COMPUTE, "stack fotolo · swarm/docker-compose.yml · services med tilstand er låst til manager-noden", fill="#fbfbff")
 
     MX, MY, MW, MH = 552, 150, 1132, 222
-    frame(s, MX, MY, MW, MH, "Monitoring", OBS, "Grafana dashboards: overview · logs & traces · product", fill="#fffbf3")
+    frame(s, MX, MY, MW, MH, "Overvågning", OBS, "Grafana-dashboards: overblik · logs og traces · produkt", fill="#fffbf3")
 
-    grafana = Box(860, 188, 170, 62, "Grafana", ["port 3000 · firewalled / SSH"], OBS)
+    grafana = Box(860, 188, 170, 62, "Grafana", ["port 3000 · bag firewall / SSH"], OBS)
     loki = Box(640, 282, 160, 68, "Loki", ["logs"], OBS, "cyl")
-    tempo = Box(860, 282, 170, 68, "Tempo", ["traces · service map"], OBS, "cyl")
-    prom = Box(1090, 282, 170, 68, "Prometheus", ["metrics"], OBS, "cyl")
-    nodeexp = Box(1330, 290, 190, 54, "node-exporter", ["host CPU / RAM / disk"], OBS, badge="global")
+    tempo = Box(860, 282, 170, 68, "Tempo", ["traces · servicekort"], OBS, "cyl")
+    prom = Box(1090, 282, 170, 68, "Prometheus", ["metrikker"], OBS, "cyl")
+    nodeexp = Box(1330, 290, 190, 54, "node-exporter", ["værtens CPU / RAM / disk"], OBS, badge="global")
 
     edge_y, edge_h = 448, 128
-    cloudflared = Box(566, 462, 164, 92, "cloudflared", ["Cloudflare Tunnel client", "outbound only"], CLOUDFLARE, badge="×2")
-    vip = Box(784, 462, 170, 92, "Swarm VIP  server:8080", ["IPVS load balancer", "per TCP connection", "not a container"], EDGE_NET, "ghost")
-    server = Box(1040, 456, 220, 104, "server", ["ASP.NET Core · --Role=api", "JWT · rate limits · /healthz", "rolling update, start-first"], COMPUTE, badge="×N (2)")
-    worker = Box(1450, 462, 200, 92, "vote-worker", ["same image · --Role=voteworker", "no port · stop-first"], COMPUTE, badge="×1")
-    postgres = Box(1290, 620, 150, 104, "PostgreSQL 18", ["single container", "volume on manager"], DATA, "cyl")
-    migrate = Box(1290, 772, 150, 56, "migrate", ["EF bundle · job per deploy"], CI, badge="job")
+    cloudflared = Box(566, 462, 164, 92, "cloudflared", ["Cloudflare Tunnel-klient", "kun udgående"], CLOUDFLARE, badge="×2")
+    vip = Box(784, 462, 170, 92, "Swarm VIP  server:8080", ["IPVS-load balancer", "pr. TCP-forbindelse", "ikke en container"], EDGE_NET, "ghost")
+    server = Box(1040, 456, 220, 104, "server", ["ASP.NET Core · --Role=api", "JWT · rate limits · /healthz", "rullende opdatering, start-first"], COMPUTE, badge="×N (2)")
+    worker = Box(1450, 462, 200, 92, "vote-worker", ["samme image · --Role=voteworker", "ingen port · stop-first"], COMPUTE, badge="×1")
+    postgres = Box(1290, 620, 150, 104, "PostgreSQL 18", ["én container", "volume på manager"], DATA, "cyl")
+    migrate = Box(1290, 772, 150, 56, "migrate", ["EF-bundle · job pr. deploy"], CI, badge="job")
 
     s.rect(552, edge_y - 18, 726, edge_h + 34, fill=EDGE_NET, stroke=EDGE_NET, rx=12, sw=1.2, dash="4 4",
            extra='fill-opacity="0.04" stroke-opacity="0.6"')
-    s.text(568, edge_y + edge_h + 4, "edge overlay network · 10.250.0.0/24", size=10.5, fill=EDGE_NET, weight="600")
-    s.text(568, 836, "backend overlay network: every service except cloudflared", size=10.5, fill=MUTED, weight="600")
+    s.text(568, edge_y + edge_h + 4, "edge-overlaynetværk · 10.250.0.0/24", size=10.5, fill=EDGE_NET, weight="600")
+    s.text(568, 836, "backend-overlaynetværk: alle services undtagen cloudflared", size=10.5, fill=MUTED, weight="600")
 
-    app = Box(48, 450, 182, 110, "Expo app", ["iOS / Android", "JWT access 15 min", "+ refresh token"], APP)
-    cf = Box(290, 444, 186, 122, "Cloudflare", ["`fotolo.mesasoftware.com`", "HTTPS · tunnel route", "→ http://server:8080", "100 MB body cap (free)"], CLOUDFLARE)
-    ghactions = Box(48, 152, 170, 76, "GitHub Actions", ["push to main", "amd64 + arm64 builds"], CI)
-    ghcr = Box(262, 152, 170, 76, "GHCR", ["server + migrations", "images"], CI, "cyl")
+    app = Box(48, 450, 182, 110, "Expo app", ["iOS / Android", "JWT-adgang 15 min", "+ refresh token"], APP)
+    cf = Box(290, 444, 186, 122, "Cloudflare", ["`fotolo.mesasoftware.com`", "HTTPS · tunnelrute", "→ http://server:8080", "100 MB body-grænse (gratis)"], CLOUDFLARE)
+    ghactions = Box(48, 152, 170, 76, "GitHub Actions", ["push til main", "amd64- + arm64-builds"], CI)
+    ghcr = Box(262, 152, 170, 76, "GHCR", ["server + migrationer", "images"], CI, "cyl")
 
     AX, AY, AW, AH = 742, 900, 520, 168
     frame(s, AX, AY, AW, AH, "Azure Blob Storage", AZURE, fill="#f5faff")
-    s.text(AX + AW / 2, AY + AH - 14, "blobs are named by the SHA-256 of the original upload", size=11, fill=MUTED, anchor="middle")
-    media = Box(770, 950, 220, 82, "media", ["public blob read, no listing", "`{hash}.webp  {hash}_thumb.webp`"], AZURE, "cyl")
-    uploads = Box(1020, 950, 220, 82, "uploads", ["private · backend only", "originals, metadata intact"], AZURE, "cyl")
+    s.text(AX + AW / 2, AY + AH - 14, "blobs navngives efter SHA-256 af den originale upload", size=11, fill=MUTED, anchor="middle")
+    media = Box(770, 950, 220, 82, "media", ["offentlig læsning, ingen listning", "`{hash}.webp  {hash}_thumb.webp`"], AZURE, "cyl")
+    uploads = Box(1020, 950, 220, 82, "uploads", ["privat · kun backend", "originaler, metadata bevaret"], AZURE, "cyl")
 
     arrow(s, [(grafana.cx, grafana.b), (tempo.cx, tempo.t)], OBS)
     arrow(s, [(grafana.l, grafana.cy), (loki.cx, grafana.cy), (loki.cx, loki.t)], OBS)
     arrow(s, [(grafana.r, grafana.cy), (prom.cx, grafana.cy), (prom.cx, prom.t)], OBS)
-    arrow(s, [(tempo.r, tempo.cy + 6), (prom.l, tempo.cy + 6)], OBS, "span\nmetrics", at=((tempo.r + prom.l) / 2, tempo.cy - 22))
-    arrow(s, [(prom.r, nodeexp.cy), (nodeexp.l, nodeexp.cy)], OBS, "scrapes", at=((prom.r + nodeexp.l) / 2, nodeexp.cy - 16))
+    arrow(s, [(tempo.r, tempo.cy + 6), (prom.l, tempo.cy + 6)], OBS, "span-\nmetrikker", at=((tempo.r + prom.l) / 2, tempo.cy - 22))
+    arrow(s, [(prom.r, nodeexp.cy), (nodeexp.l, nodeexp.cy)], OBS, "scraper", at=((prom.r + nodeexp.l) / 2, nodeexp.cy - 16))
 
     bus = 412
     s.poly([(server.cx, server.t), (server.cx, bus)], OBS, sw=1.7, dash="6 4", rounded=0)
@@ -159,45 +159,45 @@ def build():
     s.poly([(loki.cx, bus), (worker.cx, bus)], OBS, sw=1.7, dash="6 4", rounded=0)
     for b in (loki, tempo, prom):
         arrow(s, [(b.cx, bus), (b.cx, b.b)], OBS, dash="6 4")
-    tag(s, (server.cx + worker.cx) / 2, bus, "OTLP push: logs · metrics · traces", OBS)
+    tag(s, (server.cx + worker.cx) / 2, bus, "OTLP-push: logs · metrikker · traces", OBS)
 
     arrow(s, [(grafana.cx + 40, grafana.t), (grafana.cx + 40, 172), (1668, 172), (1668, postgres.b - 24), (postgres.r, postgres.b - 24)],
-          OBS, "app data (SQL)", at=(1668, 700), dash="6 4")
+          OBS, "appdata (SQL)", at=(1668, 700), dash="6 4")
 
     arrow(s, [(ghactions.r, ghactions.cy), (ghcr.l, ghactions.cy)], CI, "push", at=((ghactions.r + ghcr.l) / 2, ghactions.cy - 14))
-    arrow(s, [(ghcr.r, ghcr.cy), (SX, ghcr.cy)], CI, "stack deploy\npulls", at=((ghcr.r + SX) / 2, ghcr.cy + 26), dash="6 4")
+    arrow(s, [(ghcr.r, ghcr.cy), (SX, ghcr.cy)], CI, "stack deploy\nhenter", at=((ghcr.r + SX) / 2, ghcr.cy + 26), dash="6 4")
 
     arrow(s, [(app.r, app.cy), (cf.l, app.cy)], APP, "/api/*", at=((app.r + cf.l) / 2, app.cy - 14))
     arrow(s, [(cf.r, cloudflared.cy), (cloudflared.l, cloudflared.cy)], CLOUDFLARE, tunnel=True)
     tag(s, (cf.r + cloudflared.l) / 2, cloudflared.cy - 20, "tunnel", CLOUDFLARE)
     arrow(s, [(cloudflared.r, cloudflared.cy), (vip.l, vip.cy)], EDGE_NET, "HTTP", at=((cloudflared.r + vip.l) / 2, cloudflared.cy - 14))
-    arrow(s, [(vip.r, vip.cy), (server.l, vip.cy)], EDGE_NET, "1 replica /\nconnection", at=((vip.r + server.l) / 2, vip.cy - 26))
+    arrow(s, [(vip.r, vip.cy), (server.l, vip.cy)], EDGE_NET, "1 replika /\nforbindelse", at=((vip.r + server.l) / 2, vip.cy - 26))
 
     arrow(s, [(server.r, server.b - 22), (postgres.cx - 20, server.b - 22), (postgres.cx - 20, postgres.t + 2)], DATA,
-          "SQL: posts, matchups,\npending votes", at=(postgres.cx - 20, 596))
+          "SQL: opslag, matchups,\nafventende stemmer", at=(postgres.cx - 20, 596))
     arrow(s, [(worker.cx, worker.b), (worker.cx, postgres.t + 34), (postgres.r, postgres.t + 34)], DATA,
-          "every minute: count votes,\nwrite Elo + trending", at=(worker.cx + 10, 590))
-    arrow(s, [(migrate.cx, migrate.t), (migrate.cx, postgres.b)], CI, "migrations", at=(migrate.cx + 46, (migrate.t + postgres.b) / 2))
+          "hvert minut: tæl stemmer,\nskriv Elo + trending", at=(worker.cx + 10, 590))
+    arrow(s, [(migrate.cx, migrate.t), (migrate.cx, postgres.b)], CI, "migrationer", at=(migrate.cx + 46, (migrate.t + postgres.b) / 2))
 
-    arrow(s, [(server.cx + 40, server.b), (server.cx + 40, uploads.t + 2)], AZURE, "save original", at=(server.cx + 40, 830))
+    arrow(s, [(server.cx + 40, server.b), (server.cx + 40, uploads.t + 2)], AZURE, "gem original", at=(server.cx + 40, 830))
     arrow(s, [(server.cx - 40, server.b), (server.cx - 40, 872), (media.r - 50, 872), (media.r - 50, media.t + 2)], AZURE,
-          "write WebP + thumbnail", at=((media.r - 50 + server.cx - 40) / 2, 872))
+          "skriv WebP + miniature", at=((media.r - 50 + server.cx - 40) / 2, 872))
     arrow(s, [(app.cx, app.b), (app.cx, media.cy + 10), (media.l, media.cy + 10)], APP,
-          "GET images directly (URLs come from the API)", at=((app.cx + media.l) / 2 + 20, media.cy + 10))
+          "GET billeder direkte (URL'er kommer fra API'et)", at=((app.cx + media.l) / 2 + 20, media.cy + 10))
 
     import textwrap
     px, py, pw = 560, 612, 460
     notes = [
-        "Uploads (max 25 MB) are processed inline: hash, validate ≤ 50 MP, WebP 2048 px + 400 px thumbnail, thumbhash, EXIF read. Post photos are cropped square, avatars aren't.",
-        "Rate limits, in memory per replica: 100 req/min per user (or IP), 15/min per IP on login, register and refresh.",
-        "Client IP comes from CF-Connecting-IP, trusted only from the edge network.",
-        "The API only inserts votes. Elo, wins, losses and trending are written by the vote worker alone.",
-        "The API is stateless; scale it with SERVER_REPLICAS.",
+        "Uploads (maks. 25 MB) behandles direkte i requestet: hash, validering ≤ 50 MP, WebP 2048 px + 400 px miniature, thumbhash, EXIF-læsning. Opslagsfotos beskæres kvadratisk, profilbilleder gør ikke.",
+        "Rate limits i hukommelsen pr. replika: 100 req/min pr. bruger (eller IP), 15/min pr. IP på login, register og refresh.",
+        "Klient-IP kommer fra CF-Connecting-IP og stoles kun på fra edge-netværket.",
+        "API'et indsætter kun stemmer. Elo, sejre, nederlag og trending skrives kun af vote-workeren.",
+        "API'et er stateless; skalér det med SERVER_REPLICAS.",
     ]
     wrapped = [textwrap.wrap(n, 76) for n in notes]
     ph = 40 + sum(len(w) * 15 + 6 for w in wrapped)
     s.rect(px, py, pw, ph, fill=BG, stroke=LINE, rx=10)
-    s.text(px + 14, py + 20, "Inside the API", size=12.5, weight="700", fill=COMPUTE)
+    s.text(px + 14, py + 20, "Inde i API'et", size=12.5, weight="700", fill=COMPUTE)
     yy = py + 42
     for w in wrapped:
         s.circle(px + 18, yy, 2.2, MUTED, MUTED, 0)
@@ -211,13 +211,13 @@ def build():
 
     lx, ly = 1296, 880
     s.rect(lx, ly, 420, 200, fill=PANEL, stroke=LINE, rx=10)
-    s.text(lx + 16, ly + 22, "Legend", size=13, weight="700")
+    s.text(lx + 16, ly + 22, "Forklaring", size=13, weight="700")
     rows = [
-        ("solid", INK, "request / data flow"),
-        ("dash", INK, "telemetry, deploy, or read-only access"),
-        ("tunnel", CLOUDFLARE, "Cloudflare Tunnel (cloudflared dials out)"),
-        ("ghost", EDGE_NET, "Swarm built-in, not a container"),
-        ("cyl", DATA, "stores data (volume or blob container)"),
+        ("solid", INK, "request / dataflow"),
+        ("dash", INK, "telemetri, deploy eller kun læseadgang"),
+        ("tunnel", CLOUDFLARE, "Cloudflare Tunnel (cloudflared ringer ud)"),
+        ("ghost", EDGE_NET, "indbygget i Swarm, ikke en container"),
+        ("cyl", DATA, "gemmer data (volume eller blob-container)"),
     ]
     yy = ly + 48
     for kind, c, desc in rows:
@@ -235,7 +235,7 @@ def build():
             s.add(f'<ellipse cx="{x0 + 22}" cy="{yy - 7}" rx="14" ry="4" fill="{c}" fill-opacity="0.14" stroke="{c}" stroke-width="1.4"/>')
         s.text(lx + 78, yy, desc, size=12)
         yy += 25
-    s.text(lx + 18, yy + 2, "×N = replicas · global = one per node · job = runs once per deploy", size=11, fill=MUTED)
+    s.text(lx + 18, yy + 2, "×N = replikaer · global = én pr. node · job = kører én gang pr. deploy", size=11, fill=MUTED)
 
     return s.render(1764, 1112, "Fotolo services")
 

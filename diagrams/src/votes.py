@@ -19,7 +19,7 @@ def photo(s, x, y, size, letter, color, won):
         s.rect(x - 4, y - 4, size + 8, size + 8, stroke=WIN, sw=3, rx=19)
         bw = 58
         s.rect(x + size / 2 - bw / 2, y - 15, bw, 22, fill=WIN, rx=11)
-        s.text(x + size / 2, y - 4, "WINS", size=11, weight="700", fill="#fff", anchor="middle")
+        s.text(x + size / 2, y - 4, "VINDER", size=11, weight="700", fill="#fff", anchor="middle")
 
 
 def scenario(s, x, y, w, h, title, sub, a, b, winner):
@@ -39,7 +39,7 @@ def scenario(s, x, y, w, h, title, sub, a, b, winner):
         won = p == winner
         photo(s, cx - size / 2, py, size, p, color, won)
         s.text(cx, py + size + 26, f"Elo {elo[p]:.0f}", size=15, weight="700", anchor="middle")
-        s.text(cx, py + size + 46, f"{chance[p] * 100:.0f}% chance to win", size=12, fill=MUTED, anchor="middle")
+        s.text(cx, py + size + 46, f"{chance[p] * 100:.0f}% chance for at vinde", size=12, fill=MUTED, anchor="middle")
         d = after[p] - elo[p]
         c = WIN if d > 0 else LOSE
         s.text(cx, py + size + 92, f"{'+' if d > 0 else '−'}{abs(d):.0f}", size=34, weight="700", fill=c, anchor="middle")
@@ -48,8 +48,8 @@ def scenario(s, x, y, w, h, title, sub, a, b, winner):
 
     by = y + h - 50
     s.rect(x + 20, by - 20, w - 40, 40, fill=PANEL, stroke=LINE, rx=10)
-    s.text(x + w / 2, by, f"{winner} had a {(1 - chance[winner]) * 100:.0f}% chance of losing  →  "
-                          f"{K} × {(1 - chance[winner]) * 100:.0f}% = {change:.0f} points move from {loser} to {winner}",
+    s.text(x + w / 2, by, f"{winner} havde {(1 - chance[winner]) * 100:.0f}% chance for at tabe  →  "
+                          f"{K} × {(1 - chance[winner]) * 100:.0f}% = {change:.0f} point går fra {loser} til {winner}",
            size=12.5, anchor="middle", weight="600")
 
 
@@ -63,34 +63,34 @@ def build():
           + '</defs>')
 
     W = 1400
-    s.text(48, 46, "Fotolo · votes and Elo", size=24, weight="700")
-    s.text(48, 76, "Every post has an Elo rating (new posts start at 1000). Winning a matchup takes points from the loser.",
+    s.text(48, 46, "Fotolo · stemmer og Elo", size=24, weight="700")
+    s.text(48, 76, "Hvert opslag har en Elo-rating (nye opslag starter på 1000). Vinderen af et matchup tager point fra taberen.",
            size=13, fill=MUTED)
 
-    s.text(48, 132, "1 · How a vote gets counted", size=16, weight="700")
+    s.text(48, 132, "1 · Sådan bliver en stemme talt", size=16, weight="700")
     bw, bh, gap, by = 250, 96, (W - 96 - 4 * 250) / 3, 160
     steps = [
-        ("You vote", ["tap the better of two photos"], APP, None),
-        ("Saved as pending", ["the API only stores the vote", "Elo isn't changed yet"], COMPUTE, None),
-        ("Vote worker", ["counts all pending votes,", "oldest first"], COMPUTE, "every minute"),
-        ("Rankings update", ["new Elo, wins, losses", "and trending"], DATA, None),
+        ("Du stemmer", ["tryk på det bedste af to fotos"], APP, None),
+        ("Gemt som afventende", ["API'et gemmer kun stemmen", "Elo ændres ikke endnu"], COMPUTE, None),
+        ("Vote-worker", ["tæller alle afventende stemmer,", "ældste først"], COMPUTE, "hvert minut"),
+        ("Ranglister opdateres", ["ny Elo, sejre, nederlag", "og trending"], DATA, None),
     ]
     boxes = [Box(48 + i * (bw + gap), by, bw, bh, t, ls, c, badge=bd) for i, (t, ls, c, bd) in enumerate(steps)]
     for a, b in zip(boxes, boxes[1:]):
         arrow(s, [(a.r + 4, a.cy), (b.l - 4, a.cy)], INK)
     for b in boxes:
         b.draw(s)
-    s.text(W / 2, by + bh + 32, "Only one worker counts, so every vote is applied once, in the order it was cast.",
+    s.text(W / 2, by + bh + 32, "Kun én worker tæller, så hver stemme bliver talt én gang, i den rækkefølge den blev afgivet.",
            size=12.5, fill=MUTED, anchor="middle")
 
-    s.text(48, 340, "2 · How much a win is worth", size=16, weight="700")
-    s.text(48 + sans_width("2 · How much a win is worth", 16, True) + 14, 340,
-           "the winner gets 32 × the chance it had of losing", size=13, fill=MUTED)
+    s.text(48, 340, "2 · Hvad en sejr er værd", size=16, weight="700")
+    s.text(48 + sans_width("2 · Hvad en sejr er værd", 16, True) + 14, 340,
+           "vinderen får 32 × den chance, den havde for at tabe", size=13, fill=MUTED)
     sw_, sh = (W - 96 - 32) / 2, 420
-    scenario(s, 48, 368, sw_, sh, "Expected win", "the favourite wins: small change", 1200, 1000, "A")
-    scenario(s, 48 + sw_ + 32, 368, sw_, sh, "Upset", "the underdog wins: big change", 1200, 1000, "B")
+    scenario(s, 48, 368, sw_, sh, "Forventet sejr", "favoritten vinder: lille ændring", 1200, 1000, "A")
+    scenario(s, 48 + sw_ + 32, 368, sw_, sh, "Overraskelse", "underdoggen vinder: stor ændring", 1200, 1000, "B")
 
-    return s.render(W, 368 + sh + 40, "Fotolo votes and Elo")
+    return s.render(W, 368 + sh + 40, "Fotolo stemmer og Elo")
 
 
 if __name__ == "__main__":

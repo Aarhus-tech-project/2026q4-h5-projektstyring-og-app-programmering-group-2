@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="936" viewBox="0 0 1400 936"><title>Fotolo matchups</title><rect width="100%" height="100%" fill="#ffffff"/><defs><filter id="shadow" x="-5%" y="-5%" width="110%" height="120%"><feDropShadow dx="0" dy="1.5" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.10"/></filter><marker id="a-e11d48" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#e11d48"/></marker><marker id="a-4f46e5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#4f46e5"/></marker><marker id="a-0d9488" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#0d9488"/></marker><marker id="a-475569" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#475569"/></marker><marker id="a-0f172a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#0f172a"/></marker><marker id="a-6366f1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#6366f1"/></marker><marker id="a-f59e0b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="#f59e0b"/></marker></defs>
+<text x="48.0" y="46.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="central" >Fotolo · sådan vælges et matchup</text>
+<text x="48.0" y="76.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >To fotos, valgt i to trin. Hvert trin læser kun omkring 20 opslag, så det er lige så hurtigt at vælge et matchup med en million opslag.</text>
+<text x="48.0" y="132.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="central" >1 · Vælg opslag A tilfældigt</text>
+<text x="321.8" y="132.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >hvert opslag får et tilfældigt tal mellem 0 og 1, når det uploades</text>
+<rect x="48.0" y="158.0" width="1304.0" height="200.0" rx="14" fill="#ffffff" stroke="#0f172a" stroke-width="1.4" stroke-opacity="0.55"/>
+<text x="66.0" y="180.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="central" ></text>
+<line x1="120.0" y1="282.0" x2="1280.0" y2="282.0" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round"/>
+<line x1="120.0" y1="274.0" x2="120.0" y2="290.0" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="butt"/>
+<text x="120.0" y="306.0" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="12" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >0</text>
+<line x1="1280.0" y1="274.0" x2="1280.0" y2="290.0" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="butt"/>
+<text x="1280.0" y="306.0" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="12" font-weight="normal" fill="#64748b" text-anchor="middle" dominant-baseline="central" >1</text>
+<circle cx="154.8" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="212.8" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="212.8" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="305.6" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="398.4" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="410.0" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="433.2" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="560.8" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="665.2" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="676.8" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="723.2" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="746.4" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="1071.2" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="1071.2" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="1106.0" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="1256.8" cy="282.0" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+<circle cx="850.8" cy="282.0" r="6" fill="#ffffff" stroke="#e11d48" stroke-width="2"/>
+<line x1="846.8" y1="278.0" x2="854.8" y2="286.0" stroke="#e11d48" stroke-width="1.8" stroke-linecap="butt"/>
+<line x1="846.8" y1="286.0" x2="854.8" y2="278.0" stroke="#e11d48" stroke-width="1.8" stroke-linecap="butt"/>
+<text x="850.8" y="312.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#e11d48" text-anchor="middle" dominant-baseline="central" >dit eget opslag:</text>
+<text x="850.8" y="327.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#e11d48" text-anchor="middle" dominant-baseline="central" >springes over</text>
+<circle cx="955.2" cy="282.0" r="10" fill="#6366f1" stroke="#6366f1" stroke-width="0"/>
+<text x="955.2" y="282.5" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >A</text>
+<text x="955.2" y="312.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#6366f1" text-anchor="middle" dominant-baseline="central" >første opslag på</text>
+<text x="955.2" y="327.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#6366f1" text-anchor="middle" dominant-baseline="central" >eller over tallet</text>
+<path d="M 792.8 202.0 L 792.8 270.0" fill="none" stroke="#0f172a" stroke-width="1.7" stroke-linejoin="round" marker-end="url(#a-0f172a)"/>
+<rect x="713.3" y="184.0" width="159.0" height="20.0" rx="5" fill="#ffffff" stroke="none" stroke-width="1" fill-opacity="0.94"/>
+<text x="792.8" y="194.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#0f172a" text-anchor="middle" dominant-baseline="central" >træk et tilfældigt tal: 0.58</text>
+<path d="M 795.8 262.0 L 951.2 262.0" fill="none" stroke="#6366f1" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a-6366f1)"/>
+<text x="120.0" y="202.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >Opslag sorteret efter deres tilfældige tal</text>
+<text x="120.0" y="220.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >(slettede opslag vælges aldrig)</text>
+<text x="1280.0" y="202.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#64748b" text-anchor="end" dominant-baseline="central" >Intet over tallet?</text>
+<text x="1280.0" y="220.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#64748b" text-anchor="end" dominant-baseline="central" >Start forfra og tag det første.</text>
+<text x="48.0" y="410.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0f172a" text-anchor="start" dominant-baseline="central" >2 · Vælg opslag B</text>
+<text x="219.8" y="410.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >alle opslag, sorteret efter Elo</text>
+<rect x="48.0" y="436.0" width="1304.0" height="200.0" rx="14" fill="#ffffff" stroke="#0d9488" stroke-width="1.4" stroke-opacity="0.55"/>
+<text x="66.0" y="458.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0d9488" text-anchor="start" dominant-baseline="central" >90% af gangene: en tæt kamp</text>
+<text x="295.2" y="458.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >B er et tilfældigt af de 20 opslag, der ligger tættest på A i Elo</text>
+<rect x="561.0" y="523.0" width="413.8" height="26.0" rx="7" fill="#0d9488" stroke="none" stroke-width="1" fill-opacity="0.10"/>
+<rect x="120.0" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="139.4" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="158.8" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="178.2" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="197.6" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="216.9" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="236.3" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="255.7" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="275.1" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="294.5" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="313.9" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="333.3" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="352.7" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="372.1" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="391.5" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="410.8" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="430.2" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="449.6" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="469.0" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="488.4" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="507.8" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="527.2" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="546.6" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="566.0" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="585.4" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="604.7" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="624.1" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="643.5" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="662.9" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="682.3" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="701.7" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="721.1" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="740.5" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="759.9" y="528.0" width="16.0" height="16.0" rx="4" fill="#6366f1" stroke="none" stroke-width="1" />
+<rect x="779.3" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="798.6" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="818.0" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="837.4" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="856.8" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="876.2" y="528.0" width="16.0" height="16.0" rx="4" fill="#f59e0b" stroke="none" stroke-width="1" />
+<rect x="895.6" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="915.0" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="934.4" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="953.8" y="528.0" width="16.0" height="16.0" rx="4" fill="#0d9488" stroke="none" stroke-width="1" />
+<rect x="973.2" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="992.5" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1011.9" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1031.3" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1050.7" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1070.1" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1089.5" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1108.9" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1128.3" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1147.7" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1167.1" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1186.4" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1205.8" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1225.2" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1244.6" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1264.0" y="528.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="734.3" y="487.0" width="67.0" height="22.0" rx="11" fill="#6366f1" stroke="none" stroke-width="1" />
+<text x="767.9" y="498.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >A · 1022</text>
+<line x1="767.9" y1="509.0" x2="767.9" y2="525.0" stroke="#6366f1" stroke-width="1.5" stroke-linecap="butt"/>
+<rect x="850.7" y="487.0" width="67.0" height="22.0" rx="11" fill="#f59e0b" stroke="none" stroke-width="1" />
+<text x="884.2" y="498.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >B · 1036</text>
+<line x1="884.2" y1="509.0" x2="884.2" y2="525.0" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="butt"/>
+<path d="M 566.0 552.0 L 566.0 558.0 L 756.5 558.0 L 756.5 552.0" fill="none" stroke="#0d9488" stroke-width="1.6" stroke-linejoin="round"/>
+<text x="661.2" y="574.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#0d9488" text-anchor="middle" dominant-baseline="central" >10 lige under A</text>
+<path d="M 779.3 552.0 L 779.3 558.0 L 969.8 558.0 L 969.8 552.0" fill="none" stroke="#0d9488" stroke-width="1.6" stroke-linejoin="round"/>
+<text x="874.5" y="574.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#0d9488" text-anchor="middle" dominant-baseline="central" >10 lige over A</text>
+<text x="120.0" y="536.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="end" dominant-baseline="central" >laveste Elo </text>
+<text x="1286.0" y="536.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" > højeste Elo</text>
+<text x="120.0" y="612.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#0f172a" text-anchor="start" dominant-baseline="central" >To fotos, der er omtrent lige gode: stemmen er et reelt valg, og den sorterer midten af ranglisten præcist.</text>
+<rect x="48.0" y="660.0" width="1304.0" height="200.0" rx="14" fill="#ffffff" stroke="#f59e0b" stroke-width="1.4" stroke-opacity="0.55"/>
+<text x="66.0" y="682.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#f59e0b" text-anchor="start" dominant-baseline="central" >10% af gangene: hvem som helst</text>
+<text x="319.6" y="682.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >B vælges tilfældigt, på samme måde som A</text>
+<rect x="120.0" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="139.4" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="158.8" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="178.2" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="197.6" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="216.9" y="752.0" width="16.0" height="16.0" rx="4" fill="#f59e0b" stroke="none" stroke-width="1" />
+<rect x="236.3" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="255.7" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="275.1" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="294.5" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="313.9" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="333.3" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="352.7" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="372.1" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="391.5" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="410.8" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="430.2" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="449.6" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="469.0" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="488.4" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="507.8" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="527.2" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="546.6" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="566.0" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="585.4" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="604.7" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="624.1" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="643.5" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="662.9" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="682.3" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="701.7" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="721.1" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="740.5" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="759.9" y="752.0" width="16.0" height="16.0" rx="4" fill="#6366f1" stroke="none" stroke-width="1" />
+<rect x="779.3" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="798.6" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="818.0" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="837.4" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="856.8" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="876.2" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="895.6" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="915.0" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="934.4" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="953.8" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="973.2" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="992.5" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1011.9" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1031.3" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1050.7" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1070.1" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1089.5" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1108.9" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1128.3" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1147.7" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1167.1" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1186.4" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1205.8" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1225.2" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1244.6" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="1264.0" y="752.0" width="16.0" height="16.0" rx="4" fill="#e2e8f0" stroke="none" stroke-width="1" />
+<rect x="734.3" y="711.0" width="67.0" height="22.0" rx="11" fill="#6366f1" stroke="none" stroke-width="1" />
+<text x="767.9" y="722.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >A · 1022</text>
+<line x1="767.9" y1="733.0" x2="767.9" y2="749.0" stroke="#6366f1" stroke-width="1.5" stroke-linecap="butt"/>
+<rect x="194.6" y="711.0" width="60.7" height="22.0" rx="11" fill="#f59e0b" stroke="none" stroke-width="1" />
+<text x="224.9" y="722.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central" >B · 868</text>
+<line x1="224.9" y1="733.0" x2="224.9" y2="749.0" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="butt"/>
+<text x="120.0" y="760.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="end" dominant-baseline="central" >laveste Elo </text>
+<text x="1286.0" y="760.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" > højeste Elo</text>
+<text x="120.0" y="836.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#0f172a" text-anchor="start" dominant-baseline="central" >En stor Elo-forskel giver et stort udsving ved en overraskelse: et nyt eller forkert placeret foto kan springe langt på én stemme i stedet for at kravle én plads ad gangen.</text>
+<text x="48.0" y="900.0" font-family="Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="normal" fill="#64748b" text-anchor="start" dominant-baseline="central" >Dine egne opslag vælges aldrig. Hvis du ikke har stemt på dit seneste matchup, får du det samme igen i stedet for et nyt.</text></svg>

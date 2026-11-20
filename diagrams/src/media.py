@@ -76,16 +76,16 @@ def build():
 
     card(s, ox, CY, CW, CH, "Original", CI, kb(st["original_bytes"]))
     original(s, ox + (CW - PIC) / 2, py, PIC, data_uri("media-original.webp", "image/webp"), st["original_w"], st["original_h"])
-    for i, ln in enumerate([f"{st['original_w']} × {st['original_h']} px · {st['original_format'].upper()}", "kept in uploads, never sent to the app"]):
+    for i, ln in enumerate([f"{st['original_w']} × {st['original_h']} px · {st['original_format'].upper()}", "gemmes i uploads, sendes aldrig til appen"]):
         s.text(ox + CW / 2, py + PIC + 22 + i * 16, ln, size=11.5, fill=MUTED, anchor="middle")
     dx = ox + CW + GAP / 2
     s.line(dx, CY + 10, dx, CY + CH - 10, LINE, sw=1.5, dash="6 5")
 
     stages = [
-        ("Skeleton", APP, "0 B", ["shown while the posts load", "`#EAEAEA · pulse 800 ms`"]),
-        ("ThumbHash", COMPUTE, f"{st['thumbhash_bytes']} B", ["decoded on the device", f"`{st['thumbhash_base64'][:22]}…`"]),
-        ("Thumbnail", AZURE, kb(st["thumb_bytes"]), [f"{st['thumb_px']} px WebP · quality 80"]),
-        ("Full image", AZURE, kb(st["full_bytes"]), [f"{st['full_px']} px WebP · quality 80"]),
+        ("Skelet", APP, "0 B", ["vises mens opslagene indlæses", "`#EAEAEA · pulse 800 ms`"]),
+        ("ThumbHash", COMPUTE, f"{st['thumbhash_bytes']} B", ["dekodes på enheden", f"`{st['thumbhash_base64'][:22]}…`"]),
+        ("Miniature", AZURE, kb(st["thumb_bytes"]), [f"{st['thumb_px']} px WebP · kvalitet 80"]),
+        ("Fuldt billede", AZURE, kb(st["full_bytes"]), [f"{st['full_px']} px WebP · kvalitet 80"]),
     ]
     for x, (title, color, badge, lines) in zip(xs, stages):
         card(s, x, CY, CW, CH, title, color, badge)
@@ -101,12 +101,12 @@ def build():
     picture(s, px0[3], py, PIC, data_uri("media-full.webp", "image/webp"))
 
     ay = py + PIC / 2
-    for i, label in enumerate(["post JSON\narrives", "thumbnail\ndownloaded", "post\nopened"]):
+    for i, label in enumerate(["opslagets JSON\nankommer", "miniature\nhentet", "opslag\nåbnet"]):
         x0, x1 = xs[i] + CW, xs[i + 1]
         arrow(s, [(x0 + 4, ay), (x1 - 4, ay)], INK)
         tag(s, (x0 + x1) / 2, ay - 28, label, INK)
 
-    return s.render(xs[3] + CW + 48, CY + CH + 40, "Fotolo media loading")
+    return s.render(xs[3] + CW + 48, CY + CH + 40, "Fotolo medieindlæsning")
 
 
 if __name__ == "__main__":

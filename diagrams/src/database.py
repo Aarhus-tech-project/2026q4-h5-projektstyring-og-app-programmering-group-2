@@ -22,84 +22,84 @@ FAVS = "#0284c7"
 BADGE_COLORS = {"PK": "#b45309", "FK": "#2563eb", "UK": "#7c3aed", "GEN": "#64748b"}
 
 TABLES = {
-    "users": dict(color=USERS, caption="one per account · stats recomputed from live posts", rows=[
+    "users": dict(color=USERS, caption="én pr. konto · statistik genberegnes fra aktive opslag", rows=[
         ("id", "uuid", "PK", ""),
         ("username", "text", "", ""),
-        ("email", "citext", "UK", "case-insensitive"),
+        ("email", "citext", "UK", "case-insensitiv"),
         ("password_hash", "text", "", ""),
-        ("description", "text", "", "nullable"),
-        ("elo", "real", "", "best live post's elo"),
-        ("wins", "int", "", "sum over live posts"),
-        ("losses", "int", "", "sum over live posts"),
-        ("avatar_hash", "bytea", "FK", "null = no avatar"),
+        ("description", "text", "", "kan være null"),
+        ("elo", "real", "", "bedste aktive opslags elo"),
+        ("wins", "int", "", "sum af aktive opslag"),
+        ("losses", "int", "", "sum af aktive opslag"),
+        ("avatar_hash", "bytea", "FK", "null = intet profilbillede"),
         ("created_at", "timestamptz", "", ""),
     ], foot=["unique (email)", "ix (avatar_hash)"]),
-    "sessions": dict(color=SESSIONS, caption="one per login · refresh token rotated on use", rows=[
+    "sessions": dict(color=SESSIONS, caption="én pr. login · refresh token skiftes ved brug", rows=[
         ("id", "uuid", "PK", ""),
         ("user_id", "uuid", "FK", ""),
-        ("refresh_token_hash", "text", "UK", "SHA-256 of the token"),
-        ("device_id", "uuid", "", "random per app install"),
+        ("refresh_token_hash", "text", "UK", "SHA-256 af tokenet"),
+        ("device_id", "uuid", "", "tilfældig pr. app-installation"),
         ("device_name", "text", "", ""),
         ("platform", "text", "", "ios / android"),
         ("app_version", "text", "", ""),
         ("created_at", "timestamptz", "", ""),
         ("last_seen_at", "timestamptz", "", ""),
-        ("revoked_at", "timestamptz", "", "null = active"),
+        ("revoked_at", "timestamptz", "", "null = aktiv"),
     ], foot=["unique (refresh_token_hash)", "ix (user_id)"]),
-    "media": dict(color=MEDIA, caption="one per distinct original · shared by hash", rows=[
-        ("hash", "bytea", "PK", "SHA-256 of the original"),
-        ("kind", "text", "", "photo (video later)"),
+    "media": dict(color=MEDIA, caption="én pr. unik original · deles via hash", rows=[
+        ("hash", "bytea", "PK", "SHA-256 af originalen"),
+        ("kind", "text", "", "foto (video senere)"),
         ("width", "int", "", ""),
         ("height", "int", "", ""),
-        ("thumbhash", "bytea", "", "~25 B blur placeholder"),
+        ("thumbhash", "bytea", "", "~25 B sløret pladsholder"),
         ("original_format", "text", "", ""),
         ("original_size_bytes", "bigint", "", ""),
-        ("camera_make", "text", "", "EXIF, not sent to app"),
-        ("camera_model", "text", "", "EXIF, not sent to app"),
-        ("taken_at", "timestamptz", "", "EXIF, not sent to app"),
+        ("camera_make", "text", "", "EXIF, sendes ikke til appen"),
+        ("camera_model", "text", "", "EXIF, sendes ikke til appen"),
+        ("taken_at", "timestamptz", "", "EXIF, sendes ikke til appen"),
         ("created_at", "timestamptz", "", ""),
     ], foot=["blobs: {hash}.webp, {hash}_thumb.webp"]),
-    "posts": dict(color=POSTS, caption="a photo in the contest · soft-deleted", rows=[
+    "posts": dict(color=POSTS, caption="et foto i konkurrencen · soft-delete", rows=[
         ("id", "uuid", "PK", ""),
         ("user_id", "uuid", "FK", ""),
         ("media_hash", "bytea", "FK", ""),
-        ("elo", "real", "", "default 1000 · worker only"),
-        ("wins", "int", "", "worker only"),
-        ("losses", "int", "", "worker only"),
-        ("rand_key", "float8", "", "random() at insert"),
+        ("elo", "real", "", "standard 1000 · kun worker"),
+        ("wins", "int", "", "kun worker"),
+        ("losses", "int", "", "kun worker"),
+        ("rand_key", "float8", "", "random() ved oprettelse"),
         ("created_at", "timestamptz", "", ""),
-        ("created_week", "date", "GEN", "Monday of created_at (UTC)"),
-        ("deleted_at", "timestamptz", "", "null = live"),
-    ], foot=["ix (elo, rand_key)                 live", "ix (rand_key)                      live",
-             "ix (created_week, elo, rand_key)   live", "ix (user_id, created_at, id)       live",
+        ("created_week", "date", "GEN", "mandag i created_at-ugen (UTC)"),
+        ("deleted_at", "timestamptz", "", "null = aktiv"),
+    ], foot=["ix (elo, rand_key)                 aktiv", "ix (rand_key)                      aktiv",
+             "ix (created_week, elo, rand_key)   aktiv", "ix (user_id, created_at, id)       aktiv",
              "ix (media_hash)"]),
-    "user_favorites": dict(color=FAVS, caption="a user's saved posts", rows=[
+    "user_favorites": dict(color=FAVS, caption="en brugers gemte opslag", rows=[
         ("user_id", "uuid", "PK FK", ""),
         ("post_id", "uuid", "PK FK", ""),
         ("created_at", "timestamptz", "", ""),
     ], foot=["ix (post_id)"]),
-    "matchups": dict(color=MATCHUPS, caption="a pair of posts shown to one voter", rows=[
+    "matchups": dict(color=MATCHUPS, caption="to opslag vist til én vælger", rows=[
         ("id", "uuid", "PK", ""),
         ("voter_id", "uuid", "FK", ""),
         ("post_a_id", "uuid", "FK", ""),
         ("post_b_id", "uuid", "FK", ""),
         ("issued_at", "timestamptz", "", ""),
     ], foot=["ix (voter_id, issued_at)", "ix (post_a_id) · ix (post_b_id)", "check post_a_id <> post_b_id"]),
-    "votes": dict(color=VOTES, caption="at most one per matchup · counted later", rows=[
+    "votes": dict(color=VOTES, caption="højst én pr. matchup · tælles senere", rows=[
         ("matchup_id", "uuid", "PK FK", ""),
         ("winner_id", "uuid", "FK", ""),
         ("loser_id", "uuid", "FK", ""),
         ("winner_was_a", "bool", "", ""),
-        ("created_at", "timestamptz", "", "counting order"),
-        ("counted_at", "timestamptz", "", "null = pending"),
-        ("winner_elo_before", "real", "", "set when counted"),
-        ("loser_elo_before", "real", "", "set when counted"),
+        ("created_at", "timestamptz", "", "tællerækkefølge"),
+        ("counted_at", "timestamptz", "", "null = afventer"),
+        ("winner_elo_before", "real", "", "sættes ved optælling"),
+        ("loser_elo_before", "real", "", "sættes ved optælling"),
     ], foot=["ix (created_at) where counted_at is null", "ix (winner_id) · ix (loser_id)",
              "check winner_id <> loser_id"]),
-    "post_elo_changes": dict(color=ELO, caption="hourly Elo deltas for Trending · kept 96 h", rows=[
-        ("hour", "timestamptz", "PK", "truncated to the hour, UTC"),
-        ("post_id", "uuid", "PK", "no FK constraint"),
-        ("elo_change", "real", "", "net change that hour"),
+    "post_elo_changes": dict(color=ELO, caption="Elo-ændringer pr. time til Trending · gemmes 96 t", rows=[
+        ("hour", "timestamptz", "PK", "rundet ned til hel time, UTC"),
+        ("post_id", "uuid", "PK", "ingen FK-constraint"),
+        ("elo_change", "real", "", "nettoændring den time"),
     ], foot=[]),
 }
 
@@ -232,9 +232,9 @@ def build():
     s.add('<defs><filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">'
           '<feDropShadow dx="0" dy="1.5" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.10"/></filter></defs>')
 
-    s.text(M, 46, "Fotolo · PostgreSQL schema", size=24, weight="700")
-    s.text(M, 76, "8 tables. Every FK line runs from the referencing column to the key it references. "
-                  "Line colour = the table being referenced.", size=13, fill=MUTED)
+    s.text(M, 46, "Fotolo · PostgreSQL-skema", size=24, weight="700")
+    s.text(M, 76, "8 tabeller. Hver FK-linje går fra den refererende kolonne til den nøgle, den refererer til. "
+                  "Linjefarve = den tabel, der refereres til.", size=13, fill=MUTED)
 
     y_uid = u.row_y("id")
     y_pid = po.row_y("id")
@@ -322,20 +322,20 @@ def build():
         s.rect(lx, y - 8, w, 16, fill=BG, rx=4)
         s.text(lx + w / 2, y, text, size=10.5, fill=color, anchor="middle", weight="600")
 
-    label((se.right + u.left) / 2, y_uid - 14, "logged in on", USERS)
-    label((u.right + x_u23) / 2 + 40, y_uid - 14, "creates · votes · favorites", USERS)
-    label((po.left + me.right) / 2, y_mh - 14, "shown in", MEDIA)
-    label(x_avatar, (u.row_y("avatar_hash") + y_mh) / 2, "avatar", MEDIA)
-    label(x_r, (vo.row_y("matchup_id") + y_mid) / 2, "decided by", MATCHUPS)
-    label((el.left + x_p) / 2, el.row_y("post_id") - 13, "logical ref", POSTS)
+    label((se.right + u.left) / 2, y_uid - 14, "logget ind på", USERS)
+    label((u.right + x_u23) / 2 + 40, y_uid - 14, "opretter · stemmer · favoritter", USERS)
+    label((po.left + me.right) / 2, y_mh - 14, "vist i", MEDIA)
+    label(x_avatar, (u.row_y("avatar_hash") + y_mh) / 2, "profilbillede", MEDIA)
+    label(x_r, (vo.row_y("matchup_id") + y_mid) / 2, "afgjort af", MATCHUPS)
+    label((el.left + x_p) / 2, el.row_y("post_id") - 13, "logisk ref.", POSTS)
 
     lx, ly = po.x, y_uid + 48
     lw = po.w
     lh = po.y - 36 - ly
     s.rect(lx, ly, lw, lh, fill=PANEL, stroke=LINE, rx=10)
-    s.text(lx + 16, ly + 22, "Legend", size=13, weight="700")
+    s.text(lx + 16, ly + 22, "Forklaring", size=13, weight="700")
     yy = ly + 50
-    for k, desc in [("PK", "primary key"), ("FK", "foreign key"), ("UK", "unique"), ("GEN", "generated (stored) column")]:
+    for k, desc in [("PK", "primærnøgle"), ("FK", "fremmednøgle"), ("UK", "unik"), ("GEN", "genereret (gemt) kolonne")]:
         bw = 20 if k != "GEN" else 28
         s.rect(lx + 16, yy - 7.5, bw, 15, fill=BADGE_COLORS[k], rx=3.5, extra='fill-opacity="0.12"')
         s.text(lx + 16 + bw / 2, yy + 0.5, k, size=8.5, fill=BADGE_COLORS[k], weight="700", anchor="middle")
@@ -343,7 +343,7 @@ def build():
         yy += 22
     yy += 6
     ex = lx + 16
-    for kind, desc in [("one", "exactly one"), ("one?", "zero or one"), ("many", "zero or many")]:
+    for kind, desc in [("one", "præcis én"), ("one?", "nul eller én"), ("many", "nul eller flere")]:
         s.line(ex, yy, ex + 30, yy, INK, 1.6)
         if kind == "one":
             one(s, ex, yy, 1, INK)
@@ -354,23 +354,23 @@ def build():
         s.text(lx + 56, yy, desc, size=12)
         yy += 22
     s.line(ex, yy, ex + 30, yy, INK, 1.6, dash="5 4")
-    s.text(lx + 56, yy, "reference without FK constraint", size=12)
+    s.text(lx + 56, yy, "reference uden FK-constraint", size=12)
     yy += 30
-    for line in ["All FKs are ON DELETE CASCADE, except users.avatar_hash (no action).",
-                 "\"live\" = partial index WHERE deleted_at IS NULL."]:
+    for line in ["Alle FK'er er ON DELETE CASCADE, undtagen users.avatar_hash (no action).",
+                 "\"aktiv\" = partielt indeks WHERE deleted_at IS NULL."]:
         s.text(lx + 16, yy, line, size=11, fill=MUTED)
         yy += 17
 
     nx, ny, nw = se.x, se.bottom + 40, se.w
     import textwrap
     notes = [
-        "Voting writes one votes row with counted_at = null. The vote worker counts pending votes once a minute, in created_at order.",
-        "Only the worker writes posts.elo / wins / losses. Per batch it also adds each post's net change to post_elo_changes for that hour.",
-        "users.elo / wins / losses are recomputed from the user's live posts (best elo, summed wins / losses), never incremented.",
-        "Posts are soft-deleted: every live query filters on deleted_at IS NULL, and rows, media and votes stay.",
-        "votes.matchup_id is the primary key, so a matchup can only be voted on once.",
-        "Rankings: all-time and this week read (elo, rand_key); Trending sums the last 48 h of post_elo_changes.",
-        "Logging in revokes the user's earlier sessions with the same device_id.",
+        "En stemme skriver én række i votes med counted_at = null. Vote-workeren tæller afventende stemmer én gang i minuttet, i created_at-rækkefølge.",
+        "Kun workeren skriver posts.elo / wins / losses. For hver batch lægger den også hvert opslags nettoændring til post_elo_changes for den time.",
+        "users.elo / wins / losses genberegnes fra brugerens aktive opslag (bedste elo, summerede wins / losses) og tælles aldrig bare op.",
+        "Opslag soft-deletes: alle forespørgsler på aktive opslag filtrerer på deleted_at IS NULL, og rækker, medier og stemmer bliver liggende.",
+        "votes.matchup_id er primærnøglen, så der kan kun stemmes én gang pr. matchup.",
+        "Ranglister: altid og denne uge læser (elo, rand_key); Trending summerer de seneste 48 t af post_elo_changes.",
+        "Et login tilbagekalder brugerens tidligere sessioner med samme device_id.",
     ]
     lines = []
     for n in notes:
@@ -378,7 +378,7 @@ def build():
         lines.append(wrapped)
     nh = 46 + sum(len(l) * 17 + 8 for l in lines) + 6
     s.rect(nx, ny, nw, nh, fill=PANEL, stroke=LINE, rx=10)
-    s.text(nx + 16, ny + 22, "How the data moves", size=13, weight="700")
+    s.text(nx + 16, ny + 22, "Sådan flytter data sig", size=13, weight="700")
     yy = ny + 48
     for wrapped in lines:
         s.circle(nx + 20, yy, 2.5, MUTED, MUTED, 0)

@@ -46,47 +46,47 @@ def build():
                     f'orient="auto-start-reverse"><path d="M 0 0.5 L 10 5 L 0 9.5 z" fill="{c}"/></marker>' for c in colors)
           + '</defs>')
 
-    s.text(48, 46, "Fotolo · login and tokens", size=24, weight="700")
-    s.text(48, 76, "The app holds two tokens: a short-lived access token for every request, "
-                   "and a refresh token that only buys new tokens.", size=13, fill=MUTED)
+    s.text(48, 46, "Fotolo · login og tokens", size=24, weight="700")
+    s.text(48, 76, "Appen har to tokens: et kortlivet access token til hvert request, "
+                   "og et refresh token, der kun bruges til at få nye tokens.", size=13, fill=MUTED)
 
     top, bottom = 112, 1036
-    frame(s, 48, top, 600, bottom - top, "App", APP, "Expo · tokens in SecureStore", fill="#fffafb")
+    frame(s, 48, top, 600, bottom - top, "App", APP, "Expo · tokens i SecureStore", fill="#fffafb")
     frame(s, 688, top, 500, bottom - top, "Server", COMPUTE, "AuthController", fill="#fbfbff")
 
     c1, c2, c3 = 190, 490, 938
 
-    pill(s, c2, 190, 170, 42, "App opens", APP)
-    diamond(s, c2, 290, 200, 92, "Tokens saved\non the phone?", APP)
-    login = Box(c2 - 110, 382, 220, 76, "Login screen", ["email + password"], APP)
+    pill(s, c2, 190, 170, 42, "Appen åbnes", APP)
+    diamond(s, c2, 290, 200, 92, "Tokens gemt\npå telefonen?", APP)
+    login = Box(c2 - 110, 382, 220, 76, "Loginskærm", ["e-mail + adgangskode"], APP)
     s1 = Box(c3 - 150, 360, 300, 120, "POST /api/Auth/login",
-             ["check email + password", "revoke this phone's old session", "new session: store only the",
-              "SHA-256 of the refresh token"], COMPUTE)
-    save = Box(c2 - 110, 522, 220, 76, "Save both tokens", ["in SecureStore (Keychain)"], APP)
-    request = Box(c1 - 100, 522, 200, 76, "API request", ["voting, ranking, upload …"], APP)
-    diamond(s, c1, 690, 210, 104, "Access token runs\nout in < 30 s?", APP)
+             ["tjek e-mail + adgangskode", "tilbagekald telefonens gamle session", "ny session: gem kun",
+              "SHA-256 af refresh tokenet"], COMPUTE)
+    save = Box(c2 - 110, 522, 220, 76, "Gem begge tokens", ["i SecureStore (Keychain)"], APP)
+    request = Box(c1 - 100, 522, 200, 76, "API-request", ["afstemning, rangliste, upload …"], APP)
+    diamond(s, c1, 690, 210, 104, "Udløber access\ntoken om < 30 s?", APP)
     s2 = Box(c3 - 150, 640, 300, 100, "POST /api/Auth/refresh",
-             ["find session by token hash", "not revoked, used in last 30 days?"], COMPUTE)
-    send = Box(c1 - 110, 792, 220, 76, "Send the request", ["`Authorization: Bearer …`"], APP)
-    s3 = Box(c3 - 150, 785, 300, 90, "Check the JWT", ["signature + expiry only", "no database lookup"], COMPUTE)
-    out = Box(c2 - 120, 922, 240, 76, "Sign out on the phone", ["delete both tokens,", "show the login screen"], FAIL)
+             ["find session via token-hash", "ikke tilbagekaldt, brugt inden 30 dage?"], COMPUTE)
+    send = Box(c1 - 110, 792, 220, 76, "Send requestet", ["`Authorization: Bearer …`"], APP)
+    s3 = Box(c3 - 150, 785, 300, 90, "Tjek JWT'en", ["kun signatur + udløb", "intet databaseopslag"], COMPUTE)
+    out = Box(c2 - 120, 922, 240, 76, "Log ud på telefonen", ["slet begge tokens,", "vis loginskærmen"], FAIL)
 
     arrow(s, [(c2, 211), (c2, 244)], INK)
-    arrow(s, [(c2, 336), (c2, login.t)], INK, "no", at=(c2 + 18, 359))
-    arrow(s, [(c2 - 100, 290), (c1, 290), (c1, request.t)], INK, "yes", at=((c1 + c2 - 100) / 2, 290))
-    arrow(s, [(login.r, login.cy), (s1.l, login.cy)], INK, "email, password,\ndevice id", at=((login.r + s1.l) / 2, login.cy - 28))
+    arrow(s, [(c2, 336), (c2, login.t)], INK, "nej", at=(c2 + 18, 359))
+    arrow(s, [(c2 - 100, 290), (c1, 290), (c1, request.t)], INK, "ja", at=((c1 + c2 - 100) / 2, 290))
+    arrow(s, [(login.r, login.cy), (s1.l, login.cy)], INK, "e-mail, adgangskode,\nenheds-id", at=((login.r + s1.l) / 2, login.cy - 28))
     s.poly([(c3, s2.t), (c3, 560)], DATA, sw=1.7, rounded=0)
     arrow(s, [(c3, s1.b), (c3, 560), (save.r, 560)], DATA, "access + refresh token", at=((save.r + s1.l) / 2 + 10, 560))
-    tag(s, c3, 600, "valid: new pair, old\nrefresh token stops working", DATA)
+    tag(s, c3, 600, "gyldigt: nyt par, det gamle\nrefresh token holder op med at virke", DATA)
     arrow(s, [(save.l, 560), (request.r, 560)], INK)
     arrow(s, [(c1, request.b), (c1, 638)], INK)
-    arrow(s, [(c1 + 105, 690), (s2.l, 690)], INK, "yes: refresh first", at=((c1 + 105 + s2.l) / 2, 674))
-    arrow(s, [(c1, 742), (c1, send.t)], INK, "no", at=(c1 + 18, 767))
+    arrow(s, [(c1 + 105, 690), (s2.l, 690)], INK, "ja: refresh først", at=((c1 + 105 + s2.l) / 2, 674))
+    arrow(s, [(c1, 742), (c1, send.t)], INK, "nej", at=(c1 + 18, 767))
     arrow(s, [(send.r, 815), (s3.l, 815)], INK, "request", at=((send.r + s3.l) / 2, 801))
     arrow(s, [(s3.l, 848), (send.r, 848)], DATA, "200 + data", at=((send.r + s3.l) / 2, 862))
 
     s.poly([(s2.r, s2.cy), (1150, s2.cy), (1150, out.cy)], FAIL, sw=1.7, rounded=10)
-    tag(s, 1150, 800, "invalid:\n401", FAIL)
+    tag(s, 1150, 800, "ugyldigt:\n401", FAIL)
     arrow(s, [(c3, s3.b), (c3, out.cy), (out.r, out.cy)], FAIL, "401", at=(c3, 902))
     s.poly([(1150, out.cy), (c3, out.cy)], FAIL, sw=1.7, rounded=0)
 
@@ -95,28 +95,28 @@ def build():
 
     rx, rw = 1228, 344
     y = info(s, rx, 130, rw, "Access token", COMPUTE, "15 min", [
-        "a JWT signed by the server (HMAC-SHA256)",
-        "holds the user id and session id",
-        "sent with every request",
-        "checked without touching the database, so it's fast",
+        "en JWT signeret af serveren (HMAC-SHA256)",
+        "indeholder bruger-id og session-id",
+        "sendes med hvert request",
+        "tjekkes uden at røre databasen, så det er hurtigt",
     ])
-    y = info(s, rx, y + 36, rw, "Refresh token", DATA, "30 days idle", [
-        "32 random bytes, only sent to /refresh",
-        "the server keeps only its SHA-256 hash, so a database leak can't be used to log in",
-        "swapped for a new one on every refresh: each token works once",
+    y = info(s, rx, y + 36, rw, "Refresh token", DATA, "30 dage inaktiv", [
+        "32 tilfældige bytes, sendes kun til /refresh",
+        "serveren gemmer kun dets SHA-256-hash, så et databaselæk ikke kan bruges til at logge ind",
+        "skiftes ud ved hver refresh: hvert token virker kun én gang",
     ])
-    y = info(s, rx, y + 36, rw, "Logging out", FAIL, "revokes", [
-        "logout revokes this session, so its refresh token stops working",
-        "logout all revokes every session the user has",
-        "logging in again on the same phone revokes its old session",
-        "an access token already handed out keeps working until it runs out (at most 15 min)",
+    y = info(s, rx, y + 36, rw, "Log ud", FAIL, "tilbagekalder", [
+        "logout tilbagekalder denne session, så dens refresh token holder op med at virke",
+        "logout all tilbagekalder alle brugerens sessioner",
+        "nyt login på samme telefon tilbagekalder dens gamle session",
+        "et access token, der allerede er udstedt, virker, indtil det udløber (højst 15 min)",
     ])
-    note = textwrap.wrap("The app reads the expiry from the token before each request and refreshes if it's "
-                            "almost out, so requests don't fail halfway. If several requests need a refresh at "
-                            "once, they share one refresh call.", 50)
+    note = textwrap.wrap("Appen læser udløbstiden i tokenet før hvert request og refresher, hvis det næsten er "
+                            "udløbet, så requests ikke fejler halvvejs. Hvis flere requests skal bruge en refresh på "
+                            "samme tid, deler de ét refresh-kald.", 50)
     y += 36
     s.rect(rx, y, rw, 44 + len(note) * 16, fill=BG, stroke=LINE, rx=10)
-    s.text(rx + 16, y + 22, "Why refresh 30 s early?", size=12.5, weight="700", fill=APP)
+    s.text(rx + 16, y + 22, "Hvorfor refreshe 30 s før?", size=12.5, weight="700", fill=APP)
     for i, ln in enumerate(note):
         s.text(rx + 16, y + 46 + i * 16, ln, size=12, fill=INK)
 
